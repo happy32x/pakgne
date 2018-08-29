@@ -7,7 +7,7 @@ import InfiniteScrollViewNew from './_SandBox/InfiniteScrollViewNew/InfiniteScro
 export default class App extends React.Component {
   render() {
     return (
-      <InfiniteScrollViewNew />
+      <InfiniteScrollView />
     )
   }
 }
