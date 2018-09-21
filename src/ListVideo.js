@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { View, Text, FlatList, ActivityIndicator } from 'react-native'
 import { List, ListItem, SearchBar } from 'react-native-elements'
 
-export default class FlatListDemo extends React.Component {
+export default class FlatListDemo extends Component {
   constructor(props) {
     super(props)
 
@@ -26,18 +26,18 @@ export default class FlatListDemo extends React.Component {
     this.setState({ loading: true })
 
     fetch(url)
-      .then(res => res.json())
-      .then(res => {
-        this.setState({
-          data: page === 1 ? res.results : [...this.state.data, ...res.results],
-          error: res.error || null,
-          loading: false,
-          refreshing: false
-        })
+    .then(res => res.json())
+    .then(res => {
+      this.setState({
+        data: page === 1 ? res.results : [...this.state.data, ...res.results],
+        error: res.error || null,
+        loading: false,
+        refreshing: false
       })
-      .catch(error => {
-        this.setState({ error, loading: false })
-      })
+    })
+    .catch(error => {
+      this.setState({ error, loading: false })
+    })
   }
 
   handleRefresh = () => {
@@ -61,8 +61,8 @@ export default class FlatListDemo extends React.Component {
       () => {
         this.makeRemoteRequest();
       }
-    )
-  }
+    );
+  };
 
   renderSeparator = () => {
     return (
@@ -74,12 +74,12 @@ export default class FlatListDemo extends React.Component {
           marginLeft: "14%"
         }}
       />
-    )
-  }
+    );
+  };
 
   renderHeader = () => {
-    return <SearchBar placeholder="Type Here..." lightTheme round />
-  }
+    return <SearchBar placeholder="Type Here..." lightTheme round />;
+  };
 
   renderFooter = () => {
     if (!this.state.loading) return null;
@@ -94,8 +94,8 @@ export default class FlatListDemo extends React.Component {
       >
         <ActivityIndicator animating size="large" />
       </View>
-    )
-  }
+    );
+  };
 
   render() {
     return (
@@ -111,19 +111,16 @@ export default class FlatListDemo extends React.Component {
               containerStyle={{ borderBottomWidth: 0 }}
             />
           )}
-          keyExtractor={item => item.email}
+          keyExtractor={(item,i) => i.toString()}
           ItemSeparatorComponent={this.renderSeparator}
           ListHeaderComponent={this.renderHeader}
           ListFooterComponent={this.renderFooter}
           onRefresh={this.handleRefresh}
           refreshing={this.state.refreshing}
           onEndReached={this.handleLoadMore}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={50}
         />
       </List>
-    )
+    );
   }
 }
-
-
-

@@ -1,2 +1,2 @@
-const AppName = 'Robot'
+const AppName = 'Pakgne'
 export default AppName

@@ -22,7 +22,7 @@ export default class Pakgne extends React.Component{
     this.timeoutID = setTimeout(() => {
       this.setState({isReady: true})
     }, 1000)
-  }r
+  }
 
   render() {
     return ( !this.state.isReady ? <SplashPage /> : <Root /> )

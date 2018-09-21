@@ -15,7 +15,6 @@ export default class InfiniteScrollViewNew extends Component {
     this.fetchMore = this._fetchMore.bind(this)
     this.fetchData = this._fetchData.bind(this)
     this.state = {
-      dataSource: null, // remove this dataSource
       isLoading: true,
       isLoadingMore: false,
       _data: null,
@@ -26,8 +25,7 @@ export default class InfiniteScrollViewNew extends Component {
   _fetchData(callback) {
     const params = this.state._dataAfter !== ''
       ? `&after=${this.state._dataAfter}`
-      : '';
-    //Limits fetches to 15 so there's lesser items from the get go
+      : ''
     fetch(`https://www.reddit.com/subreddits/popular/.json?limit=15${params}`)
       .then(response => response.json())
       .then(callback)
@@ -57,6 +55,7 @@ export default class InfiniteScrollViewNew extends Component {
       })
     })
   }
+
   render() {
     if (this.state.isLoading) {
       return (
@@ -66,37 +65,37 @@ export default class InfiniteScrollViewNew extends Component {
       );
     } else {
       return (
+        <View style={{ flex:1 }}>
         <FlatList
-           data={this.state._data} //Remove this reference to dataSource
-           renderItem={({item: rowData}) => { //Replaces renderRow={rowData => { 
+           data={this.state._data}
+           renderItem={({item}) => {
             return (
               <View style={styles.listItem}>
                 <View style={styles.imageWrapper}>
                   <Image
                     style={{ width: 70, height: 70 }}
                     source={{
-                      uri: rowData.data.icon_img === '' ||
-                        rowData.data.icon_img === null
+                      uri: item.data.icon_img === '' ||
+                        item.data.icon_img === null
                         ? 'https://via.placeholder.com/70x70.jpg'
-                        : rowData.data.icon_img,
+                        : item.data.icon_img,
                     }}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.title}>
-                    {rowData.data.display_name}
+                    {item.data.display_name}
                   </Text>
                   <Text style={styles.subtitle}>
-                    {rowData.data.public_description}
+                    {item.data.public_description}
                   </Text>
                 </View>
               </View>
             );
           }}
-          onEndReached={() =>
-            this.setState({ isLoadingMore: true }, () => this.fetchMore())}
-          keyExtractor={(item, index) => index}
-          ListFooterComponent={() => { // replaces renderFooter={() => {
+          keyExtractor={item => item.data.name}
+          onEndReached={() => this.setState({ isLoadingMore: true }, () => this.fetchMore())}
+          ListFooterComponent={() => {
             return (
               this.state.isLoadingMore &&
               <View style={{ flex: 1, padding: 10 }}>
@@ -105,6 +104,7 @@ export default class InfiniteScrollViewNew extends Component {
             );
           }}
         />
+        </View>
       );
     }
   }

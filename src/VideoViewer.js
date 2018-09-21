@@ -1,8 +1,17 @@
 import React from 'react'
-import { ScrollView, View, Text, Platform, StatusBar, Image } from 'react-native'
+import { 
+  ScrollView, 
+  View, Text, 
+  Platform, 
+  StatusBar, 
+  Image,
+  TouchableNativeFeedback,
+} from 'react-native'
 import BarStatus from './BarStatus'
 import Icon from 'react-native-vector-icons/Ionicons'
 import img from './assets/2.jpg'
+import YoutubeWebView from './YoutubeWebView'
+import YoutubeView from './YoutubeView'
 
 export default class VideoViewer extends React.Component{
   
@@ -11,18 +20,35 @@ export default class VideoViewer extends React.Component{
   };
 
   render() {
+    const { navigation } = this.props
+    const videoId = navigation.getParam('videoId', 'NO-ID')
+
     return (
       <View style={{ flex:1 }}>
           <View style={{alignSelf:'stretch', height:200, backgroundColor:"#000", marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
-            <Icon style={{ 
-              position:"absolute", 
-              top:10,
-              left:10,
-              fontWeight:'bold', 
-              fontFamily:'normal', 
-              color:"#FFF", 
-              fontSize:20,
-            }} name="md-arrow-back" />
+            <YoutubeView videoId={videoId} />
+            
+            <TouchableNativeFeedback 
+              background={TouchableNativeFeedback.Ripple("#5e5e5e",true)}
+              onPress={() => this.props.navigation.goBack()}
+            > 
+              <View style={{ 
+                position:"absolute", 
+                top: 0,
+                left: 0,
+                width: 40, 
+                height: 40,
+                alignItems:'center', 
+                justifyContent:'center', 
+                opacity: 0.3
+              }}>
+                <Icon style={{           
+                  fontWeight:'bold', 
+                  color:"#FFF", 
+                  fontSize:20,                  
+                }} name="md-arrow-back" /> 
+              </View>              
+            </TouchableNativeFeedback>
           </View>
 
           <ScrollView style={{ flex:1 }} showsVerticalScrollIndicator={false}>

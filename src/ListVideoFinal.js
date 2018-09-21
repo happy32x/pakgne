@@ -7,30 +7,30 @@ import {
   ListView,
   ActivityIndicator,
   RefreshControl,
+  FlatList,
 } from 'react-native'
 import { Constants } from 'expo'
 import Sample from './Sample'
 import Card from './Card'
 import ButtonScrollTop from './ButtonScrollTop'
+import InfiniteElements from './InfiniteElements'
 
 const apiKey = 'AIzaSyAIhByrz5QzcD0ODHh5g5sOqzBBvLvl5OM'
 const channelId = 'UCWitG84eyFDN5xj8oLXwVhA'
 const results = 15
 
-export default class SandBox extends Component {
+export default class ListVideoFinal extends Component {
   constructor(props) {
     super(props)
     this.fetchMore = this._fetchMore.bind(this)
     this.fetchData = this._fetchData.bind(this)
     this.fetchRefresh = this._fetchRefresh.bind(this)
-    this.scrollTop = this._scrollTop.bind(this)
-    this.onScroll = this.onScroll.bind(this)
     this.state = {
       dataSource: null,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
-      _data: null,
+      _data: [1,2],
       _dataAfter: '',
       isButtonScrollTopVisible: false,
     }
@@ -78,15 +78,14 @@ export default class SandBox extends Component {
     })
   }
 
-  _scrollTop() {
-    this.scroll.scrollTo({x: 0, y: 0, animated: true})
-    this.setState({ isButtonScrollTopVisible: false })
+  scrollTop = () => {
+    this.scroll.scrollToIndex({index:0 , animated: true})
   }
 
-  onScroll(evt) {
-    const currentOffset = evt.nativeEvent.contentOffset.y
-    if (currentOffset > 100)  this.setState({ isButtonScrollTopVisible: true }) 
-    else this.setState({ isButtonScrollTopVisible: false }) 
+  onScroll = (evt) => {
+    let currentOffset = evt.nativeEvent.contentOffset.y
+    if (currentOffset > 100) this.setState({ isButtonScrollTopVisible: true })
+    else this.setState({ isButtonScrollTopVisible: false })
   }
 
   componentDidMount() {
@@ -105,44 +104,22 @@ export default class SandBox extends Component {
   }
 
   render() {
-    if (this.state.isLoading) {
-      return (
-        <View style={styles.container}>
-          <ActivityIndicator size="large" color="#F57F17"/>
-        </View>
-      )
-    } else {
       return (
         <View>
-          <ListView
+          <FlatList
             ref={(lv) => {this.scroll = lv}}
-            showsVerticalScrollIndicator={false}
-            dataSource={this.state.dataSource}
-            renderRow={rowData => <Card {...rowData} apikey={apiKey} /> }
-            onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
-            renderFooter={() => {
-              return (
-                this.state.isLoadingMore &&
-                <View style={{ flex: 1, padding: 10 }}>
-                  <ActivityIndicator size="large" color="#F57F17" />
-                </View>
-              )
-            }}
-            refreshControl={ 
-              <RefreshControl 
-                colors={["#F57F17"]} 
-                refreshing={this.state.isRefreshing} 
-                onRefresh={() => this.setState({ isRefreshing: true, isLoadingMore: false, _dataAfter: '' }, () => this.fetchRefresh())}
-              /> 
-            }
+            data={this.state._data}
+            renderItem={({ item }) => (
+              <InfiniteElements />
+            )}
+            keyExtractor={(item,i) => i.toString()}
             onScroll={this.onScroll}
             scrollEventThrottle={1}
           />
           
-          {this.state.isButtonScrollTopVisible ? <ButtonScrollTop scrollTop={this.scrollTop}/> : null}
+          <ButtonScrollTop scrollTop={this.scrollTop} isButtonScrollTopVisible={this.state.isButtonScrollTopVisible} />
         </View>
       )
-    }
   }
 }
 

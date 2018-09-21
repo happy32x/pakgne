@@ -24,7 +24,6 @@ export default class SandBox extends Component {
     this.fetchData = this._fetchData.bind(this)
     this.fetchRefresh = this._fetchRefresh.bind(this)
     this.scrollTop = this._scrollTop.bind(this)
-    this.onScroll = this.onScroll.bind(this)
     this.state = {
       dataSource: null,
       isLoading: true,
@@ -86,7 +85,7 @@ export default class SandBox extends Component {
   onScroll(evt) {
     const currentOffset = evt.nativeEvent.contentOffset.y
     if (currentOffset > 100)  this.setState({ isButtonScrollTopVisible: true }) 
-    else this.setState({ isButtonScrollTopVisible: false }) 
+    else this.setState({ isButtonScrollTopVisible: false })
   }
 
   componentDidMount() {
@@ -118,7 +117,7 @@ export default class SandBox extends Component {
             ref={(lv) => {this.scroll = lv}}
             showsVerticalScrollIndicator={false}
             dataSource={this.state.dataSource}
-            renderRow={rowData => <Card {...rowData} apikey={apiKey} /> }
+            renderRow={rowData => <Card {...rowData} /> }
             onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             renderFooter={() => {
               return (
@@ -126,7 +125,7 @@ export default class SandBox extends Component {
                 <View style={{ flex: 1, padding: 10 }}>
                   <ActivityIndicator size="large" color="#F57F17" />
                 </View>
-              )
+              );
             }}
             refreshControl={ 
               <RefreshControl 

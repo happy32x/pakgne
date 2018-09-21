@@ -114,7 +114,7 @@ export default class News extends React.Component{
                     style={{backgroundColor:'#EFEFEF', paddingLeft:0, paddingTop:0}}
                     showsVerticalScrollIndicator={false}
                     data={this.state.data}
-                    renderItem={ ({ item }) => ( <Card key={item.id} {...item} /> )}
+                    renderItem={ ({ item }) => ( <Card {...item} /> )}
                     keyExtractor={item=>item.id}
                     ListFooterComponent={this.renderFooter}
                     refreshControl={ <RefreshControl colors={["#F57F17"]} refreshing={this.state.refreshing} onRefresh={this.handleRefresh} /> }
@@ -123,7 +123,7 @@ export default class News extends React.Component{
                 />
             </View>
         )
-    }
+      }
   }
 }
 
