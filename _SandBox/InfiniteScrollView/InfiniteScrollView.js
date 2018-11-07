@@ -68,7 +68,7 @@ export default class InfiniteScrollView extends Component {
     if (this.state.isLoading) {
       return (
         <View style={styles.container}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color="#F57F17" />
         </View>
       );
     } else {
@@ -106,7 +106,7 @@ export default class InfiniteScrollView extends Component {
             return (
               this.state.isLoadingMore &&
               <View style={{ flex: 1, padding: 10 }}>
-                <ActivityIndicator size="small" />
+                <ActivityIndicator size="large" color="#F57F17" />
               </View>
             );
           }}
@@ -118,11 +118,10 @@ export default class InfiniteScrollView extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#ecf0f1',
+    backgroundColor: '#ebe8f2',
   },
   listItem: {
     flex: 1,

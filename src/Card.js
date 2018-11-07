@@ -112,7 +112,9 @@ class Card extends React.Component{
                             </View>
                         </TouchableNativeFeedback>
         
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#fabe92",true)}>
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple("#fabe92",true)}                            
+                        >
                             <View style={{ flex:1, alignItems:'center', justifyContent:'center', flexDirection:'row', }}>
                                 <View style={{ flex:1, alignItems:'center', justifyContent:'center', flexDirection:'row'}}>
                                     <Icon style={{ fontWeight:'bold', fontFamily:'normal', color:"#F57F17", fontSize:20 }} name="md-chatbubbles" />

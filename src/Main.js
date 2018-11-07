@@ -3,6 +3,7 @@ import { View, Platform } from 'react-native'
 import Header from './Header'
 import BarStatus from './BarStatus'
 import SweetTab from './SweetTab'
+import ModalView from './ModalView'
 
 export default class Main extends React.Component{
   static navigationOptions = {
