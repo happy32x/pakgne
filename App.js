@@ -1,13 +1,20 @@
 import React from 'react'
-import Pakgne from './src/Pakgne'
-import InfiniteScrollViewNew from './_SandBox/InfiniteScrollViewNew/InfiniteScrollViewNew';
-import InfiniteScrollView from './_SandBox/InfiniteScrollView/InfiniteScrollView';
-import ListVideoWell from './src/ListVideoWell';
+import Root from './src/Navigation/Root'
+
+import { Provider } from 'react-redux'
+import Store from './src/Store/configureStore'
+import { persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/es/integration/react'
 
 export default class App extends React.Component {
   render() {
+    let persistor = persistStore(Store)
     return (
-      <Pakgne />
+      <Provider store={Store}>
+        <PersistGate persistor={persistor}>
+          <Root />
+        </PersistGate>
+      </Provider>
     )
   }
 }
