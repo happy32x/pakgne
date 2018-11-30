@@ -32,8 +32,8 @@ class ParameterViewerContent extends React.Component{
               </View>
             </View>
             <View style={styles.user_name_container}>
-              <Text style={styles.user_name}>User_ae450pu6e</Text>
-              <Text style={styles.user_description}>I am your first fan</Text>
+              <Text style={styles.user_name}>Jane doe</Text>
+              <Text style={styles.user_description}>Je suis votre première fan</Text>
             </View>
           </View>
 
@@ -43,7 +43,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-key" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Account</Text>
+                <Text style={styles.text}>Compte</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -82,7 +82,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialIcons style={styles.icon} name="data-usage" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Data usage</Text>
+                <Text style={styles.text}>Usage de données</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -95,7 +95,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-person-add" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Invite friend(s)</Text>
+                <Text style={styles.text}>Invitez un ou plusieurs amis</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -108,7 +108,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialIcons style={styles.icon} name="event-note" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Event</Text>
+                <Text style={styles.text}>Evènement</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -121,7 +121,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-images" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Gallery</Text>
+                <Text style={styles.text}>Galeries</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -134,7 +134,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialCommunityIcons style={styles.icon} name="phone" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Call for support</Text>
+                <Text style={styles.text}>Appel audio</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -147,7 +147,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialCommunityIcons style={styles.icon} name="qrcode" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Code generator</Text>
+                <Text style={styles.text}>Générateur de QR code</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -160,7 +160,7 @@ class ParameterViewerContent extends React.Component{
                 <IconOcticons style={styles.icon} name="database" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Data saver</Text>
+                <Text style={styles.text}>Sauvegarde de données</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -173,7 +173,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialCommunityIcons style={styles.icon} name="earth" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Language</Text>
+                <Text style={styles.text}>Langue</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -186,7 +186,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-lock" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Confidentiality</Text>
+                <Text style={styles.text}>Sécurité</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -199,7 +199,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-bookmarks" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Condition and regulation</Text>
+                <Text style={styles.text}>Conditions d'utilisation</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -212,7 +212,7 @@ class ParameterViewerContent extends React.Component{
                 <IconMaterialIcons style={styles.icon} name="report-problem" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Report a problem</Text>
+                <Text style={styles.text}>Rapporter un bug</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -225,7 +225,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-exit" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Disconnection</Text>
+                <Text style={styles.text}>Déconnexion</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -238,7 +238,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-information-circle" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>About</Text>
+                <Text style={styles.text}>A propos</Text>
               </View>
             </View>
           </TouchableNativeFeedback>
@@ -251,7 +251,7 @@ class ParameterViewerContent extends React.Component{
                 <Icon style={styles.icon} name="md-help-circle" />
               </View>
               <View style={styles.text_container}>
-                <Text style={styles.text}>Help</Text>
+                <Text style={styles.text}>F.A.Q</Text>
               </View>
             </View>
           </TouchableNativeFeedback>

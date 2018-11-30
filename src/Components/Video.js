@@ -28,7 +28,6 @@ class Video extends React.Component{
     }
 
     this.fetchData = this._fetchData.bind(this)
-
     this.toggleFavorite = this._toggleFavorite.bind(this)
   }
 
@@ -62,11 +61,11 @@ class Video extends React.Component{
   render() {
     if (this.state.isLoading) {
       return (
-        <VideoLoader />
+          <VideoLoader />
       )
     } else {
       return (
-        <View key={this.props.firstData.id.videoId} style={styles.main_container}>
+        <View  key={this.props.firstData.id.videoId} style={styles.main_container}>
 
           <View style={styles.top_element_container}>
             <View style={styles.film_logo_container}>
@@ -96,7 +95,7 @@ class Video extends React.Component{
 
           <View style={styles.middle_element_container}>
             <TouchableWithoutFeedback onPress={() => {
-              this.props.navigateTo('VideoViewer', { videoId: this.props.firstData.id.videoId })
+              this.props.navigateTo( 'VideoViewer', { video: [this.props.firstData,this.state.secondData] } )
             }}>
               <View style={styles.image_container}>
                 <Image 
@@ -155,7 +154,7 @@ class Video extends React.Component{
                   <Icon style={styles.same_element_one} name="md-share" />
                 </View>
                 <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>shared</Text>
+                  <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3 }]}>partager</Text>
                 </View>
               </View>
             </TouchableNativeFeedback>
@@ -202,7 +201,8 @@ const styles = StyleSheet.create({
     flex: 10, 
     alignItems:'flex-start', 
     justifyContent:'center', 
-    paddingTop:10, paddingBottom:10, 
+    paddingTop:10, 
+    paddingBottom:10, 
     paddingLeft:10 
   },
   title_video: { 

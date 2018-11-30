@@ -1,266 +1,180 @@
-import React from 'react'
-import {
-  TouchableNativeFeedback, 
-  TouchableWithoutFeedback, 
+import React, { Component } from 'react';
+import { 
+  Animated, 
+  ImageBackground, 
+  Platform, 
+  StyleSheet, 
   View, 
   Text, 
-  Image,
-  StyleSheet,
-  Share,
-} from 'react-native'
+  ListView,
+} from 'react-native';
 
-import Constants from 'expo'
-import Icon from 'react-native-vector-icons/Ionicons'
-import Star from './Star'
-import timeConverter from '../Helpers/timeConverter'
-import likeConverter from '../Helpers/likeConverter'
-import MomentConverter from './MomentConverter'
-import { getVideoInfoFromApi } from '../API/REQUEST'
-import VideoLoader from './VideoLoader'
+const NAVBAR_HEIGHT = 64;
+const STATUS_BAR_HEIGHT = Platform.select({ ios: 20, android: 24 });
 
-class Video extends React.Component{
+const DATA = Array.from({ length: 30 });
+const USER_IMG = '../assets/2.jpg'
+
+const AnimatedListView = Animated.createAnimatedComponent(ListView);
+
+class Test extends Component {
   constructor(props) {
-    super(props)
+    super(props);
+
+    const dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+
+    const scrollAnim = new Animated.Value(0);
+    const offsetAnim = new Animated.Value(0);
+
     this.state = {
-      isLoading: true,
-      secondData: undefined
-    }
-
-    this.fetchData = this._fetchData.bind(this)
-
-    this.toggleFavorite = this._toggleFavorite.bind(this)
+      dataSource: dataSource.cloneWithRows(DATA),
+      scrollAnim,
+      offsetAnim,
+      clampedScroll: Animated.diffClamp(
+        Animated.add(
+          scrollAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1],
+            extrapolateLeft: 'clamp',
+          }),
+          offsetAnim,
+        ),
+        0,
+        NAVBAR_HEIGHT - STATUS_BAR_HEIGHT,
+      ),
+    };
   }
 
-  _toggleFavorite() {
-    this.props.toggleFavorite(this.props.firstData, this.state.secondData)
-  }
-
-  _fetchData(callback) {
-    getVideoInfoFromApi(this.props.firstData.id.videoId).then(callback)
-  }
+  _clampedScrollValue = 0;
+  _offsetValue = 0;
+  _scrollValue = 0;
 
   componentDidMount() {
-    const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
-    if (favoriteVideoIndex !== -1) {
-      this.setState({ 
-        isLoading: false,
-        secondData: this.props.recoverFavorite(favoriteVideoIndex),
-      })
-      return
-    }
+    this.state.scrollAnim.addListener(({ value }) => {
+      const diff = value - this._scrollValue;
+      this._diff = diff
+      this._scrollValue = value;
+      this._clampedScrollValue = Math.min(
+        Math.max(this._clampedScrollValue + diff, 0),
+        NAVBAR_HEIGHT - STATUS_BAR_HEIGHT,
+      );
+      console.log("scrollAnim : " + value)
+      console.log("clampedScrollValue : " + this._clampedScrollValue)
+    });
+    this.state.offsetAnim.addListener(({ value }) => {
+      this._offsetValue = value;
+      console.log("offsetValue : " + value)
+      console.log("clampedScrollValue : " + this._clampedScrollValue)
+    });
+  }
 
-    this.fetchData(responseJson => {
-      const secondData = responseJson.items[0]
-      this.setState({
-        isLoading: false,
-        secondData,
-      })
-    })
+  componentWillUnmount() {
+    this.state.scrollAnim.removeAllListeners();
+    this.state.offsetAnim.removeAllListeners();
+  }
+
+  _onScrollEndDrag = () => {
+    this._scrollEndTimer = setTimeout(this._onMomentumScrollEnd, 250);
+  };
+
+  _onMomentumScrollBegin = () => {
+    clearTimeout(this._scrollEndTimer);
+  };
+
+  _onMomentumScrollEnd = () => {
+    const toValue = this._scrollValue > NAVBAR_HEIGHT &&
+      this._clampedScrollValue > (NAVBAR_HEIGHT - STATUS_BAR_HEIGHT) / 2
+      ? this._offsetValue + NAVBAR_HEIGHT
+      : this._offsetValue - NAVBAR_HEIGHT;
+
+    Animated.timing(this.state.offsetAnim, {
+      toValue,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  _renderRow = (rowData, sectionId, rowId) => {
+    return (
+      <ImageBackground key={rowId} style={styles.row} source={require(USER_IMG)} resizeMode="cover">
+        <Text style={styles.rowText}>Amazone</Text>
+      </ImageBackground>
+    );
   }
 
   render() {
-    if (this.state.isLoading) {
-      return (
-        <VideoLoader />
-      )
-    } else {
-      return (
-        <View key={this.props.firstData.id.videoId} style={styles.main_container}>
+    const { clampedScroll } = this.state;
 
-          <View style={styles.top_element_container}>
-            <View style={styles.film_logo_container}>
-              <Icon style={styles.film_logo} name="md-film" />
-            </View>
+    const navbarTranslate = clampedScroll.interpolate({
+      inputRange: [0, NAVBAR_HEIGHT - STATUS_BAR_HEIGHT],
+      outputRange: [0, -(NAVBAR_HEIGHT - STATUS_BAR_HEIGHT)],
+      extrapolate: 'clamp',
+    });
+    const navbarOpacity = clampedScroll.interpolate({
+      inputRange: [0, NAVBAR_HEIGHT - STATUS_BAR_HEIGHT],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    });
 
-            <View style={styles.title_video_container}>
-              <Text style={styles.title_video}>
-                {this.props.firstData.snippet.title}
-              </Text>
-              <Text style={styles.publish_at_video}>
-                <MomentConverter publishAt={this.props.firstData.snippet.publishedAt} />
-              </Text>
-            </View>
-
-            <View style={styles.star_container}>
-
-            </View>
-          </View>
-
-          <View style={styles.middle_element_container}>
-            <TouchableWithoutFeedback onPress={() => {
-              this.props.navigateTo('VideoViewer', { videoId: this.props.firstData.id.videoId })
-            }}>
-              <View style={styles.image_container}>
-                <Image 
-                  source={{uri: this.props.firstData.snippet.thumbnails.medium.url}}
-                  style={styles.image}
-                />
-                <Text style={styles.duration}>
-                  {timeConverter(this.state.secondData.contentDetails.duration)}
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-
-          <View style={styles.bottom_element_container}>
-            <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#fabe92",true)}>
-              <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-heart" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
-                </View>
-              </View>
-            </TouchableNativeFeedback>
-
-            <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple("#fabe92",true)}                            
-            >
-              <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-chatbubbles" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.commentCount)}</Text>
-                </View>
-              </View>
-            </TouchableNativeFeedback>
-
-            <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple("#fabe92",true)}
-              onPress={() => {
-                Share.share({
-                  message: `https://www.youtube.com/watch?v=${this.props.firstData.id.videoId}`,
-                  url: `https://www.youtube.com/watch?v=${this.props.firstData.id.videoId}`,
-                  title: `${this.props.firstData.snippet.title}`
-                }, {
-                  dialogTitle: 'Partager cette video',
-                  excludedActivityTypes: [
-                    'com.apple.UIKit.activity.PostToTwitter'
-                  ]
-                })
-              }}
-            >
-              <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-share" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>shared</Text>
-                </View>
-              </View>
-            </TouchableNativeFeedback>
-          </View>
-
-        </View>
-      )
-    }
+    return (
+      <View style={styles.fill}>
+        <AnimatedListView
+          contentContainerStyle={styles.contentContainer}
+          dataSource={this.state.dataSource}
+          renderRow={this._renderRow}
+          scrollEventThrottle={1}
+          onMomentumScrollBegin={this._onMomentumScrollBegin}
+          onMomentumScrollEnd={this._onMomentumScrollEnd}
+          onScrollEndDrag={this._onScrollEndDrag}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
+            { useNativeDriver: true },
+          )}
+        />
+        <Animated.View style={[styles.navbar, { transform: [{ translateY: navbarTranslate }] }]}>
+          <Animated.Text style={[styles.title, { opacity: navbarOpacity }]}>
+            PLACES
+          </Animated.Text>
+        </Animated.View>
+      </View>
+    );
   }
 }
 
 const styles = StyleSheet.create({
-  loader: {
+  fill: {
     flex: 1,
+  },
+  navbar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    backgroundColor: 'white',
+    borderBottomColor: '#dedede',
+    borderBottomWidth: 1,
+    height: NAVBAR_HEIGHT,
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#ecf0f1',
+    paddingTop: STATUS_BAR_HEIGHT,
   },
-  main_container: { 
-    alignSelf:'stretch', 
-    marginBottom:10 
+  contentContainer: {
+    paddingTop: NAVBAR_HEIGHT,
   },
-  top_element_container: { 
-    backgroundColor:"#FFF", 
-    alignSelf:'stretch', 
-    flexDirection:'row' 
+  title: {
+    color: '#333333',
   },
-  film_logo_container: { 
-    flex: 1, 
-    alignItems:'center',
-    justifyContent:'center', 
-    paddingTop:10, 
-    paddingBottom:10, 
-    paddingLeft:10
+  row: {
+    height: 300,
+    width: null,
+    marginBottom: 1,
+    padding: 16,
+    backgroundColor: 'transparent',
   },
-  film_logo: { 
-    fontWeight:'bold', 
-    fontFamily:'normal', 
-    color:"#000", 
-    fontSize:25 
-  },
-  title_video_container: { 
-    flex: 10, 
-    alignItems:'flex-start', 
-    justifyContent:'center', 
-    paddingTop:10, paddingBottom:10, 
-    paddingLeft:10 
-  },
-  title_video: { 
-    color: '#000', 
-    fontSize: 16 
-  },
-  publish_at_video: { 
-    color: '#A7A7A7', 
-    fontSize: 14 
-  },
-  star_container: { 
-    flex: 2 
-  },
-  middle_element_container: { 
-    backgroundColor:"#000", 
-    height: 200, 
-    alignSelf:'stretch' 
-  },
-  image_container: { 
-    flex:1 
-  },
-  image: { 
-    flex: 1, 
-    height: null, 
-    width: null 
-  },
-  duration: {
-    color:"#FFF",
-    position:"absolute",
-    backgroundColor:"#000",
-    paddingLeft:6,
-    paddingRight:6,
-    right:10,
-    bottom:10,
-    opacity:0.8,
-    fontSize:13,
-  },
-  bottom_element_container: { 
-    backgroundColor:"#FFF", 
-    alignSelf:'stretch', 
-    flexDirection:'row', 
-    height:45 
-  },
-  same_element: { 
-    flex:1, 
-    alignItems:'center', 
-    justifyContent:'center', 
-    flexDirection:'row'
-  },
-  same_element_one: { 
-    fontWeight:'bold', 
-    fontFamily:'normal', 
-    color:"#F57F17", 
-    fontSize:20 
-  },
-  same_element_two: { 
-    flex:1, 
-    alignItems:'center', 
-    justifyContent:'flex-start', 
-    flexDirection:'row'
-  },
-  same_element_four: { 
-    color: '#A7A7A7', 
-    fontSize: 14 
+  rowText: {
+    color: 'white',
+    fontSize: 18,
   },
 })
 
-export default Video
-
+export default Test

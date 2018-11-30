@@ -9,20 +9,19 @@ import {
   StatusBar,
 } from 'react-native'
 
+import { Constants } from 'expo'
 import Video from './Video'
+import ButtonScrollTop from './ButtonScrollTop'
+import BounceUpAndDown from '../Animations/BounceUpAndDown'
 import { getVideoListFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
 import { connect } from 'react-redux'
-import { DIMENSION } from '../INFO/DIMENSION'
-import ContentIndicator from './ContentIndicator'
-
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
-const NAVBAR_HEIGHT = 50
-const TOTAL_HEADER_HEIGHT = MAX_HEADER_HEIGHT + NAVBAR_HEIGHT
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView);
+const HEADER_HEIGHT = 60
+const TAB_BAR_HEIGHT = 50
+const LEVEL = 100
+let OLD_OFFSET = 0
 
 class VideoList extends Component {
   constructor(props) {
@@ -34,6 +33,7 @@ class VideoList extends Component {
       isRefreshing: false,
       _data: null,
       _dataAfter: '',
+      isButtonScrollTopVisible: false,
     }
 
     this.fetchMore = this._fetchMore.bind(this)
@@ -44,6 +44,8 @@ class VideoList extends Component {
     this.recoverFavorite = this._recoverFavorite.bind(this)
     this.isFavorite = this._isFavorite.bind(this)
     this.navigateTo = this._navigateTo.bind(this)
+
+    this.onScroll = this._onScroll.bind(this)
   }
 
   _toggleFavorite(firstData, secondData) {
@@ -102,6 +104,22 @@ class VideoList extends Component {
     this.scroll.scrollTo({x: 0, animated: false})
   }
 
+  _onScroll(evt) {
+    let contentOffset = evt.nativeEvent.contentOffset.y
+    contentOffset = contentOffset >= 0 ? contentOffset : 0
+    this.props.onFuck(contentOffset)
+    let gap = contentOffset - OLD_OFFSET
+    console.log('contentOffset : ' + contentOffset)
+    if (contentOffset < LEVEL || gap > 0) {
+      OLD_OFFSET = contentOffset
+      this.setState({ isButtonScrollTopVisible: false })
+    } 
+    else if (gap < 0) {
+      OLD_OFFSET = contentOffset
+      this.setState({ isButtonScrollTopVisible: true })
+    }
+  }
+
   componentDidMount() {
     this.fetchData(responseJson => {
       let ds = new ListView.DataSource({
@@ -129,20 +147,20 @@ class VideoList extends Component {
         <View style={styles.main_container}>
           <AnimatedListView
             ref={(lv) => {this.scroll = lv}}
-            contentContainerStyle={styles.content_container}
             showsVerticalScrollIndicator={false}
             dataSource={this.state.dataSource}
-            renderHeader={() => <ContentIndicator type="MaterialCommunityIcons" icon="movie" color="#F57F17" backgroundColor="#FFF" />}
             renderRow={
-              (rowData, sectionId, rowId) => <Video 
+              (rowData, sectionID, rowID) => <Video 
                 firstData={rowData}
                 toggleFavorite={this.toggleFavorite} 
                 recoverFavorite={this.recoverFavorite}
                 isFavorite={this.isFavorite}
                 navigateTo={this.navigateTo}
-                rowId={rowId}
+                sectionID={sectionID}
+                rowID={rowID}
               /> 
             }
+            onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             renderFooter={() => {
               return (
                 this.state.isLoadingMore &&
@@ -151,18 +169,22 @@ class VideoList extends Component {
                 </View>
               )
             }}
-            onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             refreshControl={ 
               <RefreshControl 
                 colors={["#F57F17"]} 
                 refreshing={this.state.isRefreshing} 
-                progressViewOffset={50}
+                progressViewOffset={100}
                 onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
               /> 
             }
             scrollEventThrottle={16}
             {...this.props}
           />
+
+            <BounceUpAndDown scrollTop={this.scrollTop} isButtonScrollTopVisible={this.state.isButtonScrollTopVisible}>
+              <ButtonScrollTop />
+            </BounceUpAndDown>
+
         </View>
       )
     }
@@ -171,17 +193,17 @@ class VideoList extends Component {
 
 const styles = StyleSheet.create({
   main_container: {
-    flex: 1,
-    paddingTop: NAVBAR_HEIGHT+STATUSBAR_HEIGHT
+    flex: 1
   },
-  content_container: {
-    marginTop: 0
+  hidden_container: { 
+    height: StatusBar.currentHeight+HEADER_HEIGHT+TAB_BAR_HEIGHT,
+    width: '100%'
   },
   isloading_container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: STATUSBAR_HEIGHT,
+    paddingTop: Constants.statusBarHeight,
     backgroundColor: '#ecf0f1',
   },
   isloadingmore_container: { 

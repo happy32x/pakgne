@@ -14,21 +14,22 @@ import BarStatus from './BarStatus'
 import Icon from 'react-native-vector-icons/Ionicons'
 import img from '../assets/2.jpg'
 import YoutubeView from './YoutubeView'
+import likeConverter from '../Helpers/likeConverter'
 
 class VideoViewer extends React.Component{
-  
+
   static navigationOptions = {
     header: null
   }
 
   render() {
     const { navigation } = this.props
-    const videoId = navigation.getParam('videoId', 'NO-ID')
+    const video = navigation.getParam('video', 'NO-DATA')
 
     return (
       <View style={styles.main_container}>
           <View style={styles.video_container}>
-            <YoutubeView videoId={videoId} />
+            <YoutubeView videoId={video[0].id.videoId} />
             
             <TouchableNativeFeedback 
               background={TouchableNativeFeedback.Ripple("#5e5e5e",true)}
@@ -45,25 +46,25 @@ class VideoViewer extends React.Component{
             <View style={styles.bottom_info_container}>
               <View style={styles.bottom_info}>
                 <View style={styles.title_container}>
-                  <Text style={styles.title}>Pakgne Saidon 2 : La sorcière</Text>
-                  <Text style={styles.same_element}>587 k vues</Text>
+                  <Text style={styles.title}>{video[0].snippet.title}</Text>
+                  <Text style={styles.same_element}>{likeConverter(video[1].statistics.viewCount)} vues</Text>
                 </View>
                 <View style={styles.bottom_element} >
                   <View style={styles.same_element_one}>
                     <Icon style={styles.like_icon} name="md-heart" />
-                    <Text style={styles.like_text}>29 k</Text>
+                    <Text style={styles.like_text}>{likeConverter(video[1].statistics.likeCount)}</Text>
                   </View>
                   <View style={styles.same_element_one}>
                     <Icon style={styles.same_element_two} name="md-heart-outline" />
-                    <Text style={styles.same_element}>2,7 k</Text>
+                    <Text style={styles.same_element}>{likeConverter(video[1].statistics.dislikeCount)}</Text>
                   </View>
                   <View style={styles.same_element_one}>
                     <Icon style={styles.same_element_two} name="md-share" />
-                    <Text style={styles.same_element}>shared</Text>
+                    <Text style={styles.same_element}>partager</Text>
                   </View>
                   <View style={styles.same_element_one}>
                     <Icon style={styles.same_element_two} name="md-download" />
-                    <Text style={styles.same_element}>download</Text>
+                    <Text style={styles.same_element}>télécharger</Text>
                   </View>          
                 </View>
               </View>

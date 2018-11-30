@@ -3,19 +3,49 @@ import {
 	TouchableNativeFeedback, 
 	View, 
 	Text, 
-	StatusBar,
-	StyleSheet
+	StyleSheet,
+	StatusBar
 } from 'react-native'
-import Icon from 'react-native-vector-icons/Ionicons'
-import AppName from '../Info/AppName'
-import { withNavigation } from 'react-navigation'
 
-class Header extends React.Component{
+import { Font } from 'expo'
+
+import Icon from 'react-native-vector-icons/Ionicons'
+import APPNAME from '../INFO/APPNAME'
+import { withNavigation } from 'react-navigation'
+import { DIMENSION } from '../INFO/DIMENSION'
+
+const STATUSBAR_HEIGHT = StatusBar.currentHeight
+const MIN_HEADER_HEIGHT = 60 
+const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
+
+class Header extends React.Component {
+
+	constructor(props) {
+    super(props)
+    this.state = {
+      fontLoaded: false
+    }
+  }
+
+	async componentDidMount() {
+    await Font.loadAsync({
+      'candy': require('../assets/fonts/candy.ttf'),
+    });
+
+    this.setState({ fontLoaded: true });
+  }
+
   render() {
     return (
       <View style={styles.main_container}>
         <View style={styles.appname_container}>
-          <Text style={styles.appname}>{AppName}</Text>
+
+					{
+            this.state.fontLoaded 
+              ? <Text style={{ fontFamily: 'candy', fontSize: 28, color: '#FFF', textAlign: 'center', paddingLeft:17 }}>Pakgne</Text>
+                : <Text style={styles.appname}>{APPNAME}</Text>
+          }
+
         </View>
         <View style={styles.option_container}>   
           <TouchableNativeFeedback
@@ -50,11 +80,15 @@ class Header extends React.Component{
 
 const styles = StyleSheet.create({
   main_container: {
-		backgroundColor:"#F57F17",
-		height:StatusBar.currentHeight+60,
+		backgroundColor: "#F57F17",
+		height: MAX_HEADER_HEIGHT,
+		width: '100%',
 		flexDirection:'row',
-		paddingTop: StatusBar.currentHeight,
+		paddingTop: STATUSBAR_HEIGHT,
 		marginTop:0,
+		transform: [{ translateY: 0 }],
+		position: 'absolute',
+		zIndex: 999
 	},
 	appname_container: { 
 		flex:1, 
@@ -63,11 +97,10 @@ const styles = StyleSheet.create({
 		flexDirection:'row'
 	},
 	appname: {
-		fontWeight:'bold', 
-		fontFamily:'normal', 
 		color:"#FFF", 
-		fontSize:18, 
-		paddingLeft:20 
+		fontSize:20, 
+		paddingLeft:20,
+		textAlign: 'center'
 	},
 	option_container: { 
 		flex:1,
@@ -77,10 +110,10 @@ const styles = StyleSheet.create({
 	},
 	search_container: {
 		width: 45, 
-		height: 60, 
-		alignItems:'center', 
-		justifyContent:'center', 
-		flexDirection:'row'
+		height: MIN_HEADER_HEIGHT, 
+		alignItems: 'center', 
+		justifyContent: 'center', 
+		flexDirection: 'row'
 	},
 	search: {
 		fontWeight:'bold', 
@@ -90,7 +123,7 @@ const styles = StyleSheet.create({
 	},
 	paramater_container: {
 		width: 45, 
-		height: 60, 
+		height: MIN_HEADER_HEIGHT, 
 		alignItems:'center', 
 		justifyContent:'center', 
 		flexDirection:'row'

@@ -2,9 +2,9 @@ import React from 'react'
 import { 
   View, 
   Platform,
-  StyleSheet
+  StyleSheet,
 } from 'react-native'
-import Header from './Header'
+
 import BarStatus from './BarStatus'
 import RootTab from './RootTab'
 
@@ -16,7 +16,6 @@ class Main extends React.Component {
   render() {
     return (
       <View style={styles.main_container}>
-        <Header />
         <RootTab />
         { Platform.OS === 'android' ? <BarStatus color="#e17000"/> : null }
       </View>

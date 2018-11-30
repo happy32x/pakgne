@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
     left:0,  
     height: StatusBar.currentHeight,
     width: '100%',
+    zIndex: 2,
   },
 })
 

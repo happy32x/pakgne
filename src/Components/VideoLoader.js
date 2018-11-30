@@ -2,15 +2,15 @@ import React from 'react'
 import {
   View, 
   StyleSheet,
-  ActivityIndicator,
+  StatusBar,
 } from 'react-native'
 
-import Constants from 'expo'
 import Icon from 'react-native-vector-icons/Ionicons'
 
 const THEME = '#dddddd'
+const STATUSBAR_HEIGHT = StatusBar.currentHeight
 
-class VideoLoader extends React.Component{
+class VideoLoader extends React.Component {
 
   render() {
     return (
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
+    paddingTop: STATUSBAR_HEIGHT,
     backgroundColor: '#ecf0f1',
   },
   main_container: { 

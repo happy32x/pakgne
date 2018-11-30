@@ -1,10 +1,19 @@
 {
   "expo": {
+    "name": "pakgne",
+    "slug": "pakgne",
+    "privacy": "unlisted",
+    "description": "join all pakgne community together",
+    "version": "0.1.0",
     "sdkVersion": "27.0.0",
     "icon": "./src/assets/icon.png",
     "splash": {
       "image": "./src/assets/splashscreen.png",
       "resizeMode": "cover"
-    }
+    },
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "primaryColor": "#F57F17",
+    "facebookAppId": "480789959055308"
   }
 }

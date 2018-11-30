@@ -9,7 +9,8 @@ import {
   StatusBar,
 } from 'react-native'
 
-import Video from './Video'
+import Article from './Article'
+import firstDataGlobal from './firstDataGlobal';
 import { getVideoListFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
 import { connect } from 'react-redux'
@@ -24,7 +25,7 @@ const TOTAL_HEADER_HEIGHT = MAX_HEADER_HEIGHT + NAVBAR_HEIGHT
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView);
 
-class VideoList extends Component {
+class ArticleList extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -40,23 +41,7 @@ class VideoList extends Component {
     this.fetchData = this._fetchData.bind(this)
     this.fetchRefresh = this._fetchRefresh.bind(this)
 
-    this.toggleFavorite = this._toggleFavorite.bind(this)
-    this.recoverFavorite = this._recoverFavorite.bind(this)
-    this.isFavorite = this._isFavorite.bind(this)
     this.navigateTo = this._navigateTo.bind(this)
-  }
-
-  _toggleFavorite(firstData, secondData) {
-    const action = { type: "TOGGLE_FAVORITE", value: [firstData,secondData] }
-    this.props.dispatch(action)
-  }
-
-  _recoverFavorite(index) {
-    return this.props.favoritesVideo[index][1]
-  }
-
-  _isFavorite(firstData) {
-    return this.props.favoritesVideo.findIndex(item => item[0].id.videoId === firstData.id.videoId)
   }
 
   _navigateTo(destination, data) {
@@ -70,31 +55,25 @@ class VideoList extends Component {
   }
 
   _fetchMore() {
-    this.fetchData(responseJson => {
-      const data = this.state._data.concat(responseJson.items)
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(data),
-        isLoadingMore: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+    const data = this.state._data.concat(firstDataGlobal)
+    this.setState({
+      dataSource: this.state.dataSource.cloneWithRows(data),
+      isLoadingMore: false,
+      _data: data,
     })
   }
 
   _fetchRefresh() {
-    this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items;
-      this.setState({
-        dataSource: ds.cloneWithRows(data),
-        isLoading: false,
-        isLoadingMore: false,
-        isRefreshing: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+    let ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2,
+    })
+    const data = firstDataGlobal;
+    this.setState({
+      dataSource: ds.cloneWithRows(data),
+      isLoading: false,
+      isLoadingMore: false,
+      isRefreshing: false,
+      _data: data,
     })
   }
 
@@ -103,17 +82,14 @@ class VideoList extends Component {
   }
 
   componentDidMount() {
-    this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items
-      this.setState({
-        dataSource: ds.cloneWithRows(data),
-        isLoading: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+    let ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2,
+    })
+    const data = firstDataGlobal;
+    this.setState({
+      dataSource: ds.cloneWithRows(data),
+      isLoading: false,
+      _data: data,
     })
   }
 
@@ -132,16 +108,13 @@ class VideoList extends Component {
             contentContainerStyle={styles.content_container}
             showsVerticalScrollIndicator={false}
             dataSource={this.state.dataSource}
-            renderHeader={() => <ContentIndicator type="MaterialCommunityIcons" icon="movie" color="#F57F17" backgroundColor="#FFF" />}
+            renderHeader={() => <ContentIndicator type="Feather" icon="file-text" color="#F57F17" backgroundColor="#FFF" />}
             renderRow={
-              (rowData, sectionId, rowId) => <Video 
+              (rowData, sectionId, rowId) => <Article
                 firstData={rowData}
-                toggleFavorite={this.toggleFavorite} 
-                recoverFavorite={this.recoverFavorite}
-                isFavorite={this.isFavorite}
                 navigateTo={this.navigateTo}
                 rowId={rowId}
-              /> 
+              />
             }
             renderFooter={() => {
               return (
@@ -190,11 +163,5 @@ const styles = StyleSheet.create({
   }
 })
 
-const mapStateToProps = (state) => {
-  return {
-    favoritesVideo: state.toggleFavorite.favoritesVideo
-  }
-}
-
-export default withNavigation( connect(mapStateToProps)(VideoList) )
+export default withNavigation( ArticleList )
 

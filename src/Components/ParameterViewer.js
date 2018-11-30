@@ -27,16 +27,26 @@ class ParameterViewer extends Component {
         Platform.OS === 'ios' ? -HEADER_MAX_HEIGHT : 0,
       ),
       refreshing: false,
-    };
+    }
+    this.onScroll = this._onScroll.bind(this)
   }
 
   static navigationOptions = {
     header: null
-  };
+  }
 
   _renderScrollViewContent() {
     return (
       <ParameterViewerContent headerMaxHeight={HEADER_MAX_HEIGHT}/>
+    )
+  }
+
+  _onScroll() {
+    return (
+      Animated.event(
+        [{ nativeEvent: { contentOffset: { y: this.state.scrollY } } }],
+        { useNativeDriver: true },
+      )
     )
   }
 
@@ -69,7 +79,7 @@ class ParameterViewer extends Component {
       outputRange: [1, 1, 0.8],
       extrapolate: 'clamp',
     })
-    const titleTranslate = scrollY.interpolate({
+    const titleTranslateY = scrollY.interpolate({
       inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
       outputRange: [0, 0, -8],
       extrapolate: 'clamp',
@@ -82,14 +92,11 @@ class ParameterViewer extends Component {
 
     return (
       <View style={styles.fill}>
-      
+
         <Animated.ScrollView
           style={styles.fill}
           scrollEventThrottle={1}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: this.state.scrollY } } }],
-            { useNativeDriver: true },
-          )}
+          onScroll={this.onScroll()}
         >
           {this._renderScrollViewContent()}
         </Animated.ScrollView>
@@ -119,7 +126,7 @@ class ParameterViewer extends Component {
             {
               transform: [
                 { scale: titleScale },
-                { translateY: titleTranslate },
+                { translateY: titleTranslateY },
                 { translateX: titleTranslateX },
               ],
             },
@@ -137,7 +144,7 @@ class ParameterViewer extends Component {
           </View>
 
           <View style={styles.fill}>
-            <Text style={styles.title}>Parameter</Text>
+            <Text style={styles.title}>Paramètres</Text>
           </View>
         </Animated.View>
 
