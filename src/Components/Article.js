@@ -1,15 +1,11 @@
 import React from 'react'
 import {
-  TouchableNativeFeedback, 
-  TouchableWithoutFeedback, 
   View, 
   Text, 
   Image,
   StyleSheet,
-  Share,
 } from 'react-native'
 
-import Constants from 'expo'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Star from './Star'
 import timeConverter from '../Helpers/timeConverter'
@@ -20,6 +16,7 @@ import { connect } from 'react-redux'
 import ArticleViewer from './ArticleViewer'
 import ArticleLoader from './ArticleLoader'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
+import THEME from '../INFO/THEME'
 
 const COVER = '../assets/actrices-pakgne-pardon-internaute-jewanda.jpg'
 const AUTHOR_PIC = '../assets/cvHappyTof2.jpg'
@@ -49,7 +46,7 @@ class Article extends React.Component{
       return (
 
         <BounceUpAndDownStatic 
-          scale={.8}
+          scale={.9}
           onPress={() => {
             this.props.navigateTo('ArticleViewer', { firstData: this.props.firstData })
           }}
@@ -94,9 +91,9 @@ const styles = StyleSheet.create({
     alignSelf:'stretch',
     height: 125,
     flexDirection:'row',
-    backgroundColor: '#FFF',
+    backgroundColor: THEME.PRIMARY.COLOR,
     borderBottomWidth: 1,
-    borderBottomColor: "#dddddd"
+    borderBottomColor: THEME.ON_LOAD_COLOR
   },
   info_container: {
     flex: 1,
@@ -126,15 +123,15 @@ const styles = StyleSheet.create({
   },
   detail_text: {
     fontSize: 12,
-    color: "#A7A7A7",
+    color: THEME.TERTIARY.COLOR,
   },
   detail_text_two: {
     fontSize: 12,
-    color: "#A7A7A7",
+    color: THEME.TERTIARY.COLOR,
   },
   detail_text_two_icon: {
     fontSize: 12,
-    color: "#A7A7A7",
+    color: THEME.TERTIARY.COLOR,
   },
   image_container: {
     width: 125,

@@ -5,6 +5,8 @@ import {
   TouchableWithoutFeedback, 
 } from 'react-native'
 
+import THEME from '../INFO/THEME'
+
 class BounceUpAndDownStatic extends Component {
   constructor(props) {
     super(props)
@@ -17,15 +19,15 @@ class BounceUpAndDownStatic extends Component {
 
   _handlePressIn() {
     Animated.spring(this.animatedValue, {
-      toValue: this.props.scale
+      toValue: this.props.scale ? this.props.scale : .8
     }).start()
   }
 
   _handlePressOut() {
     Animated.spring(this.animatedValue, {
       toValue: 1,
-      friction: 3,
-      tension: 40
+      friction: this.props.fiction ? this.props.fiction : 3,
+      tension: this.props.tension ? this.props.tension : 40
     }).start()
   }
 

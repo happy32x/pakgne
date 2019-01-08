@@ -1,180 +1,165 @@
-import React, { Component } from 'react';
-import { 
-  Animated, 
-  ImageBackground, 
-  Platform, 
-  StyleSheet, 
-  View, 
-  Text, 
+import React, { Component } from 'react'
+import {
+  StyleSheet,
+  View,
   ListView,
-} from 'react-native';
+  ActivityIndicator,
+  RefreshControl,
+  Animated,
+} from 'react-native'
 
-const NAVBAR_HEIGHT = 64;
-const STATUS_BAR_HEIGHT = Platform.select({ ios: 20, android: 24 });
+import CommentReply from './CommentReply'
+import { getCommentListReplyFromApi } from '../API/REQUEST'
+import { withNavigation } from 'react-navigation'
+import DIMENSION from '../INFO/DIMENSION'
+import THEME from '../INFO/THEME'
+import { connect } from 'react-redux'
 
-const DATA = Array.from({ length: 30 });
-const USER_IMG = '../assets/2.jpg'
+const AnimatedListView = Animated.createAnimatedComponent(ListView)
 
-const AnimatedListView = Animated.createAnimatedComponent(ListView);
-
-class Test extends Component {
+class CommentListReply extends Component {
   constructor(props) {
-    super(props);
-
-    const dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-
-    const scrollAnim = new Animated.Value(0);
-    const offsetAnim = new Animated.Value(0);
-
+    super(props)
     this.state = {
-      dataSource: dataSource.cloneWithRows(DATA),
-      scrollAnim,
-      offsetAnim,
-      clampedScroll: Animated.diffClamp(
-        Animated.add(
-          scrollAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1],
-            extrapolateLeft: 'clamp',
-          }),
-          offsetAnim,
-        ),
-        0,
-        NAVBAR_HEIGHT - STATUS_BAR_HEIGHT,
-      ),
-    };
+      dataSource: null,
+      isLoading: true,
+      isLoadingMore: false,
+      isRefreshing: false,
+      _data: null,
+      _dataAfter: '',
+    }
+
+    this.fetchMore = this._fetchMore.bind(this)
+    this.fetchData = this._fetchData.bind(this)
+    this.fetchRefresh = this._fetchRefresh.bind(this)
+
+    this.navigateTo = this._navigateTo.bind(this)
   }
 
-  _clampedScrollValue = 0;
-  _offsetValue = 0;
-  _scrollValue = 0;
+  _navigateTo(destination, data) {
+    this.props.navigation.navigate(destination, data)
+  }
+
+  _fetchData(callback) {
+    const dataAfter = this.state._dataAfter
+    const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
+    getCommentListReplyFromApi(this.props.commentId, pageToken).then(callback)
+  }
+
+  _fetchMore() {
+    this.fetchData(responseJson => {
+      const data = this.state._data.concat(responseJson.items)
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(data),
+        isLoadingMore: false,
+        _data: data,
+        _dataAfter: responseJson.nextPageToken,
+      })
+      console.log(this.state._dataAfter)
+    })
+  }
+
+  _fetchRefresh() {
+    this.fetchData(responseJson => {
+      let ds = new ListView.DataSource({
+        rowHasChanged: (r1, r2) => r1 !== r2,
+      })
+      const data = responseJson.items;
+      this.setState({
+        dataSource: ds.cloneWithRows(data),
+        isLoading: false,
+        isLoadingMore: false,
+        isRefreshing: false,
+        _data: data,
+        _dataAfter: responseJson.nextPageToken,
+      })
+    })
+  }
 
   componentDidMount() {
-    this.state.scrollAnim.addListener(({ value }) => {
-      const diff = value - this._scrollValue;
-      this._diff = diff
-      this._scrollValue = value;
-      this._clampedScrollValue = Math.min(
-        Math.max(this._clampedScrollValue + diff, 0),
-        NAVBAR_HEIGHT - STATUS_BAR_HEIGHT,
-      );
-      console.log("scrollAnim : " + value)
-      console.log("clampedScrollValue : " + this._clampedScrollValue)
-    });
-    this.state.offsetAnim.addListener(({ value }) => {
-      this._offsetValue = value;
-      console.log("offsetValue : " + value)
-      console.log("clampedScrollValue : " + this._clampedScrollValue)
-    });
-  }
-
-  componentWillUnmount() {
-    this.state.scrollAnim.removeAllListeners();
-    this.state.offsetAnim.removeAllListeners();
-  }
-
-  _onScrollEndDrag = () => {
-    this._scrollEndTimer = setTimeout(this._onMomentumScrollEnd, 250);
-  };
-
-  _onMomentumScrollBegin = () => {
-    clearTimeout(this._scrollEndTimer);
-  };
-
-  _onMomentumScrollEnd = () => {
-    const toValue = this._scrollValue > NAVBAR_HEIGHT &&
-      this._clampedScrollValue > (NAVBAR_HEIGHT - STATUS_BAR_HEIGHT) / 2
-      ? this._offsetValue + NAVBAR_HEIGHT
-      : this._offsetValue - NAVBAR_HEIGHT;
-
-    Animated.timing(this.state.offsetAnim, {
-      toValue,
-      duration: 350,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  _renderRow = (rowData, sectionId, rowId) => {
-    return (
-      <ImageBackground key={rowId} style={styles.row} source={require(USER_IMG)} resizeMode="cover">
-        <Text style={styles.rowText}>Amazone</Text>
-      </ImageBackground>
-    );
+    this.fetchData(responseJson => {
+      let ds = new ListView.DataSource({
+        rowHasChanged: (r1, r2) => r1 !== r2,
+      })
+      const data = responseJson.items
+      this.setState({
+        dataSource: ds.cloneWithRows(data),
+        isLoading: false,
+        _data: data,
+        _dataAfter: responseJson.nextPageToken,
+      })
+    })
   }
 
   render() {
-    const { clampedScroll } = this.state;
-
-    const navbarTranslate = clampedScroll.interpolate({
-      inputRange: [0, NAVBAR_HEIGHT - STATUS_BAR_HEIGHT],
-      outputRange: [0, -(NAVBAR_HEIGHT - STATUS_BAR_HEIGHT)],
-      extrapolate: 'clamp',
-    });
-    const navbarOpacity = clampedScroll.interpolate({
-      inputRange: [0, NAVBAR_HEIGHT - STATUS_BAR_HEIGHT],
-      outputRange: [1, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <View style={styles.fill}>
-        <AnimatedListView
-          contentContainerStyle={styles.contentContainer}
-          dataSource={this.state.dataSource}
-          renderRow={this._renderRow}
-          scrollEventThrottle={1}
-          onMomentumScrollBegin={this._onMomentumScrollBegin}
-          onMomentumScrollEnd={this._onMomentumScrollEnd}
-          onScrollEndDrag={this._onScrollEndDrag}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
-            { useNativeDriver: true },
-          )}
-        />
-        <Animated.View style={[styles.navbar, { transform: [{ translateY: navbarTranslate }] }]}>
-          <Animated.Text style={[styles.title, { opacity: navbarOpacity }]}>
-            PLACES
-          </Animated.Text>
-        </Animated.View>
-      </View>
-    );
+    if (this.state.isLoading) {
+      return (
+        <View style={styles.isloading_container}>
+          <ActivityIndicator style={styles.isloading} size="large" color={THEME.SECONDARY.COLOR}/>
+        </View>
+      )
+    } else {
+      return (
+        <View style={styles.main_container}>
+          <AnimatedListView
+            contentContainerStyle={styles.sub_container}
+            showsVerticalScrollIndicator={true}
+            dataSource={this.state.dataSource}
+            renderRow={
+              (rowData, sectionId, rowId) => <CommentReply
+                data={rowData}
+                navigateTo={this.navigateTo}
+                rowId={rowId}
+              />
+            }
+            renderFooter={() => {
+              return (
+                this.state.isLoadingMore &&
+                <View style={styles.isloadingmore_container}>
+                  <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
+                </View>
+              )
+            }}
+            onEndReached={ !this.state.isRefreshing && this.state._dataAfter!==undefined ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+            refreshControl={ 
+              <RefreshControl 
+                colors={[THEME.SECONDARY.COLOR]} 
+                refreshing={this.state.isRefreshing} 
+                progressViewOffset={-25}
+                onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
+              /> 
+            }
+            scrollEventThrottle={16}
+            {...this.props}
+          />
+        </View>
+      )
+    }
   }
 }
 
 const styles = StyleSheet.create({
-  fill: {
+  main_container: {
     flex: 1,
   },
-  navbar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+  sub_container: {
+    backgroundColor: THEME.PRIMARY.COLOR,
+    padding: 15,
+  },
+  isloading_container: {
+    flex: 1,
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderBottomColor: '#dedede',
-    borderBottomWidth: 1,
-    height: NAVBAR_HEIGHT,
     justifyContent: 'center',
-    paddingTop: STATUS_BAR_HEIGHT,
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
-  contentContainer: {
-    paddingTop: NAVBAR_HEIGHT,
+  isloading: {
+    transform: [{ translateY: -DIMENSION.STATUSBAR_HEIGHT }],
   },
-  title: {
-    color: '#333333',
-  },
-  row: {
-    height: 300,
-    width: null,
-    marginBottom: 1,
-    padding: 16,
-    backgroundColor: 'transparent',
-  },
-  rowText: {
-    color: 'white',
-    fontSize: 18,
-  },
+  isloadingmore_container: { 
+    flex: 1, 
+    padding: 10 
+  }
 })
 
-export default Test
+export default withNavigation( CommentListReply )
+

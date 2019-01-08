@@ -3,7 +3,7 @@ import Moment from 'react-moment'
 import { Text } from 'react-native'
 import 'moment/locale/fr'
 
-export default class MomentConverter extends React.Component {
+class MomentConverter extends React.Component {
   render() {
     return (
       <Moment locale="fr" element={Text} fromNow>{this.props.publishAt}</Moment>
@@ -11,3 +11,4 @@ export default class MomentConverter extends React.Component {
   }
 }
 
+export default MomentConverter

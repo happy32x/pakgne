@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import BarStatus from './BarStatus'
 import InfiniteScrollView from '../../SandBox/_SandBox/InfiniteScrollView'
+import THEME from '../INFO/THEME'
 
 const DEFAULT_HEIGHT = 55
 const FLEX_TEXT_INPUT_EMPTY = 12
@@ -43,7 +44,7 @@ class SearchViewer extends Component {
     return (
       <View style={styles.crossTextInput_container}>
         <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple("#c2c2c2",true)}
+          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
           onPress={() => {
             this.text_input.focus()
             this.setState({text: '', cross_display: false, flex_text_input: FLEX_TEXT_INPUT_EMPTY})
@@ -63,7 +64,7 @@ class SearchViewer extends Component {
         <View style={styles.main_container}>
           <View style={styles.arrow_back_container}>
             <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple("#c2c2c2",true)}
+              background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
               onPress={() => {
                 this.props.navigation.goBack()
               }}
@@ -79,7 +80,7 @@ class SearchViewer extends Component {
               ref={x => this.text_input = x}
               style={styles.text_input}
               placeholder="Rechercher ..."
-              selectionColor="#F57F17"
+              selectionColor={THEME.PRIMARY.BACKGROUND_COLOR}
               autoFocus={true}
               underlineColorAndroid="transparent"
               autoCorrect={false}
@@ -95,7 +96,7 @@ class SearchViewer extends Component {
 
         <InfiniteScrollView/>
 
-        { Platform.OS === 'android' ? <BarStatus color="#FFF"/> : null }
+        { Platform.OS === 'android' ? <BarStatus color={THEME.PRIMARY.COLOR}/> : null }
       </View>
     )
   }
@@ -103,7 +104,7 @@ class SearchViewer extends Component {
 
 const styles = StyleSheet.create({
   main_container: { 
-    backgroundColor: "#FFF", 
+    backgroundColor: THEME.PRIMARY.COLOR, 
     height: StatusBar.currentHeight + DEFAULT_HEIGHT, 
     flexDirection: 'row',
     paddingTop: StatusBar.currentHeight,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   arrow_back: {
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:25 
   },
   text_input_container: { 
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   crossTextInput: {
     fontWeight:'bold',
     fontFamily:'normal',
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:25 
   },
 })

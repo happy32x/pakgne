@@ -2,13 +2,11 @@ import React from 'react'
 import {
   View, 
   StyleSheet,
-  StatusBar,
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
-
-const THEME = '#dddddd'
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
+import DIMENSION from '../INFO/DIMENSION'
+import THEME from '../INFO/THEME'
 
 class VideoLoader extends React.Component {
 
@@ -68,15 +66,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: STATUSBAR_HEIGHT,
-    backgroundColor: '#ecf0f1',
+    paddingTop: DIMENSION.STATUSBAR_HEIGHT,
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
   main_container: { 
     alignSelf:'stretch', 
     marginBottom:10 
   },
   top_element_container: { 
-    backgroundColor:"#FFF", 
+    backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
     flexDirection:'row' 
   },
@@ -89,7 +87,7 @@ const styles = StyleSheet.create({
     paddingLeft:10
   },
   film_logo: { 
-    backgroundColor: THEME, 
+    backgroundColor: THEME.ON_LOAD_COLOR, 
     width: 25,
     height: 25, 
   },
@@ -105,14 +103,14 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 16,
     width: '100%',
-    backgroundColor: THEME,
+    backgroundColor: THEME.ON_LOAD_COLOR,
     marginBottom: 5
   },
   publish_at_video: { 
     flex: 1,
     height: 14,
     width: '40%',
-    backgroundColor: THEME,
+    backgroundColor: THEME.ON_LOAD_COLOR,
     marginBottom: 5
   },
   star_container: { 
@@ -123,10 +121,10 @@ const styles = StyleSheet.create({
   star: {
     height: 20,
     width: 20,
-    backgroundColor: THEME,
+    backgroundColor: THEME.ON_LOAD_COLOR,
   },
   middle_element_container: { 
-    backgroundColor:"#000", 
+    backgroundColor: THEME.SECONDARY.COLOR, 
     height: 200, 
     alignSelf:'stretch' 
   },
@@ -137,10 +135,10 @@ const styles = StyleSheet.create({
     flex: 1, 
     height: null, 
     width: null,
-    backgroundColor: THEME
+    backgroundColor: THEME.ON_LOAD_COLOR
   },
   bottom_element_container: { 
-    backgroundColor:"#FFF", 
+    backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
     flexDirection:'row', 
     height:45 
@@ -154,7 +152,7 @@ const styles = StyleSheet.create({
   same_element_one: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:20 
   },
   same_element_two: { 
@@ -164,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection:'row'
   },
   same_element_four: { 
-    color: '#A7A7A7', 
+    color: THEME.TERTIARY.COLOR, 
     fontSize: 14 
   },
 })

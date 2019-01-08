@@ -12,6 +12,8 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import IconOcticons from 'react-native-vector-icons/Octicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+
+import THEME from '../INFO/THEME'
 import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewanda.jpg'
 
 class ParameterViewerContent extends React.Component{
@@ -23,7 +25,12 @@ class ParameterViewerContent extends React.Component{
 
   render() {
     return (
-      <View style={{ paddingTop: Platform.OS !== 'ios' ? this.props.headerMaxHeight : 0, }}>
+      <View 
+        style={{ 
+          backgroundColor: THEME.PRIMARY.COLOR, 
+          paddingTop: Platform.OS !== 'ios' ? this.props.headerMaxHeight : 0, 
+        }}
+      >
 
           <View style={styles.user_info_container}>
             <View style={styles.user_pic_container}>
@@ -37,7 +44,7 @@ class ParameterViewerContent extends React.Component{
             </View>
           </View>
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-key" />
@@ -50,7 +57,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconOcticons style={styles.icon} name="comment-discussion" />
@@ -63,7 +70,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-notifications" />
@@ -76,7 +83,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="data-usage" />
@@ -89,7 +96,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-person-add" />
@@ -102,7 +109,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="event-note" />
@@ -115,7 +122,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-images" />
@@ -128,7 +135,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="phone" />
@@ -141,7 +148,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="qrcode" />
@@ -154,7 +161,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconOcticons style={styles.icon} name="database" />
@@ -167,7 +174,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="earth" />
@@ -180,7 +187,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-lock" />
@@ -193,7 +200,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-bookmarks" />
@@ -206,7 +213,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="report-problem" />
@@ -219,7 +226,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-exit" />
@@ -232,7 +239,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-information-circle" />
@@ -245,7 +252,7 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#c8c8c8",false)}>
+          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <Icon style={styles.icon} name="md-help-circle" />
@@ -264,7 +271,7 @@ const styles = StyleSheet.create({
   render_separator: {
     height: 1,
     width: "80%",
-    backgroundColor: "#dbdbdb",
+    backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
     marginLeft: "20%"
   },
   user_info_container: { 
@@ -272,7 +279,7 @@ const styles = StyleSheet.create({
     flexDirection:'row', 
     height:100, 
     borderBottomWidth: 1, 
-    borderColor: "#d9d9d9"
+    borderColor: THEME.TERTIARY.SEPARATOR_COLOR
   },
   user_pic_container: { 
     flex:0.3, 
@@ -298,11 +305,11 @@ const styles = StyleSheet.create({
     height: '100%' 
   },
   user_name: { 
-    color: '#000', 
+    color: THEME.SECONDARY.COLOR, 
     fontSize: 20 
   },
   user_description: { 
-    color: '#aeaeae', 
+    color: THEME.TERTIARY.COLOR, 
     fontSize: 16 
   },
   band: { 
@@ -319,7 +326,7 @@ const styles = StyleSheet.create({
   icon: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:20 
   },
   text_container: { 
@@ -330,7 +337,7 @@ const styles = StyleSheet.create({
     height: '100%', 
   },
   text: { 
-    color: '#000', 
+    color: THEME.SECONDARY.COLOR, 
     fontSize: 16 
   }, 
 })

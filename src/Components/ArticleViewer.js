@@ -14,6 +14,7 @@ import secondDataGlobal from './secondDataGlobal'
 import Default from './Default'
 import ArticleGenerator from '../AI/ArticleGenerator'
 import TestArticleGenerator from '../AI/TestArticleGenerator'
+import THEME from '../INFO/THEME'
 
 const COVER = '../assets/ukraine-les-calculs-calibres-de-poutine.jpg'
 const HEADER_MAX_HEIGHT = 300
@@ -185,7 +186,7 @@ class ArticleViewer extends Component {
             ]}
           >
             <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple("#5e5e5e",true)}
+              background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}
               onPress={() => navigation.goBack()}
             >
               <View>
@@ -194,7 +195,7 @@ class ArticleViewer extends Component {
             </TouchableNativeFeedback>
           </Animated.View>
 
-          { Platform.OS === 'android' ? <BarStatus color="#e17000" /> : null }
+          { Platform.OS === 'android' ? <BarStatus color={THEME.STATUS_BAR.DEFAULT_COLOR} /> : null }
         </View>
       );
     }
@@ -204,6 +205,7 @@ class ArticleViewer extends Component {
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
+    backgroundColor: THEME.PRIMARY.COLOR
   },
   content: {
     flex: 1,
@@ -213,7 +215,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#F57F17',
+    backgroundColor: THEME.PRIMARY.BACKGROUND_COLOR,
     overflow: 'hidden',
     height: HEADER_MAX_HEIGHT,
   },
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   arrow_back: { 
-    color:"#FFF", 
+    color: THEME.PRIMARY.COLOR, 
     fontSize:22,
     marginLeft:25,
     marginRight:20,

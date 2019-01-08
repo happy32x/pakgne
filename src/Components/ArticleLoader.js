@@ -7,8 +7,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons'
 import IconFeather from 'react-native-vector-icons/Feather'
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
-
-const THEME = '#dddddd'
+import THEME from '../INFO/THEME'
 
 class ArticleLoader extends React.Component {
 
@@ -46,9 +45,9 @@ const styles = StyleSheet.create({
     alignSelf:'stretch',
     height: 125,
     flexDirection:'row',
-    backgroundColor: '#FFF',
+    backgroundColor: THEME.PRIMARY.COLOR,
     borderBottomWidth: 1,
-    borderBottomColor: THEME
+    borderBottomColor: THEME.ON_LOAD_COLOR
   },
   info_container: {
     flex: 1,
@@ -58,13 +57,13 @@ const styles = StyleSheet.create({
     flex: 0.8,
   },
   title: { 
-    backgroundColor: THEME, 
+    backgroundColor: THEME.ON_LOAD_COLOR, 
     width: '100%',
     height: 16,
     marginBottom: 8,
   },
   title_last: { 
-    backgroundColor: THEME, 
+    backgroundColor: THEME.ON_LOAD_COLOR, 
     width: '60%',
     height: 16, 
   },
@@ -80,7 +79,7 @@ const styles = StyleSheet.create({
   },
   image_small: {
     fontSize: 18,
-    color: THEME
+    color: THEME.ON_LOAD_COLOR
   },
   detail_text_container: {
     flex: 1,
@@ -91,18 +90,18 @@ const styles = StyleSheet.create({
   detail_text: {
     width: '70%',
     height: 12,
-    backgroundColor: THEME
+    backgroundColor: THEME.ON_LOAD_COLOR
   },
   image_container: {
     width: 125,
     height: 125,
     alignItems:'center', 
     justifyContent:'center',
-    backgroundColor: "#c2c2c2"
+    backgroundColor: THEME.TERTIARY.COLOR
   },
   image: {
     fontSize: 30,
-    color: "#FFF"
+    color: THEME.PRIMARY.COLOR
   }
 })
 

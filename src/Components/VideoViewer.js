@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import img from '../assets/2.jpg'
 import YoutubeView from './YoutubeView'
 import likeConverter from '../Helpers/likeConverter'
+import THEME from '../INFO/THEME'
 
 class VideoViewer extends React.Component{
 
@@ -32,7 +33,7 @@ class VideoViewer extends React.Component{
             <YoutubeView videoId={video[0].id.videoId} />
             
             <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple("#5e5e5e",true)}
+              background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}
               onPress={() => this.props.navigation.goBack()}
             > 
               <View style={styles.arrow_back_container}>
@@ -93,7 +94,7 @@ class VideoViewer extends React.Component{
 
           </ScrollView>
 
-          { Platform.OS === 'android' ? <BarStatus color="#000" /> : null }
+          { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.COLOR} /> : null }
       </View>
     );
   }
@@ -101,7 +102,8 @@ class VideoViewer extends React.Component{
 
 const styles = StyleSheet.create({
   main_container: { 
-    flex:1 
+    flex:1,
+    backgroundColor: THEME.PRIMARY.COLOR
   },
   main_container_one: { 
     flex: 1, 
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
   video_container: {
     alignSelf:'stretch', 
     height:200, 
-    backgroundColor:"#000",
+    backgroundColor: THEME.SECONDARY.COLOR,
     marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 
   },
   arrow_back_container: { 
@@ -126,13 +128,13 @@ const styles = StyleSheet.create({
   },
   arrow_back: {           
     fontWeight:'bold', 
-    color:"#FFF", 
+    color: THEME.PRIMARY.COLOR, 
     fontSize:20,                  
   },
   bottom_info_container: { 
     alignSelf:"stretch", 
     borderBottomWidth: 1, 
-    borderColor: "#d9d9d9" 
+    borderColor: THEME.TERTIARY.SEPARATOR_COLOR 
   },
   bottom_info: { 
     alignSelf:"stretch", 
@@ -151,14 +153,14 @@ const styles = StyleSheet.create({
   },
   same_element: { 
     fontSize:12, 
-    color: '#979797' 
+    color: THEME.TERTIARY.COLOR
   },
   like_text: { 
     fontSize:12, 
-    color: '#F57F17' 
+    color: THEME.PRIMARY.BACKGROUND_COLOR
   },
   like_icon: { 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:20 
   },
   same_element_one: { 
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     justifyContent:'center'
   },
   same_element_two: { 
-    color:"#979797", 
+    color: THEME.TERTIARY.COLOR, 
     fontSize:20 
   },
   continued_container: { 
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
   },
   continued: { 
     fontSize:13, 
-    color: '#979797' 
+    color: THEME.TERTIARY.COLOR 
   },
   related_video_container: { 
     alignSelf:"stretch" 
@@ -197,9 +199,9 @@ const styles = StyleSheet.create({
     marginBottom:15
   },
   related_video_duration: {
-    color:"#FFF", 
+    color: THEME.PRIMARY.COLOR, 
     position:"absolute", 
-    backgroundColor:"#000",
+    backgroundColor: THEME.SECONDARY.COLOR,
     paddingLeft:6, 
     paddingRight:6, 
     right:5,
@@ -218,7 +220,7 @@ const styles = StyleSheet.create({
   },
   related_video_more_info: { 
     fontSize:11, 
-    color:"#979797", 
+    color: THEME.TERTIARY.COLOR,
     marginTop:1 
   },
 })

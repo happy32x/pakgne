@@ -7,7 +7,9 @@ import {
 	StyleSheet,
 } from 'react-native'
 
+import Icon from 'react-native-vector-icons/Ionicons'
 import ArticleGenerator from '../AI/ArticleGenerator'
+import THEME from '../INFO/THEME'
 
 const AUTHOR_PIC = '../assets/cvHappyTof2.jpg'
 
@@ -30,7 +32,9 @@ class ArticleViewerContent extends React.Component{
 						<View style={styles.author_name_container}>
 							<Text style={styles.author_name}>{firstData.author}</Text>
 							<Text style={styles.author_detail}>{secondData.authorDescription}</Text>
-							<Text style={styles.author_detail}>{firstData.publihAt} - {secondData.readTime}</Text>
+							<Text style={styles.author_detail}>
+								<Icon name="md-time" /> {firstData.publihAt} - {secondData.readTime}
+							</Text>
 						</View>
 					</View>
 
@@ -78,11 +82,11 @@ const styles = StyleSheet.create({
 	},
 	author_name: { 
 		fontSize:18, 
-		color:"#000" 
+		color: THEME.SECONDARY.COLOR, 
 	},
 	author_detail: { 
 		fontSize:13, 
-		color:"#9d9d9d" 
+		color: THEME.TERTIARY.COLOR
 	},
 })
 

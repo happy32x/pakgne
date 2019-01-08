@@ -4,7 +4,6 @@ import {
 	View, 
 	Text, 
 	StyleSheet,
-	StatusBar
 } from 'react-native'
 
 import { Font } from 'expo'
@@ -12,11 +11,8 @@ import { Font } from 'expo'
 import Icon from 'react-native-vector-icons/Ionicons'
 import APPNAME from '../INFO/APPNAME'
 import { withNavigation } from 'react-navigation'
-import { DIMENSION } from '../INFO/DIMENSION'
-
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
+import DIMENSION from '../INFO/DIMENSION'
+import THEME from '../INFO/THEME'
 
 class Header extends React.Component {
 
@@ -42,14 +38,14 @@ class Header extends React.Component {
 
 					{
             this.state.fontLoaded 
-              ? <Text style={{ fontFamily: 'candy', fontSize: 28, color: '#FFF', textAlign: 'center', paddingLeft:17 }}>Pakgne</Text>
+              ? <Text style={styles.appname_candice}>Pakgne</Text>
                 : <Text style={styles.appname}>{APPNAME}</Text>
           }
 
         </View>
         <View style={styles.option_container}>   
           <TouchableNativeFeedback
-            background={TouchableNativeFeedback.Ripple("#ffc287",true)}
+            background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
               this.props.navigation.navigate('SearchViewer', {
               	searchId: null,
@@ -61,7 +57,7 @@ class Header extends React.Component {
             </View>
           </TouchableNativeFeedback>
           <TouchableNativeFeedback 
-            background={TouchableNativeFeedback.Ripple("#ffc287",true)}
+            background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
               this.props.navigation.navigate('ParameterViewer', {
                 parameterId: null,
@@ -80,11 +76,11 @@ class Header extends React.Component {
 
 const styles = StyleSheet.create({
   main_container: {
-		backgroundColor: "#F57F17",
-		height: MAX_HEADER_HEIGHT,
+		backgroundColor: THEME.PRIMARY.BACKGROUND_COLOR,
+		height: DIMENSION.MAX_HEADER_HEIGHT,
 		width: '100%',
 		flexDirection:'row',
-		paddingTop: STATUSBAR_HEIGHT,
+		paddingTop: DIMENSION.STATUSBAR_HEIGHT,
 		marginTop:0,
 		transform: [{ translateY: 0 }],
 		position: 'absolute',
@@ -96,8 +92,15 @@ const styles = StyleSheet.create({
 		justifyContent:'flex-start', 
 		flexDirection:'row'
 	},
+	appname_candice: { 
+		fontFamily: 'candy', 
+		fontSize: 28, 
+		color: THEME.PRIMARY.COLOR, 
+		textAlign: 'center', 
+		paddingLeft:17 
+	},
 	appname: {
-		color:"#FFF", 
+		color: THEME.PRIMARY.COLOR, 
 		fontSize:20, 
 		paddingLeft:20,
 		textAlign: 'center'
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
 	},
 	search_container: {
 		width: 45, 
-		height: MIN_HEADER_HEIGHT, 
+		height: DIMENSION.MIN_HEADER_HEIGHT, 
 		alignItems: 'center', 
 		justifyContent: 'center', 
 		flexDirection: 'row'
@@ -118,12 +121,12 @@ const styles = StyleSheet.create({
 	search: {
 		fontWeight:'bold', 
 		fontFamily:'normal', 
-		color:"#FFF", 
+		color: THEME.PRIMARY.COLOR, 
 		fontSize:25 
 	},
 	paramater_container: {
 		width: 45, 
-		height: MIN_HEADER_HEIGHT, 
+		height: DIMENSION.MIN_HEADER_HEIGHT, 
 		alignItems:'center', 
 		justifyContent:'center', 
 		flexDirection:'row'
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
 	paramater: {
 		fontWeight:'bold', 
 		fontFamily:'normal', 
-		color:"#FFF", 
+		color: THEME.PRIMARY.COLOR, 
 		fontSize:25 
 	}
 })

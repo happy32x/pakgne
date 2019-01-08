@@ -4,7 +4,6 @@ import {
   Dimensions,
   StyleSheet,
   Animated,
-  StatusBar,
 } from 'react-native'
 
 import {
@@ -18,13 +17,8 @@ import DefaultShow from './DefaultShow'
 import VideoList from './VideoList'
 import ArticleList from './ArticleList'
 import Header from './Header'
-import { DIMENSION } from '../INFO/DIMENSION'
-
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
-const NAVBAR_HEIGHT = 50
-const TOTAL_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT + NAVBAR_HEIGHT
+import DIMENSION from '../INFO/DIMENSION'
+import THEME from '../INFO/THEME'
 
 const BOTTOM_SHADOW_RAY = 5
 
@@ -58,7 +52,7 @@ class RootTab extends React.Component {
           offsetAnim,
         ),
         0,
-        MIN_HEADER_HEIGHT,
+        DIMENSION.MIN_HEADER_HEIGHT,
       ),
     }
 
@@ -125,7 +119,7 @@ class RootTab extends React.Component {
       this._scrollValue = value;
       this._clampedScrollValue = Math.min(
         Math.max(this._clampedScrollValue + diff, 0),
-        MIN_HEADER_HEIGHT,
+        DIMENSION.MIN_HEADER_HEIGHT,
       );
     });
     this.state.offsetAnim.addListener(({ value }) => {
@@ -147,10 +141,10 @@ class RootTab extends React.Component {
   };
 
   _onMomentumScrollEnd = () => {
-    const toValue = this._scrollValue > MAX_HEADER_HEIGHT &&
-      this._clampedScrollValue > MIN_HEADER_HEIGHT / 2
-      ? this._offsetValue + MAX_HEADER_HEIGHT
-      : this._offsetValue - MAX_HEADER_HEIGHT;
+    const toValue = this._scrollValue > DIMENSION.MAX_HEADER_HEIGHT &&
+      this._clampedScrollValue > DIMENSION.MIN_HEADER_HEIGHT / 2
+      ? this._offsetValue + DIMENSION.MAX_HEADER_HEIGHT
+      : this._offsetValue - DIMENSION.MAX_HEADER_HEIGHT;
 
     Animated.timing(this.state.offsetAnim, {
       toValue,
@@ -163,8 +157,8 @@ class RootTab extends React.Component {
     const { clampedScroll } = this.state;
 
     const translateY = clampedScroll.interpolate({
-      inputRange: [0, MIN_HEADER_HEIGHT],
-      outputRange: [0, -MIN_HEADER_HEIGHT],
+      inputRange: [0, DIMENSION.MIN_HEADER_HEIGHT],
+      outputRange: [0, -DIMENSION.MIN_HEADER_HEIGHT],
       extrapolate: 'clamp',
     });
 
@@ -208,20 +202,20 @@ const styles = StyleSheet.create({
   icon_tv: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#FFF", 
+    color: THEME.PRIMARY.COLOR, 
     fontSize:26 
   },
   header_container: {
     position: 'absolute',
     zIndex: 1,
     width: '100%',
-    height: MAX_HEADER_HEIGHT,
+    height: DIMENSION.MAX_HEADER_HEIGHT,
   },
   tabbar_container: {
     position: 'absolute',
     zIndex: 1,
     width: '100%',
-    height: TOTAL_HEADER_HEIGHT + BOTTOM_SHADOW_RAY,
+    height: DIMENSION.TOTAL_HEADER_HEIGHT + BOTTOM_SHADOW_RAY,
   },
   tabbar_label_style: {
     fontSize:14, 
@@ -229,15 +223,15 @@ const styles = StyleSheet.create({
     fontFamily:'normal'
   },
   tabbar_style: {
-    backgroundColor:"#F57F17",
-    height: NAVBAR_HEIGHT,
+    backgroundColor: THEME.PRIMARY.BACKGROUND_COLOR,
+    height: DIMENSION.NAVBAR_HEIGHT,
     width: '100%',
-    transform: [{ translateY: MAX_HEADER_HEIGHT}],
+    transform: [{ translateY: DIMENSION.MAX_HEADER_HEIGHT}],
     position: 'absolute',
 		zIndex: 0,
   },
   tabbar_indicator_style: {
-    backgroundColor:'#FFF'
+    backgroundColor: THEME.PRIMARY.COLOR
   }
 })
 

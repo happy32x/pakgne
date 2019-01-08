@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons'
 import BarStatus from './BarStatus'
 import ParameterViewerContent from './ParameterViewerContent'
+import THEME from '../INFO/THEME'
 
 const USER_IMG = '../assets/Pakgne-Poupi-Muriel-Blanche.jpg'
 const HEADER_MAX_HEIGHT = 300
@@ -134,7 +135,7 @@ class ParameterViewer extends Component {
         >
           <View style={styles.arrow_back_container} >
           <TouchableNativeFeedback 
-            background={TouchableNativeFeedback.Ripple("#FFF",true)}
+            background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.COLOR,true)}
             onPress={() => this.props.navigation.goBack()}
           > 
             <View style={styles.arrow_back_container_one}>
@@ -148,7 +149,7 @@ class ParameterViewer extends Component {
           </View>
         </Animated.View>
 
-        { Platform.OS === 'android' ? <BarStatus color="#e17000" /> : null }
+        { Platform.OS === 'android' ? <BarStatus color={THEME.STATUS_BAR.DEFAULT_COLOR} /> : null }
       </View>
     );
   }
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#F57F17',
+    backgroundColor: THEME.PRIMARY.BACKGROUND_COLOR,
     overflow: 'hidden',
     height: HEADER_MAX_HEIGHT,
   },
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     flexDirection:'row', 
   },
   arrow_back: {           
-    color:"#FFF", 
+    color: THEME.PRIMARY.COLOR, 
     fontSize:22,                  
   },
 })

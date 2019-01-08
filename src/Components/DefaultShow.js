@@ -3,7 +3,6 @@ import {
   View,
   Text, 
   Image, 
-  StatusBar,
   Dimensions,
   StyleSheet,
 } from 'react-native'
@@ -13,20 +12,13 @@ import {
   Font, 
 } from 'expo'
 
+import DIMENSION from '../INFO/DIMENSION'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
-import ContentIndicator from './ContentIndicator'
+import HeaderContentIndicator from './HeaderContentIndicator'
 
 import tv from '../assets/Animated-television-clipart-1_transparent.png'
 import display from '../assets/tv_bad_signal.gif'
 
-
-// APP GLOBAL CONTANT
-
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
-const NAVBAR_HEIGHT = 50
-const TOTAL_HEADER_HEIGHT = MAX_HEADER_HEIGHT + NAVBAR_HEIGHT
 
 //WINDOWS SIZE
 
@@ -103,7 +95,7 @@ class DefaultShow extends Component {
       <View style={styles.main_container}>
 
 
-        <ContentIndicator type="MaterialIcons" icon="live-tv" color="#3e3e3e" backgroundColor="transparent" />
+        <HeaderContentIndicator type="MaterialIcons" icon="live-tv" color="#3e3e3e" backgroundColor="transparent" />
         <View style={{ flex: 1, paddingTop: 20,  paddingBottom: 20 }} >
           {
             this.state.fontLoaded 
@@ -158,7 +150,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#343434',
-    paddingTop: NAVBAR_HEIGHT+STATUSBAR_HEIGHT
+    paddingTop: DIMENSION.MEDIUM_HEADER_HEIGHT,
   },
   borderShadow: {
     position: 'absolute',

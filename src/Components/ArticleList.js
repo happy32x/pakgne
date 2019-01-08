@@ -6,24 +6,18 @@ import {
   ActivityIndicator,
   RefreshControl,
   Animated,
-  StatusBar,
 } from 'react-native'
 
 import Article from './Article'
-import firstDataGlobal from './firstDataGlobal';
+import firstDataGlobal from './firstDataGlobal'
 import { getVideoListFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
+import HeaderContentIndicator from './HeaderContentIndicator'
+import DIMENSION from '../INFO/DIMENSION'
+import THEME from '../INFO/THEME'
 import { connect } from 'react-redux'
-import { DIMENSION } from '../INFO/DIMENSION'
-import ContentIndicator from './ContentIndicator'
 
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
-const NAVBAR_HEIGHT = 50
-const TOTAL_HEADER_HEIGHT = MAX_HEADER_HEIGHT + NAVBAR_HEIGHT
-
-const AnimatedListView = Animated.createAnimatedComponent(ListView);
+const AnimatedListView = Animated.createAnimatedComponent(ListView)
 
 class ArticleList extends Component {
   constructor(props) {
@@ -97,7 +91,7 @@ class ArticleList extends Component {
     if (this.state.isLoading) {
       return (
         <View style={styles.isloading_container}>
-          <ActivityIndicator size="large" color="#F57F17"/>
+          <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
         </View>
       )
     } else {
@@ -108,7 +102,7 @@ class ArticleList extends Component {
             contentContainerStyle={styles.content_container}
             showsVerticalScrollIndicator={false}
             dataSource={this.state.dataSource}
-            renderHeader={() => <ContentIndicator type="Feather" icon="file-text" color="#F57F17" backgroundColor="#FFF" />}
+            renderHeader={() => <HeaderContentIndicator type="Feather" icon="file-text" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
             renderRow={
               (rowData, sectionId, rowId) => <Article
                 firstData={rowData}
@@ -120,14 +114,14 @@ class ArticleList extends Component {
               return (
                 this.state.isLoadingMore &&
                 <View style={styles.isloadingmore_container}>
-                  <ActivityIndicator size="large" color="#F57F17" />
+                  <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR} />
                 </View>
               )
             }}
             onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             refreshControl={ 
               <RefreshControl 
-                colors={["#F57F17"]} 
+                colors={[THEME.PRIMARY.BACKGROUND_COLOR]} 
                 refreshing={this.state.isRefreshing} 
                 progressViewOffset={50}
                 onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
@@ -145,7 +139,7 @@ class ArticleList extends Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1,
-    paddingTop: NAVBAR_HEIGHT+STATUSBAR_HEIGHT
+    paddingTop: DIMENSION.MEDIUM_HEADER_HEIGHT
   },
   content_container: {
     marginTop: 0
@@ -154,8 +148,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: STATUSBAR_HEIGHT,
-    backgroundColor: '#ecf0f1',
+    paddingTop: DIMENSION.STATUSBAR_HEIGHT,
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
   isloadingmore_container: { 
     flex: 1, 

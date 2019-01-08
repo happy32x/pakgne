@@ -18,6 +18,11 @@ import MomentConverter from './MomentConverter'
 import { getVideoInfoFromApi } from '../API/REQUEST'
 import VideoLoader from './VideoLoader'
 import { connect } from 'react-redux'
+import THEME from '../INFO/THEME'
+import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
+
+const SCALE = .7
+const TENSION = 100
 
 class Video extends React.Component{
   constructor(props) {
@@ -110,32 +115,36 @@ class Video extends React.Component{
           </View>
 
           <View style={styles.bottom_element_container}>
-            <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple("#fabe92",true)}>
+          
+            <BounceUpAndDownStatic scale={SCALE} tension={TENSION} style={styles.same_element}>
               <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-heart" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
-                </View>
+                <Icon style={styles.same_element_one} name="md-heart" />
               </View>
-            </TouchableNativeFeedback>
+              <View style={styles.same_element_two}>
+                <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
+              </View>
+            </BounceUpAndDownStatic>
 
-            <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple("#fabe92",true)}                            
+            <BounceUpAndDownStatic 
+              scale={SCALE} 
+              tension={TENSION}
+              style={styles.same_element}
+              onPress={() => {
+                this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+              }}     
             >
               <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-chatbubbles" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.commentCount)}</Text>
-                </View>
+                <Icon style={styles.same_element_one} name="md-chatbubbles" />
               </View>
-            </TouchableNativeFeedback>
+              <View style={styles.same_element_two}>
+                <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.commentCount)}</Text>
+              </View>
+            </BounceUpAndDownStatic>
 
-            <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple("#fabe92",true)}
+            <BounceUpAndDownStatic
+              scale={SCALE} 
+              tension={TENSION}
+              style={styles.same_element}
               onPress={() => {
                 Share.share({
                   message: `https://www.youtube.com/watch?v=${this.props.firstData.id.videoId}`,
@@ -147,17 +156,15 @@ class Video extends React.Component{
                     'com.apple.UIKit.activity.PostToTwitter'
                   ]
                 })
-              }}
+              }} 
             >
               <View style={styles.same_element}>
-                <View style={styles.same_element}>
-                  <Icon style={styles.same_element_one} name="md-share" />
-                </View>
-                <View style={styles.same_element_two}>
-                  <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3 }]}>partager</Text>
-                </View>
+                <Icon style={styles.same_element_one} name="md-share-alt" />
               </View>
-            </TouchableNativeFeedback>
+              <View style={styles.same_element_two}>
+                <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3 }]}>partager</Text>
+              </View>
+            </BounceUpAndDownStatic>
           </View>
 
         </View>
@@ -172,14 +179,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#ecf0f1',
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
   main_container: { 
     alignSelf:'stretch', 
     marginBottom:10 
   },
   top_element_container: { 
-    backgroundColor:"#FFF", 
+    backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
     flexDirection:'row' 
   },
@@ -194,7 +201,7 @@ const styles = StyleSheet.create({
   film_logo: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#000", 
+    color: THEME.SECONDARY.COLOR, 
     fontSize:25 
   },
   title_video_container: { 
@@ -206,18 +213,18 @@ const styles = StyleSheet.create({
     paddingLeft:10 
   },
   title_video: { 
-    color: '#000', 
+    color: THEME.SECONDARY.COLOR, 
     fontSize: 16 
   },
   publish_at_video: { 
-    color: '#A7A7A7', 
+    color: THEME.TERTIARY.COLOR, 
     fontSize: 14 
   },
   star_container: { 
     flex: 2 
   },
   middle_element_container: { 
-    backgroundColor:"#000", 
+    backgroundColor: THEME.SECONDARY.COLOR, 
     height: 200, 
     alignSelf:'stretch' 
   },
@@ -230,9 +237,9 @@ const styles = StyleSheet.create({
     width: null 
   },
   duration: {
-    color:"#FFF",
+    color: THEME.PRIMARY.COLOR,
     position:"absolute",
-    backgroundColor:"#000",
+    backgroundColor: THEME.SECONDARY.COLOR,
     paddingLeft:6,
     paddingRight:6,
     right:10,
@@ -241,7 +248,7 @@ const styles = StyleSheet.create({
     fontSize:13,
   },
   bottom_element_container: { 
-    backgroundColor:"#FFF", 
+    backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
     flexDirection:'row', 
     height:45 
@@ -255,7 +262,7 @@ const styles = StyleSheet.create({
   same_element_one: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:20 
   },
   same_element_two: { 
@@ -265,7 +272,7 @@ const styles = StyleSheet.create({
     flexDirection:'row'
   },
   same_element_four: { 
-    color: '#A7A7A7', 
+    color: THEME.TERTIARY.COLOR, 
     fontSize: 14 
   },
 })

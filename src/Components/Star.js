@@ -1,18 +1,19 @@
 import React, { Component } from 'react'
 import { 
   View,
-  StyleSheet, 
-  TouchableNativeFeedback  
+  StyleSheet,
+  TouchableNativeFeedback
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
+import THEME from '../INFO/THEME'
 
 class Star extends Component {
 
   render() {
     return (
       <TouchableNativeFeedback 
-        background={TouchableNativeFeedback.Ripple("#fabe92",true)}
+        background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_WHITE,true)}
         onPress={() => this.props.toggleFavorite()}
       >
         <View style={styles.button_container}>
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   button: { 
     fontWeight:'bold', 
     fontFamily:'normal', 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:20 
   }
 })

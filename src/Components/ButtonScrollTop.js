@@ -3,7 +3,9 @@ import {
   View, 
   StyleSheet,
 } from 'react-native'
+
 import Icon from 'react-native-vector-icons/Ionicons'
+import THEME from '../INFO/THEME'
 
 class ButtonScrollTop extends Component {
 
@@ -24,10 +26,10 @@ const styles = StyleSheet.create({
     alignItems:'center', 
     justifyContent:'center',
     opacity: 0.8,
-    backgroundColor: "#FFF"
+    backgroundColor: THEME.PRIMARY.COLOR
   },
   arrow: { 
-    color:"#F57F17", 
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
     fontSize:30 
   }
 })

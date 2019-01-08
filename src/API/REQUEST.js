@@ -19,3 +19,19 @@ export function getVideoInfoFromApi (videoId) {
     .then((response) => response.json())
     .catch((error) => console.error(error))
 }
+
+//Récupérer une liste de commentaires
+export function getCommentListFromApi (videoId, order, pageToken) {
+  const url = `https://www.googleapis.com/youtube/v3/commentThreads?key=${apiKey}&videoId=${videoId}&order=${order}&part=snippet&maxResults=${results}${pageToken}`
+  return fetch(url)
+    .then((response) => response.json())
+    .catch((error) => console.error(error))
+}
+
+//Récupérer une liste de sous-comentaires (commentId : UgyfGyvTA8OzJ3ilUOd4AaABAg , UgwLj19LmkKZddNcdJh4AaABAg, UgzTt0YulIuUMp5DslN4AaABAg)
+export function getCommentListReplyFromApi (commentId, pageToken) {
+  const url = `https://www.googleapis.com/youtube/v3/comments?key=${apiKey}&parentId=${commentId}&part=snippet&maxResults=15${pageToken}`
+  return fetch(url)
+    .then((response) => response.json())
+    .catch((error) => console.error(error))
+}

@@ -6,21 +6,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   Animated,
-  StatusBar,
 } from 'react-native'
 
 import Video from './Video'
 import { getVideoListFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
 import { connect } from 'react-redux'
-import { DIMENSION } from '../INFO/DIMENSION'
-import ContentIndicator from './ContentIndicator'
-
-const STATUSBAR_HEIGHT = StatusBar.currentHeight
-const MIN_HEADER_HEIGHT = 60 
-const MAX_HEADER_HEIGHT = STATUSBAR_HEIGHT + MIN_HEADER_HEIGHT
-const NAVBAR_HEIGHT = 50
-const TOTAL_HEADER_HEIGHT = MAX_HEADER_HEIGHT + NAVBAR_HEIGHT
+import DIMENSION from '../INFO/DIMENSION'
+import HeaderContentIndicator from './HeaderContentIndicator'
+import THEME from '../INFO/THEME'
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView);
 
@@ -34,6 +28,7 @@ class VideoList extends Component {
       isRefreshing: false,
       _data: null,
       _dataAfter: '',
+      stopLoadingMore: false
     }
 
     this.fetchMore = this._fetchMore.bind(this)
@@ -71,13 +66,22 @@ class VideoList extends Component {
 
   _fetchMore() {
     this.fetchData(responseJson => {
-      const data = this.state._data.concat(responseJson.items)
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(data),
-        isLoadingMore: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+      const data = this.state._data.concat(responseJson.items)      
+
+      responseJson.nextPageToken===undefined
+        ? this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(data),
+            isLoadingMore: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+            stopLoadingMore: true,
+          })
+        : this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(data),
+            isLoadingMore: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+          })
     })
   }
 
@@ -87,14 +91,25 @@ class VideoList extends Component {
         rowHasChanged: (r1, r2) => r1 !== r2,
       })
       const data = responseJson.items;
-      this.setState({
-        dataSource: ds.cloneWithRows(data),
-        isLoading: false,
-        isLoadingMore: false,
-        isRefreshing: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+
+      responseJson.nextPageToken===undefined 
+        ? this.setState({
+            dataSource: ds.cloneWithRows(data),
+            isLoading: false,
+            isLoadingMore: false,
+            isRefreshing: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+            stopLoadingMore: true,
+          })  
+        : this.setState({
+            dataSource: ds.cloneWithRows(data),
+            isLoading: false,
+            isLoadingMore: false,
+            isRefreshing: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+          })  
     })
   }
 
@@ -108,12 +123,21 @@ class VideoList extends Component {
         rowHasChanged: (r1, r2) => r1 !== r2,
       })
       const data = responseJson.items
-      this.setState({
-        dataSource: ds.cloneWithRows(data),
-        isLoading: false,
-        _data: data,
-        _dataAfter: responseJson.nextPageToken,
-      })
+
+      responseJson.nextPageToken===undefined 
+        ? this.setState({
+            dataSource: ds.cloneWithRows(data),
+            isLoading: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+            stopLoadingMore: true,
+          })
+        : this.setState({
+            dataSource: ds.cloneWithRows(data),
+            isLoading: false,
+            _data: data,
+            _dataAfter: responseJson.nextPageToken,
+          })
     })
   }
 
@@ -121,7 +145,7 @@ class VideoList extends Component {
     if (this.state.isLoading) {
       return (
         <View style={styles.isloading_container}>
-          <ActivityIndicator size="large" color="#F57F17"/>
+          <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
         </View>
       )
     } else {
@@ -132,7 +156,7 @@ class VideoList extends Component {
             contentContainerStyle={styles.content_container}
             showsVerticalScrollIndicator={false}
             dataSource={this.state.dataSource}
-            renderHeader={() => <ContentIndicator type="MaterialCommunityIcons" icon="movie" color="#F57F17" backgroundColor="#FFF" />}
+            renderHeader={() => <HeaderContentIndicator type="MaterialCommunityIcons" icon="movie" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
             renderRow={
               (rowData, sectionId, rowId) => <Video 
                 firstData={rowData}
@@ -147,14 +171,14 @@ class VideoList extends Component {
               return (
                 this.state.isLoadingMore &&
                 <View style={styles.isloadingmore_container}>
-                  <ActivityIndicator size="large" color="#F57F17" />
+                  <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR} />
                 </View>
               )
             }}
-            onEndReached={ !this.state.isRefreshing ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             refreshControl={ 
               <RefreshControl 
-                colors={["#F57F17"]} 
+                colors={[THEME.PRIMARY.BACKGROUND_COLOR]} 
                 refreshing={this.state.isRefreshing} 
                 progressViewOffset={50}
                 onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
@@ -172,7 +196,7 @@ class VideoList extends Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1,
-    paddingTop: NAVBAR_HEIGHT+STATUSBAR_HEIGHT
+    paddingTop: DIMENSION.MEDIUM_HEADER_HEIGHT,
   },
   content_container: {
     marginTop: 0
@@ -181,8 +205,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: STATUSBAR_HEIGHT,
-    backgroundColor: '#ecf0f1',
+    paddingTop: DIMENSION.STATUSBAR_HEIGHT,
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
   isloadingmore_container: { 
     flex: 1, 

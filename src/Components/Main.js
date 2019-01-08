@@ -7,6 +7,8 @@ import {
 
 import BarStatus from './BarStatus'
 import RootTab from './RootTab'
+import THEME from '../INFO/THEME'
+import Test from './Test'
 
 class Main extends React.Component {
   static navigationOptions = {
@@ -17,7 +19,7 @@ class Main extends React.Component {
     return (
       <View style={styles.main_container}>
         <RootTab />
-        { Platform.OS === 'android' ? <BarStatus color="#e17000"/> : null }
+        { Platform.OS === 'android' ? <BarStatus color={THEME.STATUS_BAR.DEFAULT_COLOR}/> : null }
       </View>
     )
   }

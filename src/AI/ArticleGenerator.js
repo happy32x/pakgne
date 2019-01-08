@@ -6,6 +6,8 @@ import {
 	StyleSheet,
 } from 'react-native'
 
+import THEME from '../INFO/THEME'
+
 const ARTICLE_IMG = '../assets/vladimir-poutine-a-stavropol-le-9-octobre-2018_6118412.jpg'
 
 class ArticleGenerator extends React.Component{
@@ -58,11 +60,11 @@ const styles = StyleSheet.create({
 	article_title: { 
 		fontSize:30, 
 		fontWeight:'bold', 
-		color:"#000" 
+		color: THEME.SECONDARY.COLOR
 	},
 	article_title_one: { 
 		fontSize:20, 
-		color:"#9d9d9d" 
+		color: THEME.TERTIARY.COLOR
 	},
 	image_in_article_container: { 
 		height:200, 
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
 	},
 	text_in_article: { 
 		fontSize:18, 
-		color:"#161616",
+		color: THEME.SECONDARY.COLOR,
 		lineHeight: 27,
 	},
 })
