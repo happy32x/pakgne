@@ -174,6 +174,7 @@ class VideoList extends Component {
 
       const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
       console.log(data.length)
+      console.log(data.length)
 
       /*console.log(data)
       for (var i of data) {
