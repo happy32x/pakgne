@@ -5,6 +5,7 @@ import {
   StyleSheet,  
 } from 'react-native'
 
+import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
 function CommentEmpty(props) {
@@ -23,7 +24,8 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.PRIMARY.COLOR,
   },
   isempty: {
-    color: THEME.TERTIARY.COLOR
+    color: THEME.TERTIARY.COLOR,
+    transform: [{ translateY: -DIMENSION.STATUSBAR_HEIGHT }],
   },
 })
 

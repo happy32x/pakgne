@@ -40,7 +40,15 @@ class Comment extends React.Component {
       <View key={this.props.rowId} style={styles.comment_container}>
 
         <View style={styles.comment_container_left}>
-          <BounceUpAndDownStatic scale={.8}>
+          <BounceUpAndDownStatic 
+            scale={.8}
+            onPress={() => {
+              this.props.navigateTo('ImageViewer', { 
+                title: this.props.data.snippet.topLevelComment.snippet.authorDisplayName,
+                imgURLPreview: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
+              })
+            }}
+          >
             <View style={styles.comment_container_left_img_container}>
               <Image
                 style={styles.comment_container_left_img_background}

@@ -10,6 +10,7 @@ import {
 
 import Comment from './Comment'
 import CommentHeader from './CommentHeader'
+import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
 import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
@@ -17,6 +18,8 @@ import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView)
+//const controller = new AbortController()
+//const signal = controller.signal
 
 class CommentList extends Component {
   constructor(props) {
@@ -62,12 +65,13 @@ class CommentList extends Component {
     this.setState({ isModalVisible: !this.state.isModalVisible })
   }
 
-  _orderComment(order) {
+  _orderComment(order) {    
+    this.toggleModal()
     this.state.order === order 
       ? null
       : this.state.canWeHandleOrder         
         ? this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '', order }, () => this.fetchRefresh())        
-        : this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) //En temps normal on annule le chargement de la page et reprend avec la nouvelle requête
+        : this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) //En temps normal on annule le chargement de la page et on reprend avec la nouvelle requête
   }
 
   _navigateTo(destination, data) {
@@ -79,9 +83,10 @@ class CommentList extends Component {
   }
 
   _fetchData(callback) {
+    //controller.abort()
     const dataAfter = this.state._dataAfter
     const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
+    getCommentListFromApi(this.videoId, this.state.order, pageToken/*, { signal }*/).then(callback)
   }
 
   _fetchDataCommentCount(callback) {
@@ -110,6 +115,7 @@ class CommentList extends Component {
   }
 
   _fetchRefresh() {
+    //controller.abort()
     this.fetchData(responseJson => {
       let ds = new ListView.DataSource({
         rowHasChanged: (r1, r2) => r1 !== r2,
@@ -126,7 +132,7 @@ class CommentList extends Component {
               isRefreshing: false,
               _data: data,
               _dataAfter: responseJson.nextPageToken,
-              commentCount,
+               commentCount,
               stopLoadingMore: true
             })
           })
@@ -145,7 +151,7 @@ class CommentList extends Component {
     })
   }
 
-  _componentDidMountClone() {
+  _componentDidMountClone() {    
     this.fetchData(responseJson => {
       let ds = new ListView.DataSource({
         rowHasChanged: (r1, r2) => r1 !== r2,
@@ -187,7 +193,11 @@ class CommentList extends Component {
   }
 
   componentDidMount() {
-    _componentDidMountClone()
+    this.componentDidMountClone()
+  }
+
+  componentWillUnmount(){
+    //controller.abort()
   }
 
   render() {   
@@ -211,9 +221,9 @@ class CommentList extends Component {
           this.state.isLoading           
             ? <CommentLoading />
             : this.state.isEmpty
-              ? <CommentEmpty/>              
+              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedListView destinée à acceuilir les commentaires de l'utilisateur            
               : <View style={styles.listview_container}>
-                  <AnimatedListView
+                  <AnimatedListView //AnimatedListView pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}
                     dataSource={this.state.dataSource}

@@ -26,6 +26,7 @@ const ALL_THEME = {
     STATUS_BAR: {
       DEFAULT_COLOR: '#E17000',
       SOME_VIEW_COLOR: '',
+      TRANSPARENT: 'transparent',
     },
     ON_LOAD_COLOR: '#DDDDDD',
   },

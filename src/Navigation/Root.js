@@ -2,6 +2,7 @@ import { createStackNavigator } from 'react-navigation'
 import Main from '../Components/Main'
 import ArticleViewer from '../Components/ArticleViewer'
 import VideoViewer from '../Components/VideoViewer'
+import ImageViewer from '../Components/ImageViewer'
 import CommentList from '../Components/CommentList'
 import CommentListReply from '../Components/CommentListReply'
 import SearchViewer from '../Components/SearchViewer'
@@ -13,6 +14,7 @@ const Root = createStackNavigator(
       SearchViewer: SearchViewer,
       ParameterViewer: ParameterViewer,
       VideoViewer: VideoViewer,
+      ImageViewer: ImageViewer,
       CommentList: CommentList,
       CommentListReply: CommentListReply,
       ArticleViewer: ArticleViewer,

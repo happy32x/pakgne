@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 
 import Video from './Video'
+import { shuffleArray } from '../AI/Randomizer'
 import { getVideoListFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
 import { connect } from 'react-redux'
@@ -16,7 +17,7 @@ import DIMENSION from '../INFO/DIMENSION'
 import HeaderContentIndicator from './HeaderContentIndicator'
 import THEME from '../INFO/THEME'
 
-const AnimatedListView = Animated.createAnimatedComponent(ListView);
+const AnimatedListView = Animated.createAnimatedComponent(ListView)
 
 class VideoList extends Component {
   constructor(props) {
@@ -28,17 +29,51 @@ class VideoList extends Component {
       isRefreshing: false,
       _data: null,
       _dataAfter: '',
-      stopLoadingMore: false
-    }
+      stopLoadingMore: false,
+    }    
 
-    this.fetchMore = this._fetchMore.bind(this)
-    this.fetchData = this._fetchData.bind(this)
-    this.fetchRefresh = this._fetchRefresh.bind(this)
+    this.videoInProgress = []
+    this.handleVideoInProgress = this._handleVideoInProgress.bind(this)
+    this.canWeFetchMore = this._canWeFetchMore.bind(this)    
 
     this.toggleFavorite = this._toggleFavorite.bind(this)
     this.recoverFavorite = this._recoverFavorite.bind(this)
     this.isFavorite = this._isFavorite.bind(this)
     this.navigateTo = this._navigateTo.bind(this)
+
+    this.videoListOrder = ['date','rating','relevance','title','videoCount','viewCount']
+    this._videoListOrder = []
+    this.randomVideoListOrder = this._randomVideoListOrder.bind(this)
+
+    this.fetchData = this._fetchData.bind(this)
+    this.fetchMore = this._fetchMore.bind(this)    
+    this.fetchRefresh = this._fetchRefresh.bind(this)    
+  }
+
+  _handleVideoInProgress(bin) {    
+    this.state.isRefreshing 
+      ? this.videoInProgress = []
+      : bin 
+        ? this.videoInProgress.push(bin) : this.videoInProgress.pop()
+    this.canWeFetchMore()    
+    console.log(this.videoInProgress.length)
+  }
+
+  _handleVideoInProgress(bin) {    
+    if(this.state.isRefreshing) 
+      this.videoInProgress = []      
+    else {
+      if(bin) this.videoInProgress.push(bin)
+      else {
+        this.videoInProgress.pop()
+        this.canWeFetchMore() 
+      }
+    }
+    console.log(this.videoInProgress.length)
+  }
+
+  _canWeFetchMore() {
+    this.videoInProgress.length === 0 && this.state.isLoadingMore && !this.state.isRefreshing ? this.fetchMore() : null
   }
 
   _toggleFavorite(firstData, secondData) {
@@ -58,39 +93,52 @@ class VideoList extends Component {
     this.props.navigation.navigate(destination, data)
   }
 
+  _randomVideoListOrder() {    
+    do { 
+      this.videoListOrder = shuffleArray(this.videoListOrder) 
+    } while (this.videoListOrder[0] === this._videoListOrder[0])
+    this._videoListOrder = this.videoListOrder
+  }
+
   _fetchData(callback) {
     const dataAfter = this.state._dataAfter
     const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getVideoListFromApi(pageToken).then(callback)
+    console.log(this.videoListOrder[0])
+    getVideoListFromApi(this.videoListOrder[0], pageToken).then(callback)
   }
 
   _fetchMore() {
     this.fetchData(responseJson => {
-      const data = this.state._data.concat(responseJson.items)      
 
-      responseJson.nextPageToken===undefined
-        ? this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
-          })
-        : this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })
+        const data = this.state._data.concat(shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)))      
+        console.log(data.length)
+
+        responseJson.nextPageToken===undefined
+          ? this.setState({
+              dataSource: this.state.dataSource.cloneWithRows(data),
+              isLoadingMore: false,
+              _data: data,
+              _dataAfter: responseJson.nextPageToken,
+              stopLoadingMore: true,
+            })
+          : this.setState({
+              dataSource: this.state.dataSource.cloneWithRows(data),
+              isLoadingMore: false,
+              _data: data,
+              _dataAfter: responseJson.nextPageToken,
+            })
+
     })
   }
 
-  _fetchRefresh() {
+   _fetchRefresh() {
+     //this.randomVideoListOrder()
     this.fetchData(responseJson => {
       let ds = new ListView.DataSource({
         rowHasChanged: (r1, r2) => r1 !== r2,
       })
-      const data = responseJson.items;
+
+      const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
 
       responseJson.nextPageToken===undefined 
         ? this.setState({
@@ -115,14 +163,22 @@ class VideoList extends Component {
 
   scrollTop = () => {
     this.scroll.scrollTo({x: 0, animated: false})
-  }
+  }  
 
-  componentDidMount() {
+   componentDidMount() {
+     //this.randomVideoListOrder()
     this.fetchData(responseJson => {
       let ds = new ListView.DataSource({
         rowHasChanged: (r1, r2) => r1 !== r2,
       })
-      const data = responseJson.items
+
+      const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+      console.log(data.length)
+
+      /*console.log(data)
+      for (var i of data) {
+        console.log(i.id.videoId);
+      }*/
 
       responseJson.nextPageToken===undefined 
         ? this.setState({
@@ -159,12 +215,13 @@ class VideoList extends Component {
             renderHeader={() => <HeaderContentIndicator type="MaterialCommunityIcons" icon="movie" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
             renderRow={
               (rowData, sectionId, rowId) => <Video 
-                firstData={rowData}
+                firstData={rowData}                
                 toggleFavorite={this.toggleFavorite} 
                 recoverFavorite={this.recoverFavorite}
                 isFavorite={this.isFavorite}
                 navigateTo={this.navigateTo}
                 rowId={rowId}
+                handleVideoInProgress={this.handleVideoInProgress}
               /> 
             }
             renderFooter={() => {
@@ -175,7 +232,7 @@ class VideoList extends Component {
                 </View>
               )
             }}
-            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.canWeFetchMore()) : null }
             refreshControl={ 
               <RefreshControl 
                 colors={[THEME.PRIMARY.BACKGROUND_COLOR]} 
@@ -184,7 +241,7 @@ class VideoList extends Component {
                 onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
               /> 
             }
-            scrollEventThrottle={16}
+            onEndReachedThreshold={.1}
             {...this.props}
           />
         </View>

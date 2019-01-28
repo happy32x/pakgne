@@ -10,19 +10,22 @@ import {
 
 import CommentReply from './CommentReply'
 import CommentReplyHeader from './CommentReplyHeader'
+import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
 import { getCommentListReplyFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import { connect } from 'react-redux'
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView)
+//const controller = new AbortController()
+//const signal = controller.signal
 
 class CommentListReply extends Component {
   constructor(props) {
     super(props)
     this.state = {
       dataSource: null,
-      isEmpty: false,
+      isEmpty: true,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
@@ -36,6 +39,7 @@ class CommentListReply extends Component {
     this.fetchMore = this._fetchMore.bind(this)
     this.fetchRefresh = this._fetchRefresh.bind(this)
 
+    this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
   }
 
@@ -43,14 +47,19 @@ class CommentListReply extends Component {
     header: null
   };
 
+  _navigateTo(destination, data) {
+    this.props.navigation.navigate(destination, data)
+  }
+
   _navigateBack() {
     this.props.navigation.goBack()
   }
 
   _fetchData(callback) {
+    //controller.abort()
     const dataAfter = this.state._dataAfter
     const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getCommentListReplyFromApi(this.commentId, pageToken).then(callback)
+    getCommentListReplyFromApi(this.commentId, pageToken/*, { signal }*/).then(callback)
   }
 
   _fetchMore() {
@@ -113,10 +122,11 @@ class CommentListReply extends Component {
       //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users 
       //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
       data.length===0
-        ? this.setState({ isEmpty: true }) 
+        ? this.setState({ isEmpty: true, isLoading: false }) 
         : responseJson.nextPageToken===undefined 
           ? this.setState({
               dataSource: ds.cloneWithRows(data),
+              isEmpty: false,
               isLoading: false,
               _data: data,
               _dataAfter: responseJson.nextPageToken,
@@ -124,11 +134,16 @@ class CommentListReply extends Component {
             })
           : this.setState({
               dataSource: ds.cloneWithRows(data),
+              isEmpty: false,
               isLoading: false,
               _data: data,
               _dataAfter: responseJson.nextPageToken,
             })
     })
+  }
+
+  componentWillUnmount(){
+    //controller.abort()
   }
 
   render() {   
@@ -141,41 +156,42 @@ class CommentListReply extends Component {
 
         { 
           this.state.isLoading           
-            ?   
-              <CommentEmpty isEmpty={this.state.isEmpty} />
-            :
-              <View style={styles.listview_container}>
-                <AnimatedListView
-                  contentContainerStyle={styles.listview}
-                  showsVerticalScrollIndicator={true}
-                  dataSource={this.state.dataSource}
-                  renderRow={
-                    (rowData, sectionId, rowId) => <CommentReply
-                      data={rowData}
-                      rowId={rowId}
-                    />
-                  }
-                  renderFooter={() => {
-                    return (
-                      this.state.isLoadingMore &&
-                      <View style={styles.isloadingmore_container}>
-                        <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
-                      </View>
-                    )
-                  }}
-                  onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
-                  refreshControl={ 
-                    <RefreshControl 
-                      colors={[THEME.SECONDARY.COLOR]} 
-                      refreshing={this.state.isRefreshing} 
-                      progressViewOffset={-25}
-                      onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
-                    /> 
-                  }
-                  scrollEventThrottle={16}
-                  {...this.props}
-                />
-              </View>
+            ? <CommentLoading/>           
+            : this.state.isEmpty
+              ? <CommentEmpty/> 
+              : <View style={styles.listview_container}>
+                  <AnimatedListView
+                    contentContainerStyle={styles.listview}
+                    showsVerticalScrollIndicator={true}
+                    dataSource={this.state.dataSource}
+                    renderRow={
+                      (rowData, sectionId, rowId) => <CommentReply
+                        data={rowData}
+                        navigateTo={this.navigateTo}
+                        rowId={rowId}
+                      />
+                    }
+                    renderFooter={() => {
+                      return (
+                        this.state.isLoadingMore &&
+                        <View style={styles.isloadingmore_container}>
+                          <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
+                        </View>
+                      )
+                    }}
+                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+                    refreshControl={ 
+                      <RefreshControl 
+                        colors={[THEME.SECONDARY.COLOR]} 
+                        refreshing={this.state.isRefreshing} 
+                        progressViewOffset={-25}
+                        onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
+                      /> 
+                    }
+                    scrollEventThrottle={16}
+                    {...this.props}
+                  />
+                </View>
         }
 
       </View>

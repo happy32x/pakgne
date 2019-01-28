@@ -5,12 +5,19 @@ const channelId = DATA.CHANNEL_ID
 const results = DATA.REQUEST_NUMBER
 
 //Récupérer une liste de videos
-export function getVideoListFromApi (pageToken) {
-  const url = `https://www.googleapis.com/youtube/v3/search/?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=relevance&maxResults=${results}${pageToken}`
+export function getVideoListFromApi (order, pageToken) {
+  const url = `https://www.googleapis.com/youtube/v3/search/?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=${order}&maxResults=${results}${pageToken}`
   return fetch(url)
     .then((response) => response.json())
     .catch((error) => console.error(error))
 }
+
+/*export function getVideoListFromApi (pageToken) {
+  const url = `https://www.googleapis.com/youtube/v3/search/?key=${apiKey}&channelId=${channelId}&part=snippet&order=title&maxResults=50${pageToken}`
+  return fetch(url)
+    .then((response) => response.json())
+    .catch((error) => console.error(error))
+}*/
 
 //Récupérer les infos d'une video
 export function getVideoInfoFromApi (videoId) {
@@ -21,17 +28,17 @@ export function getVideoInfoFromApi (videoId) {
 }
 
 //Récupérer une liste de commentaires
-export function getCommentListFromApi (videoId, order, pageToken) {
+export function getCommentListFromApi (videoId, order, pageToken/*, { signal }*/) {
   const url = `https://www.googleapis.com/youtube/v3/commentThreads?key=${apiKey}&videoId=${videoId}&order=${order}&part=snippet&maxResults=${results}${pageToken}`
-  return fetch(url)
+  return fetch(url/*, { signal }*/)
     .then((response) => response.json())
     .catch((error) => console.error(error))
 }
 
 //Récupérer une liste de sous-comentaires (commentId : UgyfGyvTA8OzJ3ilUOd4AaABAg , UgwLj19LmkKZddNcdJh4AaABAg, UgzTt0YulIuUMp5DslN4AaABAg)
-export function getCommentListReplyFromApi (commentId, pageToken) {
+export function getCommentListReplyFromApi (commentId, pageToken/*, { signal }*/) {
   const url = `https://www.googleapis.com/youtube/v3/comments?key=${apiKey}&parentId=${commentId}&part=snippet&maxResults=15${pageToken}`
-  return fetch(url)
+  return fetch(url/*, { signal }*/)
     .then((response) => response.json())
     .catch((error) => console.error(error))
 }

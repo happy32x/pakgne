@@ -19,6 +19,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "abortcontroller-polyfill": "^1.2.1",
     "expo": "^27.0.1",
     "moment": "^2.22.2",
     "moment-duration-format": "^2.2.2",

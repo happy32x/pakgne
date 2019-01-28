@@ -29,11 +29,19 @@ class Video extends React.Component{
     super(props)
     this.state = {
       isLoading: true,
-      secondData: undefined
+      secondData: undefined,
+      isLike: false,
     }
 
     this.fetchData = this._fetchData.bind(this)
     this.toggleFavorite = this._toggleFavorite.bind(this)
+    this.toggleLike = this._toggleLike.bind(this) //Provisoire
+
+    this.props.handleVideoInProgress(1)
+  }
+
+  _toggleLike() {
+    this.setState({ isLike: !this.state.isLike })
   }
 
   _toggleFavorite() {
@@ -45,14 +53,14 @@ class Video extends React.Component{
   }
 
   componentDidMount() {
-    const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
+    /*const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
     if (favoriteVideoIndex !== -1) {
       this.setState({ 
         isLoading: false,
         secondData: this.props.recoverFavorite(favoriteVideoIndex),
       })
       return
-    }
+    }*/
 
     this.fetchData(responseJson => {
       const secondData = responseJson.items[0]
@@ -61,6 +69,10 @@ class Video extends React.Component{
         secondData,
       })
     })
+  }
+
+  componentDidUpdate() {
+    this.props.handleVideoInProgress(0)
   }
 
   render() {
@@ -116,13 +128,26 @@ class Video extends React.Component{
 
           <View style={styles.bottom_element_container}>
           
-            <BounceUpAndDownStatic scale={SCALE} tension={TENSION} style={styles.same_element}>
+            <BounceUpAndDownStatic 
+              scale={SCALE} 
+              tension={TENSION} 
+              style={styles.same_element}
+              onPress={() => { this.toggleLike() }}  
+            >
               <View style={styles.same_element}>
-                <Icon style={styles.same_element_one} name="md-heart" />
+                { 
+                  this.state.isLike
+                    ? <Icon style={styles.same_element_one} name="md-heart" />
+                    : <Icon style={styles.same_element_one} name="md-heart-outline" /> 
+                }                                               
               </View>
               <View style={styles.same_element_two}>
-                <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
-              </View>
+                { 
+                  this.state.isLike
+                    ? <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
+                    : <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
+                }                 
+              </View>              
             </BounceUpAndDownStatic>
 
             <BounceUpAndDownStatic 
