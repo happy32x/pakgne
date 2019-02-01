@@ -32,10 +32,6 @@ class VideoList extends Component {
       stopLoadingMore: false,
     }    
 
-    this.videoInProgress = []
-    this.handleVideoInProgress = this._handleVideoInProgress.bind(this)
-    this.canWeFetchMore = this._canWeFetchMore.bind(this)    
-
     this.toggleFavorite = this._toggleFavorite.bind(this)
     this.recoverFavorite = this._recoverFavorite.bind(this)
     this.isFavorite = this._isFavorite.bind(this)
@@ -48,33 +44,7 @@ class VideoList extends Component {
     this.fetchData = this._fetchData.bind(this)
     this.fetchMore = this._fetchMore.bind(this)    
     this.fetchRefresh = this._fetchRefresh.bind(this)    
-  }
-
-  _handleVideoInProgress(bin) {    
-    this.state.isRefreshing 
-      ? this.videoInProgress = []
-      : bin 
-        ? this.videoInProgress.push(bin) : this.videoInProgress.pop()
-    this.canWeFetchMore()    
-    console.log(this.videoInProgress.length)
-  }
-
-  _handleVideoInProgress(bin) {    
-    if(this.state.isRefreshing) 
-      this.videoInProgress = []      
-    else {
-      if(bin) this.videoInProgress.push(bin)
-      else {
-        this.videoInProgress.pop()
-        this.canWeFetchMore() 
-      }
-    }
-    console.log(this.videoInProgress.length)
-  }
-
-  _canWeFetchMore() {
-    this.videoInProgress.length === 0 && this.state.isLoadingMore && !this.state.isRefreshing ? this.fetchMore() : null
-  }
+  }  
 
   _toggleFavorite(firstData, secondData) {
     const action = { type: "TOGGLE_FAVORITE", value: [firstData,secondData] }
@@ -93,17 +63,15 @@ class VideoList extends Component {
     this.props.navigation.navigate(destination, data)
   }
 
-  _randomVideoListOrder() {    
-    do { 
-      this.videoListOrder = shuffleArray(this.videoListOrder) 
-    } while (this.videoListOrder[0] === this._videoListOrder[0])
+  async _randomVideoListOrder() {   
+    this.videoListOrder = await shuffleArray(this.videoListOrder) 
     this._videoListOrder = this.videoListOrder
+    return this.videoListOrder[0]
   }
 
   _fetchData(callback) {
     const dataAfter = this.state._dataAfter
     const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    console.log(this.videoListOrder[0])
     getVideoListFromApi(this.videoListOrder[0], pageToken).then(callback)
   }
 
@@ -111,7 +79,7 @@ class VideoList extends Component {
     this.fetchData(responseJson => {
 
         const data = this.state._data.concat(shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)))      
-        console.log(data.length)
+        console.log("dataLength : " + data.length)
 
         responseJson.nextPageToken===undefined
           ? this.setState({
@@ -127,75 +95,77 @@ class VideoList extends Component {
               _data: data,
               _dataAfter: responseJson.nextPageToken,
             })
-
     })
   }
 
-   _fetchRefresh() {
-     //this.randomVideoListOrder()
-    this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
+  _fetchRefresh() {
+    //console.log("baise ta maman enculé !!!!!!!!")s
+    this.randomVideoListOrder()
+      .then((order) => {
+        this.fetchData(responseJson => {
+          let ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2,
+          })
+    
+          const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+          console.log("order : " + order)
+          console.log("dataLength : " + data.length)
+    
+          responseJson.nextPageToken===undefined 
+            ? this.setState({
+                dataSource: ds.cloneWithRows(data),
+                isLoading: false,
+                isLoadingMore: false,
+                isRefreshing: false,
+                _data: data,
+                _dataAfter: responseJson.nextPageToken,
+                stopLoadingMore: true,
+              })  
+            : this.setState({
+                dataSource: ds.cloneWithRows(data),
+                isLoading: false,
+                isLoadingMore: false,
+                isRefreshing: false,
+                _data: data,
+                _dataAfter: responseJson.nextPageToken,
+                stopLoadingMore: false,
+              })  
+        })
       })
-
-      const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-
-      responseJson.nextPageToken===undefined 
-        ? this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
-          })  
-        : this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })  
-    })
   }
 
   scrollTop = () => {
     this.scroll.scrollTo({x: 0, animated: false})
   }  
 
-   componentDidMount() {
-     //this.randomVideoListOrder()
-    this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-
-      const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-      console.log(data.length)
-      console.log(data.length)
-
-      /*console.log(data)
-      for (var i of data) {
-        console.log(i.id.videoId);
-      }*/
-
-      responseJson.nextPageToken===undefined 
-        ? this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
+  componentDidMount() {
+    this.randomVideoListOrder()
+      .then((order) => {
+        this.fetchData(responseJson => {
+          let ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2,
           })
-        : this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })
-    })
+    
+          const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+          console.log("order : " + order)
+          console.log("dataLength : " + data.length)
+    
+          responseJson.nextPageToken===undefined 
+            ? this.setState({
+                dataSource: ds.cloneWithRows(data),
+                isLoading: false,
+                _data: data,
+                _dataAfter: responseJson.nextPageToken,
+                stopLoadingMore: true,
+              })
+            : this.setState({
+                dataSource: ds.cloneWithRows(data),
+                isLoading: false,
+                _data: data,
+                _dataAfter: responseJson.nextPageToken,
+              })
+        })
+      })    
   }
 
   render() {
@@ -221,8 +191,7 @@ class VideoList extends Component {
                 recoverFavorite={this.recoverFavorite}
                 isFavorite={this.isFavorite}
                 navigateTo={this.navigateTo}
-                rowId={rowId}
-                handleVideoInProgress={this.handleVideoInProgress}
+                rowId={rowId}              
               /> 
             }
             renderFooter={() => {
@@ -233,7 +202,7 @@ class VideoList extends Component {
                 </View>
               )
             }}
-            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.canWeFetchMore()) : null }
+            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
             refreshControl={ 
               <RefreshControl 
                 colors={[THEME.PRIMARY.BACKGROUND_COLOR]} 

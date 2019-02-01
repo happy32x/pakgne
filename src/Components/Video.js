@@ -35,9 +35,7 @@ class Video extends React.Component{
 
     this.fetchData = this._fetchData.bind(this)
     this.toggleFavorite = this._toggleFavorite.bind(this)
-    this.toggleLike = this._toggleLike.bind(this) //Provisoire
-
-    this.props.handleVideoInProgress(1)
+    this.toggleLike = this._toggleLike.bind(this) //Provisoire    
   }
 
   _toggleLike() {
@@ -53,14 +51,14 @@ class Video extends React.Component{
   }
 
   componentDidMount() {
-    /*const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
+    const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
     if (favoriteVideoIndex !== -1) {
       this.setState({ 
         isLoading: false,
         secondData: this.props.recoverFavorite(favoriteVideoIndex),
       })
       return
-    }*/
+    }
 
     this.fetchData(responseJson => {
       const secondData = responseJson.items[0]
@@ -69,10 +67,6 @@ class Video extends React.Component{
         secondData,
       })
     })
-  }
-
-  componentDidUpdate() {
-    this.props.handleVideoInProgress(0)
   }
 
   render() {

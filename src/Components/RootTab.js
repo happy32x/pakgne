@@ -89,7 +89,7 @@ class RootTab extends React.Component {
 
   //Data Persist Handling
 
-  _handleIndexChange = index => this.setState({ index })
+  _handleIndexChange = index => this.setState({ index }, () => console.log("index : " + index))
 
   _renderIcon = ({ route }) => {
     return (route.icon === "show" ?
