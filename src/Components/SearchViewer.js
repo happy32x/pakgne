@@ -1,20 +1,20 @@
 import React, { Component } from 'react'
-import { 
-  View, 
-  TouchableNativeFeedback, 
-  StatusBar, 
+import {
+  View,  
+  StatusBar,
   Platform,
   TextInput,
   StyleSheet,
+  TouchableNativeFeedback,
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import BarStatus from './BarStatus'
-import InfiniteScrollView from '../../SandBox/_SandBox/InfiniteScrollView'
+import VideoListMini from './VideoListMini'
+import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
-const DEFAULT_HEIGHT = 55
 const FLEX_TEXT_INPUT_EMPTY = 12
 const FLEX_TEXT_INPUT_FILLED = 10
 
@@ -27,13 +27,23 @@ class SearchViewer extends Component {
     super(props)
     this.state = {
       text: '',
+      searchText: '',
       cross_display: false,
       flex_text_input: FLEX_TEXT_INPUT_EMPTY, 
     }
+
+    this.index = this.props.navigation.getParam('searchId', 0)
+    //console.log("searchViewer :: " + this.index)
+
+    this.launchResearh = this._launchResearh.bind(this)
   }
 
-  changeText = (text) => {
-    this.setState({text})
+  _launchResearh() {
+    this.setState({searchText: this.state.text}, () => console.log('SearchViewer :: searchtext :: ' + this.state.text))
+  }
+
+  changeText = (text) => {    
+    this.setState({text}, () => console.log('SearchViewer :: text :: ' + this.state.text))
     if(text !== '' && this.state.cross_display === false)
       this.setState({cross_display: true, flex_text_input: FLEX_TEXT_INPUT_FILLED})
     else if(text === '' && this.state.cross_display === true)
@@ -60,7 +70,7 @@ class SearchViewer extends Component {
 
   render() {
     return (
-      <View>
+      <View style={styles.super_container}>
         <View style={styles.main_container}>
           <View style={styles.arrow_back_container}>
             <TouchableNativeFeedback 
@@ -88,13 +98,14 @@ class SearchViewer extends Component {
               keyboardType={'web-search'}
               returnKeyType={'search'}
               onChangeText={this.changeText}
+              onSubmitEditing={() => this.launchResearh()}
               value={this.state.text}
             />
           </View>
           {this.state.cross_display ? this.crossTextInput() : null}
         </View>
 
-        <InfiniteScrollView/>
+        <VideoListMini searchText={this.state.searchText} />
 
         { Platform.OS === 'android' ? <BarStatus color={THEME.PRIMARY.COLOR}/> : null }
       </View>
@@ -103,18 +114,21 @@ class SearchViewer extends Component {
 }
 
 const styles = StyleSheet.create({
+  super_container: { 
+    flex: 1,
+  },
   main_container: { 
     backgroundColor: THEME.PRIMARY.COLOR, 
-    height: StatusBar.currentHeight + DEFAULT_HEIGHT, 
+    height: DIMENSION.MAX_HEADER_HEIGHT, 
     flexDirection: 'row',
     paddingTop: StatusBar.currentHeight,
     marginTop: 0,
   },
   arrow_back_container: { 
     flex:2, 
-    alignItems:'center', 
-    justifyContent:'flex-start', 
     flexDirection:'row',
+    alignItems:'center', 
+    justifyContent:'flex-start',     
   },
   arrow_back_container_one: {
     width: 50, 

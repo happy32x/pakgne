@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import {
-  StyleSheet,
+import {  
   View,
   ListView,
-  ActivityIndicator,
-  RefreshControl,
   Animated,
+  StyleSheet,  
+  RefreshControl,
+  ActivityIndicator,  
 } from 'react-native'
 
 import CommentReply from './CommentReply'

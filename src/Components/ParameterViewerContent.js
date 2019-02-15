@@ -8,13 +8,20 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
-import Icon from 'react-native-vector-icons/Ionicons'
+import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
+import { withNavigation } from 'react-navigation'
+
+import IconIonicons from 'react-native-vector-icons/Ionicons'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import IconOcticons from 'react-native-vector-icons/Octicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import THEME from '../INFO/THEME'
 import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewanda.jpg'
+
+const DEFAULT_IMG = '../assets/default_100.jpg'
+const REDVALUE = 60
+const MESSAGE = 'Option indisponible dans cette version'
 
 class ParameterViewerContent extends React.Component{
   renderSeparator = () => {
@@ -29,14 +36,28 @@ class ParameterViewerContent extends React.Component{
         style={{ 
           backgroundColor: THEME.PRIMARY.COLOR, 
           paddingTop: Platform.OS !== 'ios' ? this.props.headerMaxHeight : 0, 
+          flex: 1,
         }}
       >
 
           <View style={styles.user_info_container}>
             <View style={styles.user_pic_container}>
-              <View style={styles.user_pic_container_one}>
-                <Image source={user_profile_pic} style={styles.user_pic}/>
-              </View>
+         
+              <BounceUpAndDownStatic
+                scale={.8}
+                onPress={() => {
+                  this.props.navigation.navigate('ImageViewer', { 
+                    title: '',
+                    imgURLPreview: user_profile_pic,                
+                  })
+                }}
+              >
+                <View style={styles.user_pic_container_one}>
+                  <Image style={styles.user_pic_background} source={require(DEFAULT_IMG)} />
+                  <Image style={styles.user_pic} source={user_profile_pic} />
+                </View>
+              </BounceUpAndDownStatic>
+
             </View>
             <View style={styles.user_name_container}>
               <Text style={styles.user_name}>Jane doe</Text>
@@ -44,10 +65,21 @@ class ParameterViewerContent extends React.Component{
             </View>
           </View>
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Compte',
+                type: 'Ionicons',
+                icon: 'md-key',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-key" />
+                <IconIonicons style={styles.icon} name="md-key" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Compte</Text>
@@ -57,7 +89,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Discussions',
+                type: 'Octicons',
+                icon: 'comment-discussion',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconOcticons style={styles.icon} name="comment-discussion" />
@@ -70,10 +113,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Notifications',
+                type: 'Ionicons',
+                icon: 'md-notifications',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-notifications" />
+                <IconIonicons style={styles.icon} name="md-notifications" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Notifications</Text>
@@ -83,7 +137,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Usage de données',
+                type: 'MaterialIcons',
+                icon: 'data-usage',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="data-usage" />
@@ -96,10 +161,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Inviter',
+                type: 'Ionicons',
+                icon: 'md-person-add',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-person-add" />
+                <IconIonicons style={styles.icon} name="md-person-add" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Invitez un ou plusieurs amis</Text>
@@ -109,7 +185,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Evènement',
+                type: 'MaterialIcons',
+                icon: 'event-note',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="event-note" />
@@ -122,10 +209,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Galéries',
+                type: 'Ionicons',
+                icon: 'md-images',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-images" />
+                <IconIonicons style={styles.icon} name="md-images" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Galeries</Text>
@@ -135,7 +233,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Appel audio',
+                type: 'MaterialCommunityIcons',
+                icon: 'phone',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="phone" />
@@ -148,7 +257,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Générateur de QR code',
+                type: 'MaterialCommunityIcons',
+                icon: 'qrcode',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="qrcode" />
@@ -161,7 +281,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Sauvegarde de données',
+                type: 'Octicons',
+                icon: 'database',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconOcticons style={styles.icon} name="database" />
@@ -174,7 +305,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Langue',
+                type: 'MaterialCommunityIcons',
+                icon: 'earth',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialCommunityIcons style={styles.icon} name="earth" />
@@ -187,10 +329,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Sécurité',
+                type: 'Ionicons',
+                icon: 'md-lock',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-lock" />
+                <IconIonicons style={styles.icon} name="md-lock" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Sécurité</Text>
@@ -200,10 +353,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Conditions d\'utilisation',
+                type: 'Ionicons',
+                icon: 'md-bookmarks',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-bookmarks" />
+                <IconIonicons style={styles.icon} name="md-bookmarks" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Conditions d'utilisation</Text>
@@ -213,7 +377,18 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Rapporter un bug',
+                type: 'MaterialIcons',
+                icon: 'report-problem',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
                 <IconMaterialIcons style={styles.icon} name="report-problem" />
@@ -226,10 +401,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'Déconnexion',
+                type: 'Ionicons',
+                icon: 'md-exit',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-exit" />
+                <IconIonicons style={styles.icon} name="md-exit" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>Déconnexion</Text>
@@ -239,10 +425,17 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('About', { 
+                title: 'A propos' 
+              }) 
+            }}
+          >            
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-information-circle" />
+                <IconIonicons style={styles.icon} name="md-information-circle" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>A propos</Text>
@@ -252,10 +445,21 @@ class ParameterViewerContent extends React.Component{
 
           {this.renderSeparator()}
 
-          <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('ParameterElement', { 
+                title: 'F.A.Q',
+                type: 'Ionicons',
+                icon: 'md-help-circle',
+                color: THEME.TERTIARY.COLOR,
+                message: MESSAGE,
+              }) 
+            }}
+          >
             <View style={styles.band}>
               <View style={styles.icon_container}>
-                <Icon style={styles.icon} name="md-help-circle" />
+                <IconIonicons style={styles.icon} name="md-help-circle" />
               </View>
               <View style={styles.text_container}>
                 <Text style={styles.text}>F.A.Q</Text>
@@ -291,11 +495,17 @@ const styles = StyleSheet.create({
     height:60, 
     width:60 
   },
-  user_pic: { 
+  user_pic_background: {
     flex: 1, 
-    borderRadius:60, 
+    borderRadius:REDVALUE, 
     height: null, 
     width: null 
+  },
+  user_pic: {
+    position: "absolute",
+    borderRadius: REDVALUE, 
+    width: REDVALUE,
+    height: REDVALUE,
   },
   user_name_container: { 
     flex:0.7, 
@@ -342,4 +552,4 @@ const styles = StyleSheet.create({
   }, 
 })
 
-export default ParameterViewerContent
+export default withNavigation(ParameterViewerContent)

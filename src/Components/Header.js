@@ -10,7 +10,6 @@ import { Font } from 'expo'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import APPNAME from '../INFO/APPNAME'
-import { withNavigation } from 'react-navigation'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
@@ -47,8 +46,8 @@ class Header extends React.Component {
           <TouchableNativeFeedback
             background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
-              this.props.navigation.navigate('SearchViewer', {
-              	searchId: null,
+              this.props.navigateTo('SearchViewer', {
+              	id: "search",
             	})
             }}
           >
@@ -59,8 +58,8 @@ class Header extends React.Component {
           <TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
-              this.props.navigation.navigate('ParameterViewer', {
-                parameterId: null,
+              this.props.navigateTo('ParameterViewer', {
+                id: "parameter",
               })
             }}
           >
@@ -139,5 +138,5 @@ const styles = StyleSheet.create({
 	}
 })
 
-export default withNavigation(Header)
+export default Header
 

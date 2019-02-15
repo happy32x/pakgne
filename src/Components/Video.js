@@ -25,6 +25,8 @@ const SCALE = .7
 const TENSION = 100
 
 class Video extends React.Component{
+  _isMounted = false
+  
   constructor(props) {
     super(props)
     this.state = {
@@ -51,6 +53,8 @@ class Video extends React.Component{
   }
 
   componentDidMount() {
+    this._isMounted = true
+    
     const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
     if (favoriteVideoIndex !== -1) {
       this.setState({ 
@@ -61,12 +65,18 @@ class Video extends React.Component{
     }
 
     this.fetchData(responseJson => {
-      const secondData = responseJson.items[0]
-      this.setState({
-        isLoading: false,
-        secondData,
-      })
+      if(this._isMounted) {
+        const secondData = responseJson.items[0]
+        this.setState({
+          isLoading: false,
+          secondData,
+        })
+      }      
     })
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   render() {
@@ -76,7 +86,7 @@ class Video extends React.Component{
       )
     } else {
       return (
-        <View  key={this.props.firstData.id.videoId} style={styles.main_container}>
+        <View style={styles.main_container}>
 
           <View style={styles.top_element_container}>
             <View style={styles.film_logo_container}>

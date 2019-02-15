@@ -33,13 +33,16 @@ class CommentReply extends React.Component {
   
   render() {
     return (
-      <View key={this.props.rowId} style={styles.comment_container}>
+      /*
+      <View style={styles.comment_container} key={this.props.rowId}>
+      */
+      <View style={styles.comment_container}>
 
         <View style={styles.comment_container_left}>
           <BounceUpAndDownStatic 
             scale={.8}
             onPress={() => {
-              this.props.navigateTo('ImageViewer', { 
+              this.props.navigateTo('ImageViewerDynamic', { 
                 title: this.props.data.snippet.authorDisplayName,
                 imgURLPreview: youtubeImageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
               })

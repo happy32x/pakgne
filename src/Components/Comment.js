@@ -36,14 +36,14 @@ class Comment extends React.Component {
   }
 
   render() {
-    return (
-      <View key={this.props.rowId} style={styles.comment_container}>
+    return ( 
+      <View style={styles.comment_container}>    
 
         <View style={styles.comment_container_left}>
           <BounceUpAndDownStatic 
             scale={.8}
             onPress={() => {
-              this.props.navigateTo('ImageViewer', { 
+              this.props.navigateTo('ImageViewerDynamic', { 
                 title: this.props.data.snippet.topLevelComment.snippet.authorDisplayName,
                 imgURLPreview: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
               })
@@ -52,11 +52,11 @@ class Comment extends React.Component {
             <View style={styles.comment_container_left_img_container}>
               <Image
                 style={styles.comment_container_left_img_background}
-                source = {require(DEFAULT_IMG)}
+                source={require(DEFAULT_IMG)}
               />
               <Image
                 style={styles.comment_container_left_img}
-                source = {{ uri: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
+                source={{ uri: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
               />
             </View>
           </BounceUpAndDownStatic>

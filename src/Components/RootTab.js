@@ -19,6 +19,7 @@ import ArticleList from './ArticleList'
 import Header from './Header'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
+import { withNavigation } from 'react-navigation'
 
 const BOTTOM_SHADOW_RAY = 5
 
@@ -33,11 +34,17 @@ class RootTab extends React.Component {
     const offsetAnim = new Animated.Value(0);
 
     this.state = {
+
+      scrollTopVideoList: false,
+      updateVideoList: false,
+      updateVideoListToggle: false,      
+
       index: 0,
+      indexOLD: 0,
       routes: [
-        { key: 'first', title: 'VIDEOS' },
-        { key: 'second', title: 'ARTICLES' },
-        { key: 'third', icon: 'show' },
+        { key: '0', title: 'VIDEOS' },
+        { key: '1', title: 'ARTICLES' },
+        { key: '2', icon: 'show' },
       ],
 
       scrollAnim,
@@ -56,10 +63,16 @@ class RootTab extends React.Component {
       ),
     }
 
-    this.renderScene = this._renderScene.bind(this)
+    this.index = 0
+    this.navigateTo = this._navigateTo.bind(this)
 
     this.firstRoute = () => (
       <VideoList 
+        index = {this.state.index}
+        indexOLD = {this.state.indexOLD}
+        scrollTopVideoList = {this.state.scrollTopVideoList}
+        updateVideoList = {this.state.updateVideoList}
+        updateVideoListToggle = {this.state.updateVideoListToggle}
         onScroll = {
           Animated.event(
             [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
@@ -72,7 +85,7 @@ class RootTab extends React.Component {
       />
     )
     this.secondRoute = () => (
-      <ArticleList
+      <ArticleList        
         onScroll = {
           Animated.event(
             [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
@@ -84,12 +97,58 @@ class RootTab extends React.Component {
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
     )
-    this.thirdRoute = () => (<DefaultShow />) 
+    this.thirdRoute = () => (<DefaultShow />)     
+  }
+
+  _navigateTo(destination, data) {
+    data.id === "search" 
+      ? this.props.navigation.navigate(destination, {
+          searchId: this.state.index,
+        })
+      : this.props.navigation.navigate(destination, {
+          parameterId: null,
+        })
   }
 
   //Data Persist Handling
 
-  _handleIndexChange = index => this.setState({ index }, () => console.log("index : " + index))
+  _handleIndexChange = index => {
+    this.index = index 
+    this.setState({ index, indexOLD: this.state.index })    
+    console.log('_handleIndexChange')
+  }
+
+  _onTabPress = ({ route }) => { 
+    /*console.log("this.state.scrollAnim : " + JSON.stringify(this.state.scrollAnim))
+    console.log("this.state.index : " + this.state.index)
+    console.log("route.key : " + route.key)  */  
+    
+    //scroll to top && update VideoList
+    if(route.key == 0){ //On vérifie de la plus simple des manières si on a cliqué sur l'onglet VIDEO
+      if(this.state.index === 0){ //On vérifie si on à appuyer sur Tab video plus d'une fois (ou une fois si on se trouve au lancement de l'app)
+        if( JSON.stringify(this.state.scrollAnim) != 0 ){ //videoList n'est pas encore au top
+          //scroll to top VideoList
+          this.setState({ scrollTopVideoList: true, updateVideoList: false, indexOLD: this.state.index })
+        }     
+        if( JSON.stringify(this.state.scrollAnim) == 0 ){ //videoList est déjà au top
+          //update VideoList
+          this.setState({ scrollTopVideoList: false, updateVideoList: true, updateVideoListToggle: !this.state.updateVideoListToggle, indexOLD: this.state.index })
+
+
+          
+          /* OPTIMISATION POUR EVITER LES MULTIPLES SETSTATE*/
+
+          /*if(this.weCanUpdate) {
+            this.weCanUpdate = false
+            this.setState({ scrollTopVideoList: false, updateVideoList: true, updateVideoListToggle: !this.state.updateVideoListToggle })
+          }*/ 
+          //Ensuite on execute une fonction depuis VideoList qui met "this.weCanUpdate" à true
+          //Lorsque tout est terminé
+          
+        }
+      }    
+    }
+  }
 
   _renderIcon = ({ route }) => {
     return (route.icon === "show" ?
@@ -97,15 +156,28 @@ class RootTab extends React.Component {
     : null)
   }
 
-  _renderScene() {
+  _renderScene = ({ route }) => {
+    switch (route.key) {
+      case '0':
+        return this.firstRoute()
+      case '1':
+        return this.secondRoute()
+      case '2':
+        return this.thirdRoute()
+      default:
+        return null;
+    }
+  }
+
+  /*_renderScene() {
     return (
       SceneMap({
-        first: this.firstRoute,
-        second: this.secondRoute,
-        third: this.thirdRoute,
+        0: this.firstRoute,
+        1: this.secondRoute,
+        2: this.thirdRoute,
       })
     )
-  }
+  }*/
 
   //Animation
 
@@ -128,8 +200,8 @@ class RootTab extends React.Component {
   }
 
   componentWillUnmount() {
-    this.state.scrollAnim.removeAllListeners();
-    this.state.offsetAnim.removeAllListeners();
+    this.state.scrollAnim.removeAllListeners()
+    this.state.offsetAnim.removeAllListeners()
   }
 
   _onScrollEndDrag = () => {
@@ -166,17 +238,20 @@ class RootTab extends React.Component {
       <View style={styles.main_container}>
 
         <Animated.View style={[ styles.header_container ,{ transform: [{ translateY: translateY }] }]}>
-          <Header />
+          <Header 
+            navigateTo={this.navigateTo}
+          />
         </Animated.View>
 
         <TabView
           navigationState={this.state}
-          renderScene={this.renderScene()}
+          renderScene={this._renderScene}
           renderTabBar={props => (
             <Animated.View style={[ styles.tabbar_container ,{ transform: [{ translateY: translateY }] }]}>
-              <TabBar 
+              <TabBar
                 {...props} 
                 renderIcon={this._renderIcon}
+                onTabPress={this._onTabPress}
                 indicatorStyle={styles.tabbar_indicator_style} 
                 style={styles.tabbar_style}
                 labelStyle={styles.tabbar_label_style}
@@ -235,4 +310,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default RootTab
+export default withNavigation(RootTab)

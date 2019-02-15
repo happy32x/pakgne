@@ -5,10 +5,10 @@ import {
 } from 'react-native'
 
 import ImageHeader from './ImageHeader'
-import ImageContentSimple from './ImageContentSimple'
+import ImageContent from './ImageContent'
 import THEME from '../INFO/THEME'
 
-class ImageViewer extends Component {
+class ImageViewerDynamic extends Component {
   constructor(props) {
     super(props)
     this.navigateBack = this._navigateBack.bind(this)
@@ -30,7 +30,7 @@ class ImageViewer extends Component {
     return (
       <View style={styles.main_container}>                
         <ImageHeader title={title} navigateBack={this.navigateBack} />
-        <ImageContentSimple imgURLPreview={imgURLPreview} />
+        <ImageContent imgURLPreview={imgURLPreview} />
       </View>
     )
   }
@@ -43,5 +43,5 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ImageViewer
+export default ImageViewerDynamic
 

@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import {
-  StyleSheet,
   View,
   ListView,
-  ActivityIndicator,
-  RefreshControl,
   Animated,
+  StyleSheet,
+  RefreshControl,
+  ActivityIndicator,    
 } from 'react-native'
 
 import Comment from './Comment'
@@ -22,6 +22,8 @@ const AnimatedListView = Animated.createAnimatedComponent(ListView)
 //const signal = controller.signal
 
 class CommentList extends Component {
+  _isMounted = false
+
   constructor(props) {
     super(props)
     this.state = {
@@ -95,109 +97,124 @@ class CommentList extends Component {
 
   _fetchMore() {
     this.fetchData(responseJson => {
-      const data = this.state._data.concat(responseJson.items)      
+      if(this._isMounted) {   
+        const data = this.state._data.concat(responseJson.items)      
 
-      responseJson.nextPageToken===undefined
-        ? this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
-          })
-        : this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })
+        responseJson.nextPageToken===undefined
+          ? this.setState({
+              dataSource: this.state.dataSource.cloneWithRows(data),
+              isLoadingMore: false,
+              _data: data,
+              _dataAfter: responseJson.nextPageToken,
+              stopLoadingMore: true,
+            })
+          : this.setState({
+              dataSource: this.state.dataSource.cloneWithRows(data),
+              isLoadingMore: false,
+              _data: data,
+              _dataAfter: responseJson.nextPageToken,
+            })
+      }
     })
   }
 
   _fetchRefresh() {
     //controller.abort()
     this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items;
+      if(this._isMounted) {   
+        let ds = new ListView.DataSource({
+          rowHasChanged: (r1, r2) => r1 !== r2,
+        })
+        const data = responseJson.items;
 
-      responseJson.nextPageToken===undefined 
-        ? this.fetchDataCommentCount(responseJsonCommentCount => {
-            const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-            this.setState({
-              dataSource: ds.cloneWithRows(data),
-              isLoading: false,
-              isLoadingMore: false,
-              isRefreshing: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-               commentCount,
-              stopLoadingMore: true
+        responseJson.nextPageToken===undefined 
+          ? this.fetchDataCommentCount(responseJsonCommentCount => {
+              if(this._isMounted) {  
+                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+                this.setState({
+                  dataSource: ds.cloneWithRows(data),
+                  isLoading: false,
+                  isLoadingMore: false,
+                  isRefreshing: false,
+                  _data: data,
+                  _dataAfter: responseJson.nextPageToken,
+                  commentCount,
+                  stopLoadingMore: true
+                })
+              }
             })
-          })
-        : this.fetchDataCommentCount(responseJsonCommentCount => {
-            const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-            this.setState({
-              dataSource: ds.cloneWithRows(data),
-              isLoading: false,
-              isLoadingMore: false,
-              isRefreshing: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-              commentCount,
+          : this.fetchDataCommentCount(responseJsonCommentCount => {
+              if(this._isMounted) {  
+                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+                this.setState({
+                  dataSource: ds.cloneWithRows(data),
+                  isLoading: false,
+                  isLoadingMore: false,
+                  isRefreshing: false,
+                  _data: data,
+                  _dataAfter: responseJson.nextPageToken,
+                  commentCount,
+                })
+              }
             })
-          })
+      }
     })
   }
 
   _componentDidMountClone() {    
     this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items
-      
-      //En temps normal, lorsque data.lenght===0, 
-      //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users
-      //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-      data.length===0
-        ? this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
-        : responseJson.nextPageToken===undefined 
-          ? this.fetchDataCommentCount(responseJsonCommentCount => {
-              const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-              this.setState({
-                dataSource: ds.cloneWithRows(data),
-                isEmpty: false,
-                isLoading: false,
-                _data: data,
-                _dataAfter: responseJson.nextPageToken,
-                commentCount,
-                canWeHandleOrder: true,
-                stopLoadingMore: true,                
+      if(this._isMounted) {
+        let ds = new ListView.DataSource({
+          rowHasChanged: (r1, r2) => r1 !== r2,
+        })
+        const data = responseJson.items
+        
+        //En temps normal, lorsque data.lenght===0, 
+        //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users
+        //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
+        data.length===0
+          ? this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
+          : responseJson.nextPageToken===undefined 
+            ? this.fetchDataCommentCount(responseJsonCommentCount => {
+                if(this._isMounted) {
+                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+                  this.setState({
+                    dataSource: ds.cloneWithRows(data),
+                    isEmpty: false,
+                    isLoading: false,
+                    _data: data,
+                    _dataAfter: responseJson.nextPageToken,
+                    commentCount,
+                    canWeHandleOrder: true,
+                    stopLoadingMore: true,
+                  })
+                }
               })
-            })
-          : this.fetchDataCommentCount(responseJsonCommentCount => {
-              const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-              this.setState({
-                dataSource: ds.cloneWithRows(data),
-                isEmpty: false,
-                isLoading: false,
-                _data: data,
-                _dataAfter: responseJson.nextPageToken,
-                commentCount,
-                canWeHandleOrder: true,
+            : this.fetchDataCommentCount(responseJsonCommentCount => {
+                if(this._isMounted) {
+                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+                  this.setState({
+                    dataSource: ds.cloneWithRows(data),
+                    isEmpty: false,
+                    isLoading: false,
+                    _data: data,
+                    _dataAfter: responseJson.nextPageToken,
+                    commentCount,
+                    canWeHandleOrder: true,
+                  })
+                }
               })
-            })
+      }
     })
   }
 
   componentDidMount() {
+    this._isMounted = true
     this.componentDidMountClone()
   }
 
   componentWillUnmount(){
-    //controller.abort()
+    this._isMounted = false
   }
 
   render() {   

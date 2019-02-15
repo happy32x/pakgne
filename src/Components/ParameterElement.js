@@ -4,11 +4,11 @@ import {
   StyleSheet,  
 } from 'react-native'
 
-import ImageHeader from './ImageHeader'
-import ImageContentSimple from './ImageContentSimple'
+import CommonHeader from './CommonHeader'
+import EmptyDynamic from './EmptyDynamic'
 import THEME from '../INFO/THEME'
 
-class ImageViewer extends Component {
+class ParameterElement extends Component {
   constructor(props) {
     super(props)
     this.navigateBack = this._navigateBack.bind(this)
@@ -24,13 +24,16 @@ class ImageViewer extends Component {
 
   render() {   
     const { navigation } = this.props
-    const title = navigation.getParam('title', 'NO-DATA')
-    const imgURLPreview = navigation.getParam('imgURLPreview', 'NO-DATA')    
+    const title = navigation.getParam('title', 'NO-DATA')  
+    const type = navigation.getParam('type', 'NO-DATA') 
+    const icon = navigation.getParam('icon', 'NO-DATA') 
+    const color = navigation.getParam('color', 'NO-DATA') 
+    const message = navigation.getParam('message', 'NO-DATA') 
 
     return (
       <View style={styles.main_container}>                
-        <ImageHeader title={title} navigateBack={this.navigateBack} />
-        <ImageContentSimple imgURLPreview={imgURLPreview} />
+        <CommonHeader title={title} navigateBack={this.navigateBack} />
+        <EmptyDynamic type={type} icon={icon} color={color} message={message} />      
       </View>
     )
   }
@@ -43,5 +46,5 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ImageViewer
+export default ParameterElement
 

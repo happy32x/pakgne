@@ -1,21 +1,24 @@
 import React, { Component } from 'react'
 import {
-  Animated,
-  Platform,
-  StyleSheet,
   Text,
   View,
+  Animated,
+  Platform,
+  StyleSheet,  
   TouchableNativeFeedback,
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import BarStatus from './BarStatus'
+import ParameterHeader from './ParameterHeader'
 import ParameterViewerContent from './ParameterViewerContent'
+import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
 const USER_IMG = '../assets/Pakgne-Poupi-Muriel-Blanche.jpg'
 const HEADER_MAX_HEIGHT = 300
-const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
+//const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
+const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? DIMENSION.MAX_HEADER_HEIGHT : DIMENSION.MAX_HEADER_HEIGHT
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT
 
 class ParameterViewer extends Component {
@@ -30,10 +33,15 @@ class ParameterViewer extends Component {
       refreshing: false,
     }
     this.onScroll = this._onScroll.bind(this)
+    this.navigateBack = this._navigateBack.bind(this)
   }
 
   static navigationOptions = {
     header: null
+  }
+
+  _navigateBack() {
+    this.props.navigation.goBack()
   }
 
   _renderScrollViewContent() {
@@ -75,7 +83,7 @@ class ParameterViewer extends Component {
       extrapolate: 'clamp',
     })
 
-    const titleScale = scrollY.interpolate({
+    /*const titleScale = scrollY.interpolate({
       inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
       outputRange: [1, 1, 0.8],
       extrapolate: 'clamp',
@@ -89,10 +97,10 @@ class ParameterViewer extends Component {
       inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
       outputRange: [0, 0, -50],
       extrapolate: 'clamp',
-    })
+    })*/
 
     return (
-      <View style={styles.fill}>
+      <View style={styles.fill}>             
 
         <Animated.ScrollView
           style={styles.fill}
@@ -100,7 +108,7 @@ class ParameterViewer extends Component {
           onScroll={this.onScroll()}
         >
           {this._renderScrollViewContent()}
-        </Animated.ScrollView>
+        </Animated.ScrollView>      
 
         <Animated.View
           pointerEvents="none"
@@ -114,14 +122,16 @@ class ParameterViewer extends Component {
               styles.backgroundImage,
               {
                 opacity: imageOpacity,
-                transform: [{ translateY: imageTranslate }],
+                transform: [{ translateY: imageTranslate }],            
               },
             ]}
             source={require(USER_IMG)}
           />
         </Animated.View>
 
-        <Animated.View
+        <ParameterHeader title='Parameter' navigateBack={this.navigateBack} />
+
+        {/*<Animated.View
           style={[
             styles.bar,
             {
@@ -147,9 +157,8 @@ class ParameterViewer extends Component {
           <View style={styles.fill}>
             <Text style={styles.title}>Paramètres</Text>
           </View>
-        </Animated.View>
+        </Animated.View>*/}        
 
-        { Platform.OS === 'android' ? <BarStatus color={THEME.STATUS_BAR.DEFAULT_COLOR} /> : null }
       </View>
     );
   }
@@ -180,7 +189,7 @@ const styles = StyleSheet.create({
     height: HEADER_MAX_HEIGHT,
     resizeMode: 'cover',
   },
-  bar: {
+  /*bar: {
     backgroundColor: 'transparent',
     marginTop: Platform.OS === 'ios' ? 28 : 38,
     height: 32,
@@ -191,6 +200,14 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },*/
+  bar: {
+    backgroundColor: '#000000',
+    marginTop: Platform.OS === 'ios' ? 28 : 38,
+    height: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   title: {
     color: 'white',

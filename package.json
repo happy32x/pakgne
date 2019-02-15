@@ -32,11 +32,13 @@
     "react-native-modal": "^7.0.2",
     "react-native-shadow": "^1.2.2",
     "react-native-tab-view": "^1.0.2",
+    "react-native-uuid": "^1.4.9",
     "react-native-vector-icons": "^5.0.0",
     "react-navigation": "^2.11.2",
     "react-redux": "^5.1.1",
     "redux": "^4.0.1",
-    "redux-persist": "^5.10.0"
+    "redux-persist": "^5.10.0",
+    "uuid": "^3.3.2"
   },
   "rnpm": {
     "assets": [

@@ -12,45 +12,46 @@ import BarStatus from './BarStatus'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
-function ImageHeader(props) {
+function ParameterHeader(props) {
   return (     
     <View style={styles.header}>
-
       <View style={styles.header_container_left}>        
         <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}
+          background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
           onPress={() => props.navigateBack()}
         >
           <View style={styles.arrow_back_container}>
             <Ionicons style={styles.arrow_back_icon} name="md-arrow-back" /> 
           </View>
         </TouchableNativeFeedback>              
-        <Text style={styles.title} numberOfLines={1}>
-          { props.title }
-        </Text>        
+        <Text style={styles.title}>{ props.title }</Text>        
       </View>
 
       <View style={styles.header_container_right}> 
         {/* icône de partage ou option */}             
       </View>      
-
-      { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.COLOR} /> : null }           
+    
+      { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.BACKGROUND_COLOR} /> : null }
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: THEME.SECONDARY.COLOR,
-		height: DIMENSION.MAX_HEADER_HEIGHT,
+    backgroundColor: THEME.SECONDARY.BACKGROUND_COLOR,
+    height: DIMENSION.MAX_HEADER_HEIGHT,
     width: '100%',
     alignItems: 'center', 
 		justifyContent: 'center',
 		flexDirection:'row',
 		paddingTop: DIMENSION.STATUSBAR_HEIGHT,
 		marginTop:0,
-    borderBottomWidth: 1,
+    //borderBottomWidth: 1,
     //borderBottomColor: THEME.TERTIARY.SEPARATOR_COLOR,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   header_container_left: {
     flex: 1,
@@ -82,4 +83,4 @@ const styles = StyleSheet.create({
   }, 
 })
 
-export default ImageHeader
+export default ParameterHeader
