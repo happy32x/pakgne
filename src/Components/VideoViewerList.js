@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 
 import Comment from './Comment'
-import CommentHeader from './CommentHeader'
+import VideoViewer_CommentHeader from './VideoViewerList_CommentHeader'
 import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
 import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
@@ -18,10 +18,8 @@ import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView)
-//const controller = new AbortController()
-//const signal = controller.signal
 
-class CommentList extends Component {
+class VideoViewerList extends Component {
   _isMounted = false
 
   constructor(props) {
@@ -40,9 +38,9 @@ class CommentList extends Component {
       order: 'relevance',
       canWeHandleOrder: false,
 
-      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA')   
+      commentCount: this.props.commentCount   
     }
-    this.videoId = this.props.navigation.getParam('videoId', 'NO-DATA')
+    this.videoId = this.props.videoId
 
     this.fetchData = this._fetchData.bind(this)
     this.fetchDataCommentCount = this._fetchDataCommentCount.bind(this)
@@ -57,10 +55,6 @@ class CommentList extends Component {
     this.orderComment = this._orderComment.bind(this)
 
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
-  }
-
-  static navigationOptions = {
-    header: null
   }
 
   _toggleModal() {
@@ -85,10 +79,9 @@ class CommentList extends Component {
   }
 
   _fetchData(callback) {
-    //controller.abort()
     const dataAfter = this.state._dataAfter
     const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getCommentListFromApi(this.videoId, this.state.order, pageToken/*, { signal }*/).then(callback)
+    getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
   }
 
   _fetchDataCommentCount(callback) {
@@ -119,7 +112,6 @@ class CommentList extends Component {
   }
 
   _fetchRefresh() {
-    //controller.abort()
     this.fetchData(responseJson => {
       if(this._isMounted) {   
         let ds = new ListView.DataSource({
@@ -221,7 +213,7 @@ class CommentList extends Component {
     return (
       <View style={styles.main_container}>
 
-        <CommentHeader 
+        <VideoViewer_CommentHeader 
           toggleModal={this.toggleModal}
           commentCount={this.state.commentCount}                
           navigateBack={this.navigateBack}
@@ -236,7 +228,7 @@ class CommentList extends Component {
 
         { 
           this.state.isLoading           
-            ? <CommentLoading color={THEME.SECONDARY.COLOR}/>
+            ? <CommentLoading />
             : this.state.isEmpty
               ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedListView destinée à acceuilir les commentaires de l'utilisateur            
               : <View style={styles.listview_container}>
@@ -245,11 +237,15 @@ class CommentList extends Component {
                     showsVerticalScrollIndicator={true}
                     dataSource={this.state.dataSource}
                     renderRow={
-                      (rowData, sectionId, rowId) => <Comment
-                        data={rowData}
-                        navigateTo={this.navigateTo}
-                        rowId={rowId}
-                      />
+                      (rowData, sectionId, rowId) => {
+                        if(rowData){
+                          <Comment
+                            data={rowData}
+                            navigateTo={this.navigateTo}
+                            rowId={rowId}                      
+                          />
+                        }
+                      }
                     }
                     renderFooter={() => {
                       return (
@@ -288,6 +284,7 @@ const styles = StyleSheet.create({
     flex: 1   
   },
   listview: {
+    padding: 15,
     backgroundColor: THEME.PRIMARY.COLOR,   
   },
   isloadingmore_container: { 
@@ -296,5 +293,5 @@ const styles = StyleSheet.create({
   }
 })
 
-export default CommentList
+export default VideoViewerList
 

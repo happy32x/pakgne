@@ -156,7 +156,7 @@ class CommentListReply extends Component {
 
         { 
           this.state.isLoading           
-            ? <CommentLoading/>           
+            ? <CommentLoading color={THEME.SECONDARY.COLOR}/>           
             : this.state.isEmpty
               ? <CommentEmpty/> 
               : <View style={styles.listview_container}>

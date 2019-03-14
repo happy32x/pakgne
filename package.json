@@ -31,6 +31,7 @@
     "react-native-elements": "^0.19.1",
     "react-native-modal": "^7.0.2",
     "react-native-shadow": "^1.2.2",
+    "react-native-switch": "^1.5.0",
     "react-native-tab-view": "^1.0.2",
     "react-native-uuid": "^1.4.9",
     "react-native-vector-icons": "^5.0.0",

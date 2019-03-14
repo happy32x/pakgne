@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     margin:0,
     flexDirection: 'row',
     alignItems: 'flex-start', 
-		justifyContent: 'flex-end',	
+    justifyContent: 'flex-end',  
   },
   modal_option_shadow_container: {
     width:null, 

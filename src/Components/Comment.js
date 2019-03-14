@@ -37,6 +37,9 @@ class Comment extends React.Component {
 
   render() {
     return ( 
+      /*
+      <View style={styles.comment_container} key={this.props.rowId}>
+      */
       <View style={styles.comment_container}>    
 
         <View style={styles.comment_container_left}>
@@ -73,7 +76,6 @@ class Comment extends React.Component {
               hashtag="instagram"
               mention="twitter"
             />
-
           </View>
 
           <View style={styles.design_fix_area}>
@@ -130,6 +132,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: null,
     flexDirection: 'row',
+    paddingLeft: 15,
+    paddingRight: 15,
   },
   comment_container_left: {
     width: REDVALUE,

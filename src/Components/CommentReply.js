@@ -29,8 +29,10 @@ class CommentReply extends React.Component {
     }
     this.element_on = THEME.PRIMARY.BACKGROUND_COLOR
     this.element_off = THEME.TERTIARY.COLOR
+
+    //console.log(JSON.stringify(this.props.data) + "\n\n")
   }
-  
+
   render() {
     return (
       /*

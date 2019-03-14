@@ -8,10 +8,10 @@ import {
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
-function CommentEmpty(props) {
+function CommentLoading(props) {
   return (         
     <View style={styles.isloading_container}>             
-      <ActivityIndicator style={styles.isloading} size="large" color={THEME.SECONDARY.COLOR}/>        
+      <ActivityIndicator style={styles.isloading} size="large" color={props.color}/>        
     </View>
   );
 }
@@ -28,5 +28,5 @@ const styles = StyleSheet.create({
   },
 })
 
-export default CommentEmpty
+export default CommentLoading
 

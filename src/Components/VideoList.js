@@ -78,7 +78,8 @@ class VideoList extends Component {
 
   _fetchData(callback) {
     const pageToken = this._dataAfter !== '' ? `&pageToken=${this._dataAfter}` : ''
-    getVideoListFromApi(this.videoListOrder[0], pageToken).then(callback)
+    //getVideoListFromApi(this.videoListOrder[0], pageToken).then(callback)
+    getVideoListFromApi('date', pageToken).then(callback)
   }
 
   _fetchMore() {
@@ -143,7 +144,8 @@ class VideoList extends Component {
       .then((order) => {
         this.fetchData(responseJson => {
           if(this._isMounted) {
-            const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+            //const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+            const data = responseJson.items.filter(item => item.id.videoId !== undefined)
             console.log("order : " + order)
             console.log("dataLength : " + data.length)
       
@@ -261,7 +263,7 @@ class VideoList extends Component {
     {console.log('render')}
     if (this.state.isLoading) {
       return (
-        <View style={styles.isloading_container}>
+        <View style={styles.isloading_container}> 
           <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
         </View>
       )

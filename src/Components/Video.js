@@ -1,12 +1,12 @@
 import React from 'react'
 import {
-  TouchableNativeFeedback, 
-  TouchableWithoutFeedback, 
   View, 
   Text, 
   Image,
-  StyleSheet,
   Share,
+  StyleSheet,
+  TouchableNativeFeedback, 
+  TouchableWithoutFeedback,   
 } from 'react-native'
 
 import Constants from 'expo'
@@ -159,7 +159,7 @@ class Video extends React.Component{
               tension={TENSION}
               style={styles.same_element}
               onPress={() => {
-                this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                this.props.navigateTo( 'CommentList_INTERMEDIARY', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
               }}     
             >
               <View style={styles.same_element}>

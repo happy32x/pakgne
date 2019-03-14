@@ -1,33 +1,38 @@
 import React, { Component } from 'react'
 import {  
   View,
-  FlatList,
+  ListView,
   Animated,
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native'
 
+import DATA from '../API/DATA'
 import uuidv1 from 'uuid/v1'
 
+import VideoViewerList_HeaderComponent from './VideoViewerList_HeaderComponent'
+import VideoMini from './VideoMini'
+import VideoViewerList_CommentHeader from './VideoViewerList_CommentHeader'
 import Comment from './Comment'
-import CommentHeader from './CommentHeader'
 import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
-import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
+import { getVideoListMiniRelatedToVideoIdFromApi,getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
+const AnimatedListView = Animated.createAnimatedComponent(ListView)
+const channelId = DATA.CHANNEL_ID
 
-class CommentList_FUTUR extends Component {
+class VideoViewerList_TEST extends Component {
   _isMounted = false
 
   constructor(props) {
     super(props)
     this.state = {
-      isEmpty: true,
+      isEmpty: false,
+      isFirstLoading: true,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
@@ -35,18 +40,21 @@ class CommentList_FUTUR extends Component {
 
       isModalVisible: false,
       order: 'relevance',
-      canWeHandleOrder: false,
 
-      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA')   
+      canWeHandleOrder: false,
+      commentCount: this.props.commentCount 
     }
 
-    this._data = null
+    this._dataSource = null
+    this._firstData = []
+    this._data = []
     this._dataAfter = ''
 
     this.requestId = null
-    this.videoId = this.props.navigation.getParam('videoId', 'NO-DATA')
+    this.videoId = this.props.videoId
 
     this.fetchData = this._fetchData.bind(this)
+    this.fetchFirstData = this._fetchFirstData.bind(this)
     this.fetchDataCommentCount = this._fetchDataCommentCount.bind(this)
 
     this.fetchMore = this._fetchMore.bind(this)
@@ -61,10 +69,6 @@ class CommentList_FUTUR extends Component {
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
   }
 
-  static navigationOptions = {
-    header: null
-  }
-
   _toggleModal() {
     this.setState({ isModalVisible: !this.state.isModalVisible })
   }
@@ -73,7 +77,8 @@ class CommentList_FUTUR extends Component {
   _orderComment(order) {    
     this.toggleModal()
     if(this.state.order !== order) {
-      if(this.state.canWeHandleOrder){        
+      if(this.state.canWeHandleOrder){  
+        this._dataSource = null      
         this._dataAfter = ''
 
         this.state.isLoading 
@@ -89,16 +94,20 @@ class CommentList_FUTUR extends Component {
   }
 
   _navigateTo(destination, data) {
-    this.props.navigation.navigate(destination, data)
+    this.props.navigateTo(destination, data)
   }
 
   _navigateBack() {
-    this.props.navigation.goBack()
+    this.props.navigateBack()
   }
 
   _fetchData(callback) {
     const pageToken = this._dataAfter !== '' ? `&pageToken=${this._dataAfter}` : ''    
     getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
+  }
+
+  _fetchFirstData(callback) {  
+    getVideoListMiniRelatedToVideoIdFromApi(this.videoId).then(callback)
   }
 
   _fetchDataCommentCount(callback) {
@@ -109,9 +118,10 @@ class CommentList_FUTUR extends Component {
     const requestId = this.requestId = uuidv1()
 
     this.fetchData(responseJson => {
-      if(this._isMounted && this.requestId === requestId) {         
+      if(this._isMounted && this.requestId === requestId) {   
 
         this._data = this._data.concat(responseJson.items)
+        this._dataSource = this._dataSource.cloneWithRows(this._data),
         this._dataAfter = responseJson.nextPageToken
 
         this.setState({ isLoadingMore: false })
@@ -130,8 +140,12 @@ class CommentList_FUTUR extends Component {
     this.fetchData(responseJson => {         
       this.fetchDataCommentCount(responseJsonCommentCount => {
         if(this._isMounted && this.requestId === requestId) { 
-
-          this._data = responseJson.items          
+          let ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2,
+          })
+          
+          this._data = responseJson.items  
+          this._dataSource = ds.cloneWithRows(this._data)        
           this._dataAfter = responseJson.nextPageToken
           const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
@@ -170,8 +184,13 @@ class CommentList_FUTUR extends Component {
         } else {        
           this.fetchDataCommentCount(responseJsonCommentCount => {
             if(this._isMounted && this.requestId === requestId) { 
+              let ds = new ListView.DataSource({
+                rowHasChanged: (r1, r2) => r1 !== r2,
+              })
 
-              this._data = responseJson.items              
+              //this._data = responseJson.items    
+              this._data = this._data.concat(responseJson.items)
+              this._dataSource = ds.cloneWithRows(this._data)             
               this._dataAfter = responseJson.nextPageToken
               const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
@@ -199,7 +218,26 @@ class CommentList_FUTUR extends Component {
 
   componentDidMount() {
     this._isMounted = true
-    this.componentDidMountClone()
+    this._data = [ {"contentID":"0"} ]
+
+    this.fetchFirstData(responseJson => {  
+      if(this._isMounted) {                   
+        let ds = new ListView.DataSource({
+          rowHasChanged: (r1, r2) => r1 !== r2,
+        })
+
+        //this._data = responseJson.items    
+        //this._data = this._data.concat(responseJson.items).concat([ {"contentID":"1"} ])
+        this._data = this._data.concat(responseJson.items.filter(item => item.snippet.channelId === channelId)).concat([ {"contentID":"1"} ])
+        this._firstData = this._data
+        this._dataSource = ds.cloneWithRows(this._data)             
+
+        this.setState({
+          isFirstLoading: false,   
+          isLoading: false,                          
+        })    
+      }
+    })
   }
 
   componentWillUnmount(){
@@ -208,38 +246,52 @@ class CommentList_FUTUR extends Component {
 
   render() {   
     return (
-      <View style={styles.main_container}>
-
-        <CommentHeader 
-          toggleModal={this.toggleModal}
-          commentCount={this.state.commentCount}                
-          navigateBack={this.navigateBack}
-          isLoading={this.state.isLoading}
-        />
-
+      <View style={styles.main_container}>  
         <ModalCommentTopRecent
-          toggleModal={this.toggleModal}
-          orderComment={this.orderComment}
-          isModalVisible={this.state.isModalVisible}
-        />
+                                  toggleModal={this.toggleModal}
+                                  orderComment={this.orderComment}
+                                  isModalVisible={this.state.isModalVisible}
+                                />
 
         { 
-          this.state.isLoading           
-            ? <CommentLoading />
+          this.state.isFirstLoading           
+            ? <CommentLoading color={THEME.PRIMARY.BACKGROUND_COLOR}/>
             : this.state.isEmpty
               ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
               : <View style={styles.listview_container}>
-                  <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                  <AnimatedListView //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}                  
-                    data={this._data}
-                    renderItem={
-                      ({item}) => <Comment
-                        data={item}
-                        navigateTo={this.navigateTo}
-                      />
+                    dataSource={this._dataSource}
+                    renderRow={
+                      (rowData, sectionId, rowId) => { return (                        
+                        rowData.contentID == 0 
+                          ? <VideoViewerList_HeaderComponent
+                              video={this.props.video}
+                              rowId={rowId}
+                            />
+                          : rowData.kind == "youtube#searchResult"
+                            ? <VideoMini
+                                firstData={rowData}                            
+                                navigateTo={this.navigateTo}     
+                                rowId={rowId}     
+                              />
+                            : rowData.contentID == 1
+                              ? <VideoViewerList_CommentHeader 
+                                  toggleModal={this.toggleModal}
+                                  commentCount={this.state.commentCount}                
+                                  isLoading={this.state.isLoading}
+                                />                                
+                              : rowData.kind == "youtube#commentThread"
+                                ? <Comment
+                                    data={rowData}
+                                    navigateTo={this.navigateTo}
+                                    rowId={rowId}
+                                  />
+                                : null
+                      )}
                     }
-                    ListFooterComponent={() => {
+                    renderFooter={() => {
                       return (
                         this.state.isLoadingMore &&
                         <View style={styles.isloadingmore_container}>
@@ -247,20 +299,20 @@ class CommentList_FUTUR extends Component {
                         </View>
                       )
                     }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
+                    onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
                     refreshControl={ 
                       <RefreshControl 
                         colors={[THEME.SECONDARY.COLOR]} 
                         refreshing={this.state.isRefreshing} 
                         progressViewOffset={-25}
                         onRefresh={() => {
+                          this._dataSource = null
                           this._dataAfter = ''
                           this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
                         }}                        
                       /> 
                     }
-                    keyExtractor={(item,e) => e.toString()}
-                    onEndReachedThreshold={.1}
+                    scrollEventThrottle={16}
                     {...this.props}
                   />                  
                 </View>
@@ -280,9 +332,9 @@ const styles = StyleSheet.create({
   listview_container: {
     flex: 1   
   },
-  listview: {
-    padding: 15,
+  listview: {    
     backgroundColor: THEME.PRIMARY.COLOR,   
+    paddingBottom: 15, 
   },
   isloadingmore_container: { 
     flex: 1,
@@ -290,5 +342,5 @@ const styles = StyleSheet.create({
   }
 })
 
-export default CommentList_FUTUR
+export default VideoViewerList_TEST
 

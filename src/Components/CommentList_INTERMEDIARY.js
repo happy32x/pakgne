@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import {  
   View,
-  FlatList,
+  ListView,
   Animated,
   StyleSheet,
   RefreshControl,
@@ -19,9 +19,9 @@ import THEME from '../INFO/THEME'
 import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
+const AnimatedListView = Animated.createAnimatedComponent(ListView)
 
-class CommentList_FUTUR extends Component {
+class CommentList_INTERMEDIARY extends Component {
   _isMounted = false
 
   constructor(props) {
@@ -40,6 +40,7 @@ class CommentList_FUTUR extends Component {
       commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA')   
     }
 
+    this._dataSource = null,
     this._data = null
     this._dataAfter = ''
 
@@ -73,7 +74,8 @@ class CommentList_FUTUR extends Component {
   _orderComment(order) {    
     this.toggleModal()
     if(this.state.order !== order) {
-      if(this.state.canWeHandleOrder){        
+      if(this.state.canWeHandleOrder){  
+        this._dataSource = null      
         this._dataAfter = ''
 
         this.state.isLoading 
@@ -109,9 +111,10 @@ class CommentList_FUTUR extends Component {
     const requestId = this.requestId = uuidv1()
 
     this.fetchData(responseJson => {
-      if(this._isMounted && this.requestId === requestId) {         
+      if(this._isMounted && this.requestId === requestId) {   
 
         this._data = this._data.concat(responseJson.items)
+        this._dataSource = this._dataSource.cloneWithRows(this._data),
         this._dataAfter = responseJson.nextPageToken
 
         this.setState({ isLoadingMore: false })
@@ -130,8 +133,12 @@ class CommentList_FUTUR extends Component {
     this.fetchData(responseJson => {         
       this.fetchDataCommentCount(responseJsonCommentCount => {
         if(this._isMounted && this.requestId === requestId) { 
-
-          this._data = responseJson.items          
+          let ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2,
+          })
+          
+          this._data = responseJson.items  
+          this._dataSource = ds.cloneWithRows(this._data)        
           this._dataAfter = responseJson.nextPageToken
           const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
@@ -170,8 +177,12 @@ class CommentList_FUTUR extends Component {
         } else {        
           this.fetchDataCommentCount(responseJsonCommentCount => {
             if(this._isMounted && this.requestId === requestId) { 
+              let ds = new ListView.DataSource({
+                rowHasChanged: (r1, r2) => r1 !== r2,
+              })
 
-              this._data = responseJson.items              
+              this._data = responseJson.items    
+              this._dataSource = ds.cloneWithRows(this._data)             
               this._dataAfter = responseJson.nextPageToken
               const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
@@ -225,21 +236,22 @@ class CommentList_FUTUR extends Component {
 
         { 
           this.state.isLoading           
-            ? <CommentLoading />
+            ? <CommentLoading color={THEME.SECONDARY.COLOR}/>
             : this.state.isEmpty
               ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
               : <View style={styles.listview_container}>
-                  <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                  <AnimatedListView //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}                  
-                    data={this._data}
-                    renderItem={
-                      ({item}) => <Comment
-                        data={item}
+                    dataSource={this._dataSource}
+                    renderRow={
+                      (rowData, sectionId, rowId) => <Comment
+                        data={rowData}
                         navigateTo={this.navigateTo}
+                        rowId={rowId}
                       />
                     }
-                    ListFooterComponent={() => {
+                    renderFooter={() => {
                       return (
                         this.state.isLoadingMore &&
                         <View style={styles.isloadingmore_container}>
@@ -254,13 +266,13 @@ class CommentList_FUTUR extends Component {
                         refreshing={this.state.isRefreshing} 
                         progressViewOffset={-25}
                         onRefresh={() => {
+                          this._dataSource = null
                           this._dataAfter = ''
                           this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
                         }}                        
                       /> 
                     }
-                    keyExtractor={(item,e) => e.toString()}
-                    onEndReachedThreshold={.1}
+                    scrollEventThrottle={16}
                     {...this.props}
                   />                  
                 </View>
@@ -275,14 +287,15 @@ class CommentList_FUTUR extends Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1,
-    backgroundColor: THEME.PRIMARY.COLOR,
+    backgroundColor: THEME.PRIMARY.COLOR,    
   },
   listview_container: {
-    flex: 1   
+    flex: 1,    
   },
   listview: {
-    padding: 15,
-    backgroundColor: THEME.PRIMARY.COLOR,   
+    backgroundColor: THEME.PRIMARY.COLOR,  
+    paddingTop: 15,
+    paddingBottom: 15, 
   },
   isloadingmore_container: { 
     flex: 1,
@@ -290,5 +303,5 @@ const styles = StyleSheet.create({
   }
 })
 
-export default CommentList_FUTUR
+export default CommentList_INTERMEDIARY
 

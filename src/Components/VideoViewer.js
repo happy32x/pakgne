@@ -1,19 +1,28 @@
 import React from 'react'
 import {
-  ScrollView,
   View,
   Text,
+  Image,
+  Share,
+  Switch,
   Platform,
   StatusBar,
-  Image,
   StyleSheet,
+  ScrollView,
+  ToastAndroid,
   TouchableNativeFeedback,
 } from 'react-native'
 
-import BarStatus from './BarStatus'
+import VideoViewerList from './VideoViewerList'
+import VideoViewerList_TEST from './VideoViewerList_TEST'
+
 import Icon from 'react-native-vector-icons/Ionicons'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+
+import BarStatus from './BarStatus'
 import img from '../assets/2.jpg'
 import YoutubeView from './YoutubeView'
+import RateVideoViewer from './RateVideoViewer'
 import likeConverter from '../Helpers/likeConverter'
 import THEME from '../INFO/THEME'
 
@@ -23,6 +32,31 @@ class VideoViewer extends React.Component{
     header: null
   }
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      switchValue: false,
+    }
+
+    this.toggleSwitch = this._toggleSwitch.bind(this)   
+
+    this.navigateTo = this._navigateTo.bind(this)
+    this.navigateBack = this._navigateBack.bind(this)
+  }
+
+  _toggleSwitch(value) {
+    value ? ToastAndroid.show('Auto', ToastAndroid.SHORT) : ToastAndroid.show('Annulé', ToastAndroid.SHORT)
+    this.setState({switchValue: value})
+  }
+
+  _navigateTo(destination, data) {
+    this.props.navigation.navigate(destination, data)
+  }
+
+  _navigateBack() {
+    this.props.navigation.goBack()
+  }
+
   render() {
     const { navigation } = this.props
     const video = navigation.getParam('video', 'NO-DATA')
@@ -30,11 +64,11 @@ class VideoViewer extends React.Component{
     return (
       <View style={styles.main_container}>
           <View style={styles.video_container}>
-            <YoutubeView videoId={video[0].id.videoId} />
+            {/*<YoutubeView videoId={video[0].id.videoId} />*/}
             
             <TouchableNativeFeedback 
               background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}
-              onPress={() => this.props.navigation.goBack()}
+              onPress={() => this.navigateBack()}
             > 
               <View style={styles.arrow_back_container}>
                 <Icon style={styles.arrow_back} name="md-arrow-back" /> 
@@ -42,57 +76,15 @@ class VideoViewer extends React.Component{
             </TouchableNativeFeedback>
           </View>
 
-          <ScrollView style={styles.main_container} showsVerticalScrollIndicator={false}>
-
-            <View style={styles.bottom_info_container}>
-              <View style={styles.bottom_info}>
-                <View style={styles.title_container}>
-                  <Text style={styles.title}>{video[0].snippet.title}</Text>
-                  <Text style={styles.same_element}>{likeConverter(video[1].statistics.viewCount)} vues</Text>
-                </View>
-                <View style={styles.bottom_element} >
-                  <View style={styles.same_element_one}>
-                    <Icon style={styles.like_icon} name="md-heart" />
-                    <Text style={styles.like_text}>{likeConverter(video[1].statistics.likeCount)}</Text>
-                  </View>
-                  <View style={styles.same_element_one}>
-                    <Icon style={styles.same_element_two} name="md-heart-outline" />
-                    <Text style={styles.same_element}>{likeConverter(video[1].statistics.dislikeCount)}</Text>
-                  </View>
-                  <View style={styles.same_element_one}>
-                    <Icon style={styles.same_element_two} name="md-share" />
-                    <Text style={styles.same_element}>partager</Text>
-                  </View>
-                  <View style={styles.same_element_one}>
-                    <Icon style={styles.same_element_two} name="md-download" />
-                    <Text style={styles.same_element}>télécharger</Text>
-                  </View>          
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.continued_container}>
-              <View style={styles.continued_container_one}>
-                <Text style={styles.continued}>A suivre</Text>
-              </View>
-            </View>
-
-            <View style={styles.related_video_container}>
-              <View style={styles.related_video_container_one}>
-                <View style={styles.related_video_container_two} >
-                  <View style={styles.main_container}>
-                    <Image source={img} style={styles.main_container_one}/>
-                    <Text style={styles.related_video_duration}>6:54</Text>
-                  </View>
-                  <View style={styles.related_video_title_container}>
-                    <Text style={styles.related_video_title}>GUNDAM SEED DESTINY - LA MONTE EN PUISSANCE DE SCROBIUM</Text>
-                    <Text style={styles.related_video_more_info}>1,7 vues - il y'a 2 jours</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-          </ScrollView>
+          <View style={styles.main_container}>
+            <VideoViewerList_TEST
+              videoId = {video[0].id.videoId}
+              video = {video}
+              commentCount = {video[1].statistics.commentCount}  
+              navigateTo = {this.navigateTo}
+              navigateBack = {this.navigateBack}             
+            />
+          </View>          
 
           { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.COLOR} /> : null }
       </View>
@@ -133,8 +125,6 @@ const styles = StyleSheet.create({
   },
   bottom_info_container: { 
     alignSelf:"stretch", 
-    borderBottomWidth: 1, 
-    borderColor: THEME.TERTIARY.SEPARATOR_COLOR 
   },
   bottom_info: { 
     alignSelf:"stretch", 
@@ -173,12 +163,30 @@ const styles = StyleSheet.create({
     fontSize:20 
   },
   continued_container: { 
-    alignSelf:"stretch" 
+    alignSelf:"stretch",
+    flexDirection: 'row',
+    borderTopWidth: 1, 
+    borderColor: THEME.TERTIARY.SEPARATOR_COLOR
   },
   continued_container_one: { 
-    alignSelf:"stretch", 
+    flex: 1, 
     padding:15, 
-    alignItems:'flex-start' 
+    alignItems:'flex-start',
+    justifyContent:'center',
+  },
+  continued_container_two: { 
+    flex: 3,
+    padding:15,
+    paddingRight:8, 
+    alignItems:'flex-end',
+    justifyContent:'center',
+  },
+  continued_container_three: { 
+    flex: 1,
+    paddingLeft:0,
+    paddingRight:15, 
+    alignItems:'center',
+    justifyContent:'center',
   },
   continued: { 
     fontSize:13, 
