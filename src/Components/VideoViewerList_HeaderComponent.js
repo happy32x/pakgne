@@ -131,6 +131,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
 const styles = StyleSheet.create({
   bottom_info_container: { 
     alignSelf:"stretch", 
+    height:125,
   },
   bottom_info: { 
     alignSelf:"stretch", 
@@ -168,8 +169,11 @@ const styles = StyleSheet.create({
     color: THEME.TERTIARY.COLOR, 
     fontSize:20 
   },
-  continued_container: { 
+
+
+  continued_container: {     
     alignSelf:"stretch",
+    height: 50,
     flexDirection: 'row',
     borderTopWidth: 1, 
     borderColor: THEME.ON_LOAD_COLOR,

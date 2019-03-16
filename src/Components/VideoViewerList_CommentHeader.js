@@ -3,7 +3,8 @@ import {
   View,
   Text,
   Platform,
-  StyleSheet,  
+  StyleSheet,
+  Dimensions,
   ActivityIndicator,
   TouchableNativeFeedback,
 } from 'react-native'
@@ -13,17 +14,25 @@ import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommun
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
-function VideoViewerList_CommentHeader(props) {
+class VideoViewerList_CommentHeader extends Component {
+  constructor(props) {
+    super(props)
+  }
+
+  render() { 
   return (     
-    <View style={styles.header}>
+    <View 
+      style={styles.header} 
+      ref={(lv) => this._scroll = lv}
+    >
 
       <View style={styles.header_container_left}>
         <Text style={styles.header_text_one} >Commentaires </Text>
 
         <View style={styles.header_commentCount}>  
           {
-            !props.isLoading 
-              ? <Text style={styles.header_text_two}>{props.commentCount}</Text>
+            !this.props.isLoading 
+              ? <Text style={styles.header_text_two}>{this.props.commentCount}</Text>
               : <ActivityIndicator style={styles.isloading} size="small" color={THEME.SECONDARY.COLOR}/>
           }
         </View>                
@@ -32,15 +41,18 @@ function VideoViewerList_CommentHeader(props) {
       <View style={styles.header_container_right}>
         <TouchableNativeFeedback 
           background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
-          onPress={() => props.toggleModal()}
+          onPress={() => this.props.setModalPosition( this._scroll )}
         >
           <View style={styles.header_close}>
             <Ionicons style={styles.close_icon} name="md-options" />
           </View>
         </TouchableNativeFeedback>
       </View>     
+    
     </View>
-  );
+  )
+  }
+
 }
 
 const styles = StyleSheet.create({
@@ -53,7 +65,7 @@ const styles = StyleSheet.create({
 		flexDirection:'row',
 		marginTop:0,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.TERTIARY.SEPARATOR_COLOR,
+    borderBottomColor: THEME.ON_LOAD_COLOR,
     marginBottom: 15,
   },
   header_container_left: {

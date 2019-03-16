@@ -49,7 +49,8 @@ function CommentHeader(props) {
         </TouchableNativeFeedback>
       </View>      
 
-      { Platform.OS === 'android' ? <BarStatus color={THEME.PRIMARY.COLOR} /> : null }           
+      {/* Platform.OS === 'android' ? <BarStatus color={THEME.PRIMARY.COLOR} /> : null */}
+      { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.COLOR} /> : null }
     </View>
   );
 }

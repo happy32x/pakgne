@@ -4,6 +4,7 @@ import {
   ListView,
   Animated,
   StyleSheet,
+  Dimensions,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native'
@@ -16,11 +17,12 @@ import VideoMini from './VideoMini'
 import VideoViewerList_CommentHeader from './VideoViewerList_CommentHeader'
 import Comment from './Comment'
 import CommentLoading from './CommentLoading'
-import CommentEmpty from './CommentEmpty'
+import VideoViewerList_CommentEmpty from './VideoViewerList_CommentEmpty'
 import { getVideoListMiniRelatedToVideoIdFromApi,getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
+import DIMENSION from '../INFO/DIMENSION'
 
 const AnimatedListView = Animated.createAnimatedComponent(ListView)
 const channelId = DATA.CHANNEL_ID
@@ -38,11 +40,12 @@ class VideoViewerList_TEST extends Component {
       isRefreshing: false,
       stopLoadingMore: false,
 
+      modalPosition: null,
       isModalVisible: false,
       order: 'relevance',
 
       canWeHandleOrder: false,
-      commentCount: this.props.commentCount 
+      commentCount: this.props.commentCount,
     }
 
     this._dataSource = null
@@ -62,19 +65,37 @@ class VideoViewerList_TEST extends Component {
 
     this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
+    this.navigateBackNavigateTo = this._navigateBackNavigateTo.bind(this)
 
     this.toggleModal = this._toggleModal.bind(this)
+    this.setModalPosition = this._setModalPosition.bind(this)
     this.orderComment = this._orderComment.bind(this)
 
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
   }
 
-  _toggleModal() {
+  _toggleModal() {       
     this.setState({ isModalVisible: !this.state.isModalVisible })
   }
 
+  _setModalPosition(e) {
+    e.measure((width, height, px, py, fx, fy) => {
+      console.log('W-SCREEN : ' + Dimensions.get('window').width)
+      console.log('H-SCREEN : ' + Dimensions.get('window').height)
+      console.log('width : ' + width)
+      console.log('height : ' + height)
+      console.log('px : ' + px)
+      console.log('py : ' + py)
+      console.log('fx : ' + fx)
+      console.log('fy : ' + fy)
+      console.log('\n')
+
+      fy !== undefined ? this.setState({ modalPosition: fy }, () => this.toggleModal()) : null
+    })    
+  }
+
   //On choisi d'afficher les commentaires "recents" ou "populaires"
-  _orderComment(order) {    
+  /*_orderComment(order) {    
     this.toggleModal()
     if(this.state.order !== order) {
       if(this.state.canWeHandleOrder){  
@@ -91,14 +112,35 @@ class VideoViewerList_TEST extends Component {
         this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) 
       }        
     }      
+  }*/
+
+  //On choisi d'afficher les commentaires "recents" ou "populaires"
+  _orderComment(order) {    
+    this.toggleModal()
+
+    if(this.state.order !== order) {    
+      let ds = new ListView.DataSource({
+        rowHasChanged: (r1, r2) => r1 !== r2,
+      })
+   
+      this._data = this._firstData
+      this._dataSource = ds.cloneWithRows(this._data) 
+
+      this.setState({ isLoading: true, isLoadingMore: true, order }, () => this.componentDidMountClone()) 
+    }        
   }
 
   _navigateTo(destination, data) {
-    this.props.navigateTo(destination, data)
+    this.props.navigateTo(destination, data)    
   }
 
   _navigateBack() {
     this.props.navigateBack()
+  }
+
+  _navigateBackNavigateTo(destination, data) {
+    this.navigateBack()
+    this.navigateTo(destination, data)  
   }
 
   _fetchData(callback) {
@@ -133,6 +175,7 @@ class VideoViewerList_TEST extends Component {
     })
   }
 
+  //USELESS HERE !!!
   _fetchRefresh() {
     this._dataAfter = ''
     const requestId = this.requestId = uuidv1()
@@ -188,8 +231,7 @@ class VideoViewerList_TEST extends Component {
                 rowHasChanged: (r1, r2) => r1 !== r2,
               })
 
-              //this._data = responseJson.items    
-              this._data = this._data.concat(responseJson.items)
+              this._data = this._firstData.concat(responseJson.items)
               this._dataSource = ds.cloneWithRows(this._data)             
               this._dataAfter = responseJson.nextPageToken
               const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
@@ -197,6 +239,7 @@ class VideoViewerList_TEST extends Component {
               this.setState({
                 isEmpty: false,
                 isLoading: false,    
+                isLoadingMore: false,
                 commentCount,
                 canWeHandleOrder: true,                           
               })
@@ -225,97 +268,122 @@ class VideoViewerList_TEST extends Component {
         let ds = new ListView.DataSource({
           rowHasChanged: (r1, r2) => r1 !== r2,
         })
-
-        //this._data = responseJson.items    
+         
         //this._data = this._data.concat(responseJson.items).concat([ {"contentID":"1"} ])
         this._data = this._data.concat(responseJson.items.filter(item => item.snippet.channelId === channelId)).concat([ {"contentID":"1"} ])
         this._firstData = this._data
         this._dataSource = ds.cloneWithRows(this._data)             
 
         this.setState({
-          isFirstLoading: false,   
-          isLoading: false,                          
+          isFirstLoading: false,
+          isLoading: false,                   
+        }, () => { 
+
+          //Au cas où la liste des videos relatives serai trop petite pour l'écran (cad empêcherai le déclenchement d'un onEndReached),
+          //Alors on charge directement les commentaires en dessous
+          
+          //******************************************************
+          //Algorithme de récupération des differentes dimensions 
+          //pour une gestion du chargement des commentaires ou non
+          //de manière plus intelligente
+
+          //Dimensions.get('window').height > hauteur totale de l'écran
+          //200+DIMENSION.STATUSBAR_HEIGHT  > hauteur de la partie noir (lecteur video + statusbar)
+
+          //125+50 > hauteur de VideoViewerList_HeaderComponent 
+          //120 > hauteur de VideoMini
+          //DIMENSION.MIN_HEADER_HEIGHT > hauteur de VideoViewerList_CommentHeader          
+          //******************************************************          
+
+          Dimensions.get('window').height -200 -DIMENSION.STATUSBAR_HEIGHT > +125 +50 +(120*responseJson.items.length) +DIMENSION.MIN_HEADER_HEIGHT
+          && !this.state.isFirstLoading 
+          && !this.state.isRefreshing 
+          && !this.state.stopLoadingMore 
+          && !this.state.isLoadingMore 
+            ? this.setState({ isLoadingMore: true }, () => { console.log("MORE 1 !!!"); this.fetchMore() }) 
+            : null
         })    
       }
     })
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     this._isMounted = false
-  }
+  }  
 
   render() {   
     return (
       <View style={styles.main_container}>  
         <ModalCommentTopRecent
-                                  toggleModal={this.toggleModal}
-                                  orderComment={this.orderComment}
-                                  isModalVisible={this.state.isModalVisible}
-                                />
+          toggleModal={this.toggleModal}
+          orderComment={this.orderComment}
+          isModalVisible={this.state.isModalVisible}
+          modalPosition={this.state.modalPosition}
+        />
 
         { 
           this.state.isFirstLoading           
-            ? <CommentLoading color={THEME.PRIMARY.BACKGROUND_COLOR}/>
-            : this.state.isEmpty
-              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
-              : <View style={styles.listview_container}>
-                  <AnimatedListView //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
-                    contentContainerStyle={styles.listview}
-                    showsVerticalScrollIndicator={true}                  
-                    dataSource={this._dataSource}
-                    renderRow={
-                      (rowData, sectionId, rowId) => { return (                        
-                        rowData.contentID == 0 
-                          ? <VideoViewerList_HeaderComponent
-                              video={this.props.video}
-                              rowId={rowId}
+            ? <CommentLoading color={THEME.PRIMARY.BACKGROUND_COLOR}/>                      
+            : <View style={styles.listview_container}>
+                <AnimatedListView //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                  contentContainerStyle={styles.listview}
+                  showsVerticalScrollIndicator={true}                  
+                  dataSource={this._dataSource}
+                  renderRow={
+                    (rowData, sectionId, rowId) => { return (                        
+                      rowData.contentID == 0
+                        ? <VideoViewerList_HeaderComponent
+                            video={this.props.video}
+                            rowId={rowId}
+                          />
+                        : rowData.kind == "youtube#searchResult"
+                          ? <VideoMini
+                              firstData={rowData}                            
+                              navigateTo={this.navigateBackNavigateTo}     
+                              rowId={rowId}     
                             />
-                          : rowData.kind == "youtube#searchResult"
-                            ? <VideoMini
-                                firstData={rowData}                            
-                                navigateTo={this.navigateTo}     
-                                rowId={rowId}     
-                              />
-                            : rowData.contentID == 1
-                              ? <VideoViewerList_CommentHeader 
-                                  toggleModal={this.toggleModal}
-                                  commentCount={this.state.commentCount}                
-                                  isLoading={this.state.isLoading}
-                                />                                
-                              : rowData.kind == "youtube#commentThread"
-                                ? <Comment
-                                    data={rowData}
-                                    navigateTo={this.navigateTo}
-                                    rowId={rowId}
-                                  />
-                                : null
-                      )}
-                    }
-                    renderFooter={() => {
-                      return (
-                        this.state.isLoadingMore &&
-                        <View style={styles.isloadingmore_container}>
-                          <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
-                        </View>
-                      )
-                    }}
-                    onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
-                    refreshControl={ 
-                      <RefreshControl 
-                        colors={[THEME.SECONDARY.COLOR]} 
-                        refreshing={this.state.isRefreshing} 
-                        progressViewOffset={-25}
-                        onRefresh={() => {
-                          this._dataSource = null
-                          this._dataAfter = ''
-                          this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
-                        }}                        
-                      /> 
-                    }
-                    scrollEventThrottle={16}
-                    {...this.props}
-                  />                  
-                </View>
+                          : rowData.contentID == 1
+                            ? <VideoViewerList_CommentHeader                              
+                                setModalPosition={this.setModalPosition}                                
+                                commentCount={this.state.commentCount}                
+                                isLoading={this.state.isLoading}                                        
+                              />                                
+                            : rowData.kind == "youtube#commentThread"
+                              ? <Comment
+                                  data={rowData}
+                                  navigateTo={this.navigateTo}
+                                  rowId={rowId}
+                                />
+                              : null
+                    )}
+                  }
+                  renderFooter={() => {
+                    return (
+                      this.state.isEmpty                  
+                        ? <VideoViewerList_CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur 
+                        : this.state.isLoadingMore &&
+                            <View style={styles.isloadingmore_container}>
+                              <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
+                            </View>                      
+                    )
+                  }}
+                  onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => { console.log("MORE 2 !!!"); this.fetchMore() }) : null }                    
+                  refreshControl={ 
+                    <RefreshControl 
+                      colors={[THEME.SECONDARY.COLOR]} 
+                      refreshing={this.state.isRefreshing} 
+                      progressViewOffset={-25}
+                      onRefresh={() => {
+                        this._dataSource = null
+                        this._dataAfter = ''
+                        this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
+                      }}                        
+                    /> 
+                  }
+                  scrollEventThrottle={16}
+                  {...this.props}
+                />                  
+              </View>
 
         }
 

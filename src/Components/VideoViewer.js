@@ -9,6 +9,7 @@ import {
   StatusBar,
   StyleSheet,
   ScrollView,
+  Dimensions,
   ToastAndroid,
   TouchableNativeFeedback,
 } from 'react-native'

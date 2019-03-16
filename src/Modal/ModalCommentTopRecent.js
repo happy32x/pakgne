@@ -1,21 +1,38 @@
 
 import React, { Component } from "react"
-import { 
-  Text, 
-  View ,
+import {
+  Text,
+  View,
   StyleSheet,
+  Dimensions,
   TouchableNativeFeedback,
 } from "react-native"
 
+import DIMENSION from '../INFO/DIMENSION'
 import Modal from "react-native-modal"
 import THEME from '../INFO/THEME'
 
-function ModalCommentTopRecent(props) {
+class ModalCommentTopRecent extends Component {
+  constructor(props) {
+    super(props)
+  }
+
+  render() {
   return (
-    <Modal  
-      style={styles.modal}
-      isVisible={props.isModalVisible} 
-      onBackdropPress={() => props.toggleModal()} 
+    <Modal
+      style={[
+        styles.modal, 
+        {
+          top: 
+          this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT < 200 
+            ? 200
+            : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT > Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
+              ? Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
+              : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT
+        }
+      ]}
+      isVisible={this.props.isModalVisible} 
+      onBackdropPress={() => this.props.toggleModal()} 
       backdropColor='transparent'
       animationIn='pulse'
       animationInTiming={1}
@@ -25,7 +42,7 @@ function ModalCommentTopRecent(props) {
       <View style={styles.modal_option_container}>
         <TouchableNativeFeedback 
           background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-          onPress={() => props.orderComment('relevance')}
+          onPress={() => this.props.orderComment('relevance')}
         >
           <View style={styles.modal_option}>               
             <Text style={styles.modal_option_text}>Top commentaires</Text>
@@ -33,7 +50,7 @@ function ModalCommentTopRecent(props) {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback 
           background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-          onPress={() => props.orderComment('time')}
+          onPress={() => this.props.orderComment('time')}
         >
           <View style={styles.modal_option}>               
             <Text style={styles.modal_option_text}>Les plus récents</Text>
@@ -41,25 +58,25 @@ function ModalCommentTopRecent(props) {
         </TouchableNativeFeedback>            
       </View>  
     </Modal> 
-  );
+  )
+  }
 }
 
 const styles = StyleSheet.create({
   modal: {
     margin:0,
     flexDirection: 'row',
-    alignItems: 'flex-start', 
-    justifyContent: 'flex-end',  
+    justifyContent: 'flex-end',
   },
-  modal_option_shadow_container: {
+  /*modal_option_shadow_container: {
     width:null, 
     height:100, 
     borderRadius:5,
-    margin:10,
+    //margin:10,
     overflow:'hidden',
     backgroundColor: 'black',
     opacity: 0.5
-  },
+  },*/
   modal_option_container: {
     width:null, 
     height:100, 
