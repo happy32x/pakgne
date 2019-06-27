@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import {  
   View,
-  ListView,
+  FlatList,
   Animated,
-  StyleSheet,  
+  StyleSheet,
   RefreshControl,
   ActivityIndicator,  
 } from 'react-native'
@@ -16,23 +16,24 @@ import { getCommentListReplyFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import { connect } from 'react-redux'
 
-const AnimatedListView = Animated.createAnimatedComponent(ListView)
-//const controller = new AbortController()
-//const signal = controller.signal
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 class CommentListReply extends Component {
+  _isMounted = false
+
   constructor(props) {
     super(props)
     this.state = {
-      dataSource: null,
       isEmpty: true,
       isLoading: true,
       isLoadingMore: false,
-      isRefreshing: false,
-      _data: null,
-      _dataAfter: '',
+      isRefreshing: false,      
       stopLoadingMore: false,
     }
+
+    this._data = null
+    this._dataAfter = ''
+
     this.commentId = this.props.navigation.getParam('commentId', 'NO-DATA')   
 
     this.fetchData = this._fetchData.bind(this)
@@ -55,95 +56,74 @@ class CommentListReply extends Component {
     this.props.navigation.goBack()
   }
 
-  _fetchData(callback) {
-    //controller.abort()
-    const dataAfter = this.state._dataAfter
-    const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getCommentListReplyFromApi(this.commentId, pageToken/*, { signal }*/).then(callback)
+  _fetchData(callback) {    
+    const pageToken = this._dataAfter !== '' ? `&pageToken=${this._dataAfter}` : ''
+    getCommentListReplyFromApi(this.commentId, pageToken).then(callback)
   }
 
   _fetchMore() {
-    this.fetchData(responseJson => {
-      const data = this.state._data.concat(responseJson.items)      
+    this.fetchData(responseJson => {    
+      if(this._isMounted) {
+        this._data = this._data.concat(responseJson.items)
+        this._dataAfter = responseJson.nextPageToken
 
-      responseJson.nextPageToken===undefined
-        ? this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
-          })
-        : this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(data),
-            isLoadingMore: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })
+        this.setState({ isLoadingMore: false })
+
+        responseJson.nextPageToken===undefined
+          ? this.setState({ stopLoadingMore: true })
+          : null
+      }
     })
   }
 
   _fetchRefresh() {
     this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items;
+      if(this._isMounted) {
+        this._data = responseJson.items
+        this._dataAfter = responseJson.nextPageToken
 
-      responseJson.nextPageToken===undefined 
-        ? this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-            stopLoadingMore: true,
-          })  
-        : this.setState({
-            dataSource: ds.cloneWithRows(data),
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,
-            _data: data,
-            _dataAfter: responseJson.nextPageToken,
-          })  
+        this.setState({
+          isLoading: false,
+          isLoadingMore: false,
+          isRefreshing: false,            
+        })
+
+        responseJson.nextPageToken===undefined 
+          ? this.setState({ stopLoadingMore: true })  
+          : null 
+      }
     })
   }
 
   componentDidMount() {
-    this.fetchData(responseJson => {
-      let ds = new ListView.DataSource({
-        rowHasChanged: (r1, r2) => r1 !== r2,
-      })
-      const data = responseJson.items
-      
-      //En temps normal, lorsque data.lenght===0, 
-      //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users 
-      //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-      data.length===0
-        ? this.setState({ isEmpty: true, isLoading: false }) 
-        : responseJson.nextPageToken===undefined 
-          ? this.setState({
-              dataSource: ds.cloneWithRows(data),
-              isEmpty: false,
-              isLoading: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-              stopLoadingMore: true,
-            })
-          : this.setState({
-              dataSource: ds.cloneWithRows(data),
-              isEmpty: false,
-              isLoading: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-            })
+    this._isMounted = true
+    this.fetchData(responseJson => {     
+      if(this._isMounted) {
+        //En temps normal, lorsque responseJson.items.lenght===0, 
+        //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users 
+        //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
+        if(responseJson.items.length===0) {
+          this.setState({ isEmpty: true, isLoading: false }) 
+        } else {
+
+          this._data = responseJson.items
+          this._dataAfter = responseJson.nextPageToken
+          
+          this.setState({
+            isEmpty: false,
+            isLoading: false,
+          })
+
+          responseJson.nextPageToken===undefined
+            ? this.setState({ stopLoadingMore: true })
+            : null        
+        }
+      }
     })
   }
 
   componentWillUnmount(){
-    //controller.abort()
+    this._isMounted = false
   }
 
   render() {   
@@ -156,22 +136,21 @@ class CommentListReply extends Component {
 
         { 
           this.state.isLoading           
-            ? <CommentLoading color={THEME.SECONDARY.COLOR}/>           
+            ? <CommentLoading color={THEME.SECONDARY.COLOR} />           
             : this.state.isEmpty
-              ? <CommentEmpty/> 
+              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur
               : <View style={styles.listview_container}>
-                  <AnimatedListView
+                  <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}
-                    dataSource={this.state.dataSource}
-                    renderRow={
-                      (rowData, sectionId, rowId) => <CommentReply
-                        data={rowData}
+                    data={this._data}
+                    renderItem={
+                      ({item}) => <CommentReply
+                        data={item}
                         navigateTo={this.navigateTo}
-                        rowId={rowId}
                       />
                     }
-                    renderFooter={() => {
+                    ListFooterComponent={() => {
                       return (
                         this.state.isLoadingMore &&
                         <View style={styles.isloadingmore_container}>
@@ -179,18 +158,22 @@ class CommentListReply extends Component {
                         </View>
                       )
                     }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
                     refreshControl={ 
                       <RefreshControl 
                         colors={[THEME.SECONDARY.COLOR]} 
                         refreshing={this.state.isRefreshing} 
-                        progressViewOffset={-25}
-                        onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
+                        progressViewOffset={-25}                        
+                        onRefresh={() => {
+                          this._dataAfter = ''
+                          this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
+                        }}
                       /> 
                     }
-                    scrollEventThrottle={16}
+                    keyExtractor={(item,e) => e.toString()}
+                    onEndReachedThreshold={.5}
                     {...this.props}
-                  />
+                  />                  
                 </View>
         }
 

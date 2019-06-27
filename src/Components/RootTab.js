@@ -15,7 +15,7 @@ import {
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
 import DefaultShow from './DefaultShow'
 import VideoList from './VideoList'
-import ArticleList from './ArticleList'
+import Default from './Default'
 import Header from './Header'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
@@ -42,8 +42,8 @@ class RootTab extends React.Component {
       index: 0,
       indexOLD: 0,
       routes: [
-        { key: '0', title: 'VIDEOS' },
-        { key: '1', title: 'ARTICLES' },
+        { key: '0', title: 'FEED' },
+        { key: '1', title: 'TALK' },
         { key: '2', icon: 'show' },
       ],
 
@@ -84,7 +84,7 @@ class RootTab extends React.Component {
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
     )
-    this.secondRoute = () => (
+    /*this.secondRoute = () => (
       <ArticleList        
         onScroll = {
           Animated.event(
@@ -96,8 +96,9 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )
-    this.thirdRoute = () => (<DefaultShow />)     
+    )*/
+    this.secondRoute = () => ( <Default /> )
+    this.thirdRoute = () => ( <DefaultShow /> )     
   }
 
   _navigateTo(destination, data) {
@@ -116,6 +117,7 @@ class RootTab extends React.Component {
     this.index = index 
     this.setState({ index, indexOLD: this.state.index })    
     console.log('_handleIndexChange')
+    console.log( 'index : ' + index )
   }
 
   _onTabPress = ({ route }) => { 

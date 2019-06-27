@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
-import {
+import {  
   View,
-  ListView,
+  FlatList,
   Animated,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,    
+  ActivityIndicator,
 } from 'react-native'
+
+import uuidv1 from 'uuid/v1'
 
 import Comment from './Comment'
 import CommentHeader from './CommentHeader'
@@ -14,12 +16,10 @@ import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
 import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
-import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
+import ModalCommentTopRecentStatic from '../Modal/ModalCommentTopRecentStatic'
 import { connect } from 'react-redux'
 
-const AnimatedListView = Animated.createAnimatedComponent(ListView)
-//const controller = new AbortController()
-//const signal = controller.signal
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 class CommentList extends Component {
   _isMounted = false
@@ -27,13 +27,10 @@ class CommentList extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      dataSource: null,
       isEmpty: true,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
-      _data: null,
-      _dataAfter: '',
       stopLoadingMore: false,
 
       isModalVisible: false,
@@ -42,6 +39,11 @@ class CommentList extends Component {
 
       commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA')   
     }
+
+    this._data = null
+    this._dataAfter = ''
+
+    this.requestId = null
     this.videoId = this.props.navigation.getParam('videoId', 'NO-DATA')
 
     this.fetchData = this._fetchData.bind(this)
@@ -67,13 +69,23 @@ class CommentList extends Component {
     this.setState({ isModalVisible: !this.state.isModalVisible })
   }
 
+  //On choisi d'afficher les commentaires "recents" ou "populaires"
   _orderComment(order) {    
     this.toggleModal()
-    this.state.order === order 
-      ? null
-      : this.state.canWeHandleOrder         
-        ? this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '', order }, () => this.fetchRefresh())        
-        : this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) //En temps normal on annule le chargement de la page et on reprend avec la nouvelle requête
+    if(this.state.order !== order) {
+      if(this.state.canWeHandleOrder){        
+        this._dataAfter = ''
+
+        this.state.isLoading 
+          ? this.fetchRefresh() //Lorqu'une requete est déjà en cours, on ne fait plus de setState mais on execute directement this.fetchRefresh()
+          : this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, order }, () => this.fetchRefresh())        
+      }        
+      else {
+        //Ceci ne se déclenche que lorqu'il n'y aucun element à afficher
+        //On annule donc le chargement précédent de la page et on reprend avec la nouvelle requête
+        this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) 
+      }        
+    }      
   }
 
   _navigateTo(destination, data) {
@@ -85,10 +97,8 @@ class CommentList extends Component {
   }
 
   _fetchData(callback) {
-    //controller.abort()
-    const dataAfter = this.state._dataAfter
-    const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
-    getCommentListFromApi(this.videoId, this.state.order, pageToken/*, { signal }*/).then(callback)
+    const pageToken = this._dataAfter !== '' ? `&pageToken=${this._dataAfter}` : ''    
+    getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
   }
 
   _fetchDataCommentCount(callback) {
@@ -96,114 +106,93 @@ class CommentList extends Component {
   }
 
   _fetchMore() {
+    const requestId = this.requestId = uuidv1()
+
     this.fetchData(responseJson => {
-      if(this._isMounted) {   
-        const data = this.state._data.concat(responseJson.items)      
+      if(this._isMounted && this.requestId === requestId) {         
+
+        this._data = this._data.concat(responseJson.items)
+        this._dataAfter = responseJson.nextPageToken
+
+        this.setState({ isLoadingMore: false })
 
         responseJson.nextPageToken===undefined
-          ? this.setState({
-              dataSource: this.state.dataSource.cloneWithRows(data),
-              isLoadingMore: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-              stopLoadingMore: true,
-            })
-          : this.setState({
-              dataSource: this.state.dataSource.cloneWithRows(data),
-              isLoadingMore: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-            })
+          ? this.setState({ stopLoadingMore: true })
+          : null
       }
     })
   }
 
   _fetchRefresh() {
-    //controller.abort()
-    this.fetchData(responseJson => {
-      if(this._isMounted) {   
-        let ds = new ListView.DataSource({
-          rowHasChanged: (r1, r2) => r1 !== r2,
-        })
-        const data = responseJson.items;
+    this._dataAfter = ''
+    const requestId = this.requestId = uuidv1()
 
-        responseJson.nextPageToken===undefined 
-          ? this.fetchDataCommentCount(responseJsonCommentCount => {
-              if(this._isMounted) {  
-                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                this.setState({
-                  dataSource: ds.cloneWithRows(data),
-                  isLoading: false,
-                  isLoadingMore: false,
-                  isRefreshing: false,
-                  _data: data,
-                  _dataAfter: responseJson.nextPageToken,
-                  commentCount,
-                  stopLoadingMore: true
-                })
-              }
-            })
-          : this.fetchDataCommentCount(responseJsonCommentCount => {
-              if(this._isMounted) {  
-                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                this.setState({
-                  dataSource: ds.cloneWithRows(data),
-                  isLoading: false,
-                  isLoadingMore: false,
-                  isRefreshing: false,
-                  _data: data,
-                  _dataAfter: responseJson.nextPageToken,
-                  commentCount,
-                })
-              }
-            })
-      }
+    this.fetchData(responseJson => {         
+      this.fetchDataCommentCount(responseJsonCommentCount => {
+        if(this._isMounted && this.requestId === requestId) { 
+
+          this._data = responseJson.items          
+          this._dataAfter = responseJson.nextPageToken
+          const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+
+          this.setState({
+            isLoading: false,
+            isLoadingMore: false,
+            isRefreshing: false,              
+            commentCount,
+          })          
+
+          responseJson.nextPageToken===undefined 
+          ? this.setState({ stopLoadingMore: true })
+          : null
+
+          //On vérifie pour raison de sécurité si this.requestId à été modifié
+          /*this.requestId === requestId 
+            ? this.setState({ isLoading: false })
+            : this.setState({ isLoading: true })*/
+        }
+      })
     })
   }
 
   _componentDidMountClone() {    
-    this.fetchData(responseJson => {
-      if(this._isMounted) {
-        let ds = new ListView.DataSource({
-          rowHasChanged: (r1, r2) => r1 !== r2,
-        })
-        const data = responseJson.items
+    this._dataAfter = ''
+    const requestId = this.requestId = uuidv1()
+
+    this.fetchData(responseJson => {  
+      if(this._isMounted && this.requestId === requestId) {             
         
-        //En temps normal, lorsque data.lenght===0, 
-        //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users
+        //En temps normal, lorsque responseJson.items.lenght===0, 
+        //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users
         //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-        data.length===0
-          ? this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
-          : responseJson.nextPageToken===undefined 
-            ? this.fetchDataCommentCount(responseJsonCommentCount => {
-                if(this._isMounted) {
-                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                  this.setState({
-                    dataSource: ds.cloneWithRows(data),
-                    isEmpty: false,
-                    isLoading: false,
-                    _data: data,
-                    _dataAfter: responseJson.nextPageToken,
-                    commentCount,
-                    canWeHandleOrder: true,
-                    stopLoadingMore: true,
-                  })
-                }
+        if(responseJson.items.length===0) {
+          this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
+        } else {        
+          this.fetchDataCommentCount(responseJsonCommentCount => {
+            if(this._isMounted && this.requestId === requestId) { 
+
+              this._data = responseJson.items              
+              this._dataAfter = responseJson.nextPageToken
+              const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+
+              this.setState({
+                isEmpty: false,
+                isLoading: false,    
+                commentCount,
+                canWeHandleOrder: true,                           
               })
-            : this.fetchDataCommentCount(responseJsonCommentCount => {
-                if(this._isMounted) {
-                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                  this.setState({
-                    dataSource: ds.cloneWithRows(data),
-                    isEmpty: false,
-                    isLoading: false,
-                    _data: data,
-                    _dataAfter: responseJson.nextPageToken,
-                    commentCount,
-                    canWeHandleOrder: true,
-                  })
-                }
-              })
+
+              responseJson.nextPageToken===undefined
+              ? this.setState({ stopLoadingMore: true })
+              : null
+
+              //On vérifie pour raison de sécurité si this.requestId à été modifié
+              /*this.requestId === requestId 
+                ? this.setState({ isLoading: false })
+                : this.setState({ isLoading: true })*/
+            }
+          })
+        }                
       }
     })
   }
@@ -228,7 +217,7 @@ class CommentList extends Component {
           isLoading={this.state.isLoading}
         />
 
-        <ModalCommentTopRecent
+        <ModalCommentTopRecentStatic
           toggleModal={this.toggleModal}
           orderComment={this.orderComment}
           isModalVisible={this.state.isModalVisible}
@@ -238,20 +227,19 @@ class CommentList extends Component {
           this.state.isLoading           
             ? <CommentLoading color={THEME.SECONDARY.COLOR}/>
             : this.state.isEmpty
-              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedListView destinée à acceuilir les commentaires de l'utilisateur            
+              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
               : <View style={styles.listview_container}>
-                  <AnimatedListView //AnimatedListView pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                  <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
-                    showsVerticalScrollIndicator={true}
-                    dataSource={this.state.dataSource}
-                    renderRow={
-                      (rowData, sectionId, rowId) => <Comment
-                        data={rowData}
+                    showsVerticalScrollIndicator={true}                  
+                    data={this._data}
+                    renderItem={
+                      ({item}) => <Comment
+                        data={item}
                         navigateTo={this.navigateTo}
-                        rowId={rowId}
                       />
                     }
-                    renderFooter={() => {
+                    ListFooterComponent={() => {
                       return (
                         this.state.isLoadingMore &&
                         <View style={styles.isloadingmore_container}>
@@ -259,19 +247,24 @@ class CommentList extends Component {
                         </View>
                       )
                     }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
                     refreshControl={ 
                       <RefreshControl 
                         colors={[THEME.SECONDARY.COLOR]} 
                         refreshing={this.state.isRefreshing} 
                         progressViewOffset={-25}
-                        onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
+                        onRefresh={() => {
+                          this._dataAfter = ''
+                          this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
+                        }}                        
                       /> 
                     }
-                    scrollEventThrottle={16}
+                    keyExtractor={(item,e) => e.toString()}
+                    onEndReachedThreshold={.5}
                     {...this.props}
-                  />
+                  />                  
                 </View>
+
         }
 
       </View>
@@ -287,8 +280,14 @@ const styles = StyleSheet.create({
   listview_container: {
     flex: 1   
   },
-  listview: {
+  /*listview: {
+    padding: 15,
     backgroundColor: THEME.PRIMARY.COLOR,   
+  },*/
+  listview: {
+    backgroundColor: THEME.PRIMARY.COLOR,  
+    paddingTop: 15,
+    paddingBottom: 15, 
   },
   isloadingmore_container: { 
     flex: 1,

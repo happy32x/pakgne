@@ -15,7 +15,6 @@ import {
 } from 'react-native'
 
 import VideoViewerList from './VideoViewerList'
-import VideoViewerList_TEST from './VideoViewerList_TEST'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -65,8 +64,8 @@ class VideoViewer extends React.Component{
     return (
       <View style={styles.main_container}>
           <View style={styles.video_container}>
-            {/*<YoutubeView videoId={video[0].id.videoId} />*/}
-            
+            {/*<YoutubeView videoId={video[0].id.videoId} />*/}            
+
             <TouchableNativeFeedback 
               background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}
               onPress={() => this.navigateBack()}
@@ -78,7 +77,7 @@ class VideoViewer extends React.Component{
           </View>
 
           <View style={styles.main_container}>
-            <VideoViewerList_TEST
+            <VideoViewerList
               videoId = {video[0].id.videoId}
               video = {video}
               commentCount = {video[1].statistics.commentCount}  

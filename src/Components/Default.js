@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { 
-  View, 
-  Image, 
-  StyleSheet 
+  View,
+  Image,
+  StyleSheet
 } from 'react-native'
+
 import iconOff from '../assets/iconOff.png'
 
 class Default extends Component {

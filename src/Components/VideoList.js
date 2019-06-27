@@ -71,7 +71,7 @@ class VideoList extends Component {
   }
 
   async _randomVideoListOrder() {   
-    this.videoListOrder = await shuffleArray(this.videoListOrder) 
+    //this.videoListOrder = await shuffleArray(this.videoListOrder) 
     this._videoListOrder = this.videoListOrder
     return this.videoListOrder[0]
   }

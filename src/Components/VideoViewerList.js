@@ -1,23 +1,31 @@
 import React, { Component } from 'react'
-import {
+import {  
   View,
-  ListView,
+  FlatList,
   Animated,
   StyleSheet,
+  Dimensions,
   RefreshControl,
-  ActivityIndicator,    
+  ActivityIndicator,
 } from 'react-native'
 
+import DATA from '../API/DATA'
+import uuidv1 from 'uuid/v1'
+
+import VideoViewerList_HeaderComponent from './VideoViewerList_HeaderComponent'
+import VideoMini from './VideoMini'
+import VideoViewerList_CommentHeader from './VideoViewerList_CommentHeader'
 import Comment from './Comment'
-import VideoViewer_CommentHeader from './VideoViewerList_CommentHeader'
 import CommentLoading from './CommentLoading'
-import CommentEmpty from './CommentEmpty'
-import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
+import VideoViewerList_CommentEmpty from './VideoViewerList_CommentEmpty'
+import { getVideoListMiniRelatedToVideoIdFromApi,getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import { connect } from 'react-redux'
+import DIMENSION from '../INFO/DIMENSION'
 
-const AnimatedListView = Animated.createAnimatedComponent(ListView)
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
+const channelId = DATA.CHANNEL_ID
 
 class VideoViewerList extends Component {
   _isMounted = false
@@ -25,24 +33,30 @@ class VideoViewerList extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      dataSource: null,
-      isEmpty: true,
+      isEmpty: false,
+      isFirstLoading: true,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
-      _data: null,
-      _dataAfter: '',
       stopLoadingMore: false,
 
+      modalPosition: null,
       isModalVisible: false,
       order: 'relevance',
-      canWeHandleOrder: false,
 
-      commentCount: this.props.commentCount   
+      canWeHandleOrder: false,
+      commentCount: this.props.commentCount,
     }
+
+    this._firstData = []
+    this._data = []
+    this._dataAfter = ''
+
+    this.requestId = null
     this.videoId = this.props.videoId
 
     this.fetchData = this._fetchData.bind(this)
+    this.fetchFirstData = this._fetchFirstData.bind(this)
     this.fetchDataCommentCount = this._fetchDataCommentCount.bind(this)
 
     this.fetchMore = this._fetchMore.bind(this)
@@ -50,38 +64,85 @@ class VideoViewerList extends Component {
 
     this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
+    this.navigateBackNavigateTo = this._navigateBackNavigateTo.bind(this)
 
     this.toggleModal = this._toggleModal.bind(this)
+    this.setModalPosition = this._setModalPosition.bind(this)
     this.orderComment = this._orderComment.bind(this)
 
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
   }
 
-  _toggleModal() {
+  _toggleModal() {       
     this.setState({ isModalVisible: !this.state.isModalVisible })
   }
 
+  _setModalPosition(e) {
+    e.measure((width, height, px, py, fx, fy) => {
+      console.log('W-SCREEN : ' + Dimensions.get('window').width)
+      console.log('H-SCREEN : ' + Dimensions.get('window').height)
+      console.log('width : ' + width)
+      console.log('height : ' + height)
+      console.log('px : ' + px)
+      console.log('py : ' + py)
+      console.log('fx : ' + fx)
+      console.log('fy : ' + fy)
+      console.log('\n')
+
+      fy !== undefined ? this.setState({ modalPosition: fy }, () => this.toggleModal()) : null
+    })    
+  }
+
+  //On choisi d'afficher les commentaires "recents" ou "populaires"
+  /*_orderComment(order) {    
+    this.toggleModal()
+    if(this.state.order !== order) {
+      if(this.state.canWeHandleOrder){  
+        this._dataSource = null      
+        this._dataAfter = ''
+
+        this.state.isLoading 
+          ? this.fetchRefresh() //Lorqu'une requete est déjà en cours, on ne fait plus de setState mais on execute directement this.fetchRefresh()
+          : this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, order }, () => this.fetchRefresh())        
+      }        
+      else {
+        //Ceci ne se déclenche que lorqu'il n'y aucun element à afficher
+        //On annule donc le chargement précédent de la page et on reprend avec la nouvelle requête
+        this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) 
+      }        
+    }      
+  }*/
+
+  //On choisi d'afficher les commentaires "recents" ou "populaires"
   _orderComment(order) {    
     this.toggleModal()
-    this.state.order === order 
-      ? null
-      : this.state.canWeHandleOrder         
-        ? this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '', order }, () => this.fetchRefresh())        
-        : this.setState({ order, isLoading: true }, () => this.componentDidMountClone()) //En temps normal on annule le chargement de la page et on reprend avec la nouvelle requête
+
+    if(this.state.order !== order) {    
+      this._data = this._firstData      
+      this.setState({ isLoading: true, isLoadingMore: true, order }, () => this.componentDidMountClone()) 
+    }        
   }
 
   _navigateTo(destination, data) {
-    this.props.navigation.navigate(destination, data)
+    this.props.navigateTo(destination, data)    
   }
 
   _navigateBack() {
-    this.props.navigation.goBack()
+    this.props.navigateBack()
+  }
+
+  _navigateBackNavigateTo(destination, data) {
+    this.navigateBack()
+    this.navigateTo(destination, data)  
   }
 
   _fetchData(callback) {
-    const dataAfter = this.state._dataAfter
-    const pageToken = dataAfter !== '' ? `&pageToken=${dataAfter}` : ''
+    const pageToken = this._dataAfter !== '' ? `&pageToken=${this._dataAfter}` : ''    
     getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
+  }
+
+  _fetchFirstData(callback) {  
+    getVideoListMiniRelatedToVideoIdFromApi(this.videoId).then(callback)
   }
 
   _fetchDataCommentCount(callback) {
@@ -89,185 +150,218 @@ class VideoViewerList extends Component {
   }
 
   _fetchMore() {
+    const requestId = this.requestId = uuidv1()
+
     this.fetchData(responseJson => {
-      if(this._isMounted) {   
-        const data = this.state._data.concat(responseJson.items)      
+      if(this._isMounted && this.requestId === requestId) {   
+
+        this._data = this._data.concat(responseJson.items)        
+        this._dataAfter = responseJson.nextPageToken
+
+        this.setState({ isLoadingMore: false })
 
         responseJson.nextPageToken===undefined
-          ? this.setState({
-              dataSource: this.state.dataSource.cloneWithRows(data),
-              isLoadingMore: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-              stopLoadingMore: true,
-            })
-          : this.setState({
-              dataSource: this.state.dataSource.cloneWithRows(data),
-              isLoadingMore: false,
-              _data: data,
-              _dataAfter: responseJson.nextPageToken,
-            })
+          ? this.setState({ stopLoadingMore: true })
+          : null
       }
     })
   }
 
+  //USELESS HERE !!!
   _fetchRefresh() {
-    this.fetchData(responseJson => {
-      if(this._isMounted) {   
-        let ds = new ListView.DataSource({
-          rowHasChanged: (r1, r2) => r1 !== r2,
-        })
-        const data = responseJson.items;
+    this._dataAfter = ''
+    const requestId = this.requestId = uuidv1()
 
-        responseJson.nextPageToken===undefined 
-          ? this.fetchDataCommentCount(responseJsonCommentCount => {
-              if(this._isMounted) {  
-                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                this.setState({
-                  dataSource: ds.cloneWithRows(data),
-                  isLoading: false,
-                  isLoadingMore: false,
-                  isRefreshing: false,
-                  _data: data,
-                  _dataAfter: responseJson.nextPageToken,
-                  commentCount,
-                  stopLoadingMore: true
-                })
-              }
-            })
-          : this.fetchDataCommentCount(responseJsonCommentCount => {
-              if(this._isMounted) {  
-                const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                this.setState({
-                  dataSource: ds.cloneWithRows(data),
-                  isLoading: false,
-                  isLoadingMore: false,
-                  isRefreshing: false,
-                  _data: data,
-                  _dataAfter: responseJson.nextPageToken,
-                  commentCount,
-                })
-              }
-            })
-      }
+    this.fetchData(responseJson => {         
+      this.fetchDataCommentCount(responseJsonCommentCount => {
+        if(this._isMounted && this.requestId === requestId) {         
+          
+          this._data = responseJson.items                
+          this._dataAfter = responseJson.nextPageToken
+          const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+
+          this.setState({
+            isLoading: false,
+            isLoadingMore: false,
+            isRefreshing: false,              
+            commentCount,
+          })          
+          
+          responseJson.nextPageToken===undefined 
+          ? this.setState({ stopLoadingMore: true })
+          : null
+
+          //On vérifie pour raison de sécurité si this.requestId à été modifié
+          /*this.requestId === requestId 
+            ? this.setState({ isLoading: false })
+            : this.setState({ isLoading: true })*/
+        }
+      })
     })
   }
 
   _componentDidMountClone() {    
-    this.fetchData(responseJson => {
-      if(this._isMounted) {
-        let ds = new ListView.DataSource({
-          rowHasChanged: (r1, r2) => r1 !== r2,
-        })
-        const data = responseJson.items
+    this._dataAfter = ''
+    const requestId = this.requestId = uuidv1()
+
+    this.fetchData(responseJson => {  
+      if(this._isMounted && this.requestId === requestId) {             
         
-        //En temps normal, lorsque data.lenght===0, 
-        //dans le render() on devrai avoir une autre Listview destiné à acceuillir les commentaires du users
+        //En temps normal, lorsque responseJson.items.lenght===0, 
+        //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users
         //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-        data.length===0
-          ? this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
-          : responseJson.nextPageToken===undefined 
-            ? this.fetchDataCommentCount(responseJsonCommentCount => {
-                if(this._isMounted) {
-                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                  this.setState({
-                    dataSource: ds.cloneWithRows(data),
-                    isEmpty: false,
-                    isLoading: false,
-                    _data: data,
-                    _dataAfter: responseJson.nextPageToken,
-                    commentCount,
-                    canWeHandleOrder: true,
-                    stopLoadingMore: true,
-                  })
-                }
+        if(responseJson.items.length===0) {
+          this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
+        } else {        
+          this.fetchDataCommentCount(responseJsonCommentCount => {
+            if(this._isMounted && this.requestId === requestId) {               
+
+              this._data = this._firstData.concat(responseJson.items)                         
+              this._dataAfter = responseJson.nextPageToken
+              const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+
+              this.setState({
+                isEmpty: false,
+                isLoading: false,    
+                isLoadingMore: false,
+                commentCount,
+                canWeHandleOrder: true,                           
               })
-            : this.fetchDataCommentCount(responseJsonCommentCount => {
-                if(this._isMounted) {
-                  const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
-                  this.setState({
-                    dataSource: ds.cloneWithRows(data),
-                    isEmpty: false,
-                    isLoading: false,
-                    _data: data,
-                    _dataAfter: responseJson.nextPageToken,
-                    commentCount,
-                    canWeHandleOrder: true,
-                  })
-                }
-              })
+
+              responseJson.nextPageToken===undefined 
+              ? this.setState({ stopLoadingMore: true })
+              : null
+
+              //On vérifie pour raison de sécurité si this.requestId à été modifié
+              /*this.requestId === requestId 
+                ? this.setState({ isLoading: false })
+                : this.setState({ isLoading: true })*/
+            }
+          })
+        }                
       }
     })
   }
 
   componentDidMount() {
     this._isMounted = true
-    this.componentDidMountClone()
+    this._data = [ {"contentID":"0"} ]
+
+    this.fetchFirstData(responseJson => {  
+      if(this._isMounted) {                   
+         
+        //this._data = this._data.concat(responseJson.items).concat([ {"contentID":"1"} ])
+        this._data = this._data.concat(responseJson.items.filter(item => item.snippet.channelId === channelId)).concat([ {"contentID":"1"} ])
+        this._firstData = this._data               
+
+        this.setState({
+          isFirstLoading: false,
+          isLoading: false,                   
+        }, () => { 
+
+          //Au cas où la liste des videos relatives serai trop petite pour l'écran (cad empêcherai le déclenchement d'un onEndReached),
+          //Alors on charge directement les commentaires en dessous
+          
+          //******************************************************
+          //Algorithme de récupération des differentes dimensions 
+          //pour une gestion du chargement des commentaires ou non
+          //de manière plus intelligente
+
+          //Dimensions.get('window').height > hauteur totale de l'écran
+          //200+DIMENSION.STATUSBAR_HEIGHT  > hauteur de la partie noir (lecteur video + statusbar)
+
+          //125+50 > hauteur de VideoViewerList_HeaderComponent 
+          //120 > hauteur de VideoMini
+          //DIMENSION.MIN_HEADER_HEIGHT > hauteur de VideoViewerList_CommentHeader          
+          //******************************************************          
+
+          Dimensions.get('window').height -200 -DIMENSION.STATUSBAR_HEIGHT > +125 +50 +(120*responseJson.items.length) +DIMENSION.MIN_HEADER_HEIGHT
+          && !this.state.isFirstLoading 
+          && !this.state.isRefreshing 
+          && !this.state.stopLoadingMore 
+          && !this.state.isLoadingMore 
+            ? this.setState({ isLoadingMore: true }, () => { console.log("MORE 1 !!!"); this.fetchMore() }) 
+            : null
+        })    
+      }
+    })
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     this._isMounted = false
-  }
+  }  
 
   render() {   
     return (
-      <View style={styles.main_container}>
-
-        <VideoViewer_CommentHeader 
-          toggleModal={this.toggleModal}
-          commentCount={this.state.commentCount}                
-          navigateBack={this.navigateBack}
-          isLoading={this.state.isLoading}
-        />
-
+      <View style={styles.main_container}>  
         <ModalCommentTopRecent
           toggleModal={this.toggleModal}
           orderComment={this.orderComment}
           isModalVisible={this.state.isModalVisible}
+          modalPosition={this.state.modalPosition}
         />
 
         { 
-          this.state.isLoading           
-            ? <CommentLoading />
-            : this.state.isEmpty
-              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedListView destinée à acceuilir les commentaires de l'utilisateur            
-              : <View style={styles.listview_container}>
-                  <AnimatedListView //AnimatedListView pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
-                    contentContainerStyle={styles.listview}
-                    showsVerticalScrollIndicator={true}
-                    dataSource={this.state.dataSource}
-                    renderRow={
-                      (rowData, sectionId, rowId) => {
-                        if(rowData){
-                          <Comment
-                            data={rowData}
-                            navigateTo={this.navigateTo}
-                            rowId={rowId}                      
+          this.state.isFirstLoading           
+            ? <CommentLoading color={THEME.PRIMARY.BACKGROUND_COLOR}/>                      
+            : <View style={styles.listview_container}>
+                <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                  contentContainerStyle={styles.listview}
+                  showsVerticalScrollIndicator={true}                  
+                  data={this._data}                
+                  renderItem={
+                    ({item}) => { return (                        
+                      item.contentID == 0
+                        ? <VideoViewerList_HeaderComponent
+                            video={this.props.video}                            
                           />
-                        }
-                      }
-                    }
-                    renderFooter={() => {
-                      return (
-                        this.state.isLoadingMore &&
-                        <View style={styles.isloadingmore_container}>
-                          <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
-                        </View>
-                      )
-                    }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
-                    refreshControl={ 
-                      <RefreshControl 
-                        colors={[THEME.SECONDARY.COLOR]} 
-                        refreshing={this.state.isRefreshing} 
-                        progressViewOffset={-25}
-                        onRefresh={() => this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, dataSource: null, _dataAfter: '' }, () => this.fetchRefresh())}
-                      /> 
-                    }
-                    scrollEventThrottle={16}
-                    {...this.props}
-                  />
-                </View>
+                        : item.kind == "youtube#searchResult"
+                          ? <VideoMini
+                              firstData={item}                            
+                              navigateTo={this.navigateBackNavigateTo}                                      
+                            />
+                          : item.contentID == 1
+                            ? <VideoViewerList_CommentHeader                              
+                                setModalPosition={this.setModalPosition}                                
+                                commentCount={this.state.commentCount}                
+                                isLoading={this.state.isLoading}                                        
+                              />                                
+                            : item.kind == "youtube#commentThread"
+                              ? <Comment
+                                  data={item}
+                                  navigateTo={this.navigateTo}                                  
+                                />
+                              : null
+                    )}
+                  }
+                  ListFooterComponent={() => {
+                    return (
+                      this.state.isEmpty                  
+                        ? <VideoViewerList_CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur 
+                        : this.state.isLoadingMore &&
+                            <View style={styles.isloadingmore_container}>
+                              <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
+                            </View>                      
+                    )
+                  }}
+                  onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => { console.log("MORE 2 !!!"); this.fetchMore() }) : null }                    
+                  refreshControl={ 
+                    <RefreshControl
+                      colors={[THEME.SECONDARY.COLOR]} 
+                      refreshing={this.state.isRefreshing} 
+                      progressViewOffset={-25}
+                      onRefresh={() => {                        
+                        this._dataAfter = ''
+                        this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
+                      }}                        
+                    /> 
+                  }
+                  keyExtractor={(item,e) => e.toString()}
+                  onEndReachedThreshold={.5}
+                  {...this.props}
+                />                  
+              </View>
+
         }
 
       </View>
@@ -283,9 +377,9 @@ const styles = StyleSheet.create({
   listview_container: {
     flex: 1   
   },
-  listview: {
-    padding: 15,
+  listview: {    
     backgroundColor: THEME.PRIMARY.COLOR,   
+    paddingBottom: 15, 
   },
   isloadingmore_container: { 
     flex: 1,

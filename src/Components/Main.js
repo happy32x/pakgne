@@ -1,6 +1,6 @@
 import React from 'react'
 import { 
-  View, 
+  View,
   Platform,
   StyleSheet,
 } from 'react-native'
@@ -8,7 +8,6 @@ import {
 import BarStatus from './BarStatus'
 import RootTab from './RootTab'
 import THEME from '../INFO/THEME'
-import Test from './Test'
 
 class Main extends React.Component {
   static navigationOptions = {
@@ -27,7 +26,8 @@ class Main extends React.Component {
 
 const styles = StyleSheet.create({
   main_container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
   },
 })
 

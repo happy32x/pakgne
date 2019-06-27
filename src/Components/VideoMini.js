@@ -65,7 +65,7 @@ class VideoMini extends React.Component{
           }}
         >
           <View style={styles.related_video_container_one}>
-            <View style={styles.related_video_container_two} >
+            <View style={styles.related_video_container_two}>
               <View style={styles.main_container}>
                 <Image 
                   source={{uri: this.props.firstData.snippet.thumbnails.medium.url}}

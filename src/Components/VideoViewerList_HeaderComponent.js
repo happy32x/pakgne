@@ -13,8 +13,6 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
-import VideoViewerList from './VideoViewerList'
-
 import Icon from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
@@ -115,10 +113,17 @@ class VideoViewerList_HeaderComponent extends React.Component{
               onValueChange = {this.toggleSwitch}
               value = {this.state.switchValue}
 
-              thumbTintColor = {this.state.switchValue ? THEME.PRIMARY.BACKGROUND_COLOR : "#ececec"} //couleur du thumb
+              thumbColor = {this.state.switchValue ? THEME.PRIMARY.BACKGROUND_COLOR : "#ececec"} //couleur du thumb
 
-              onTintColor = {THEME.PRIMARY.WAVE_COLOR_PRIMARY} //couleur du track activé                                   
-              tintColor = {THEME.TERTIARY.COLOR} //couleur du track désactivé           
+              //onTintColor = {THEME.PRIMARY.WAVE_COLOR_PRIMARY} //couleur du track activé                                   
+              //trackColor = {THEME.PRIMARY.WAVE_COLOR_PRIMARY} //couleur du track activé              
+              //trackColor = {THEME.TERTIARY.COLOR} //couleur du track désactivé    
+              
+              // couleur du track
+              trackColor = {{
+                false: THEME.TERTIARY.COLOR,
+                true: THEME.PRIMARY.WAVE_COLOR_PRIMARY
+              }}
             />
           </View>
         </View>

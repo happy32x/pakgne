@@ -6,7 +6,7 @@ import {
 	StyleSheet,
 } from 'react-native'
 
-import { Font } from 'expo'
+import * as Font from 'expo-font'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import APPNAME from '../INFO/APPNAME'

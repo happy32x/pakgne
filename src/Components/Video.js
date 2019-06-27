@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,   
 } from 'react-native'
 
-import Constants from 'expo'
+import Constants from 'expo-constants'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Star from './Star'
 import timeConverter from '../Helpers/timeConverter'
@@ -142,7 +142,7 @@ class Video extends React.Component{
                 { 
                   this.state.isLike
                     ? <Icon style={styles.same_element_one} name="md-heart" />
-                    : <Icon style={styles.same_element_one} name="md-heart-outline" /> 
+                    : <Icon style={styles.same_element_one} name="md-heart-empty" /> 
                 }                                               
               </View>
               <View style={styles.same_element_two}>
@@ -159,7 +159,7 @@ class Video extends React.Component{
               tension={TENSION}
               style={styles.same_element}
               onPress={() => {
-                this.props.navigateTo( 'CommentList_INTERMEDIARY', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
               }}     
             >
               <View style={styles.same_element}>

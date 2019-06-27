@@ -90,10 +90,10 @@ class Comment extends React.Component {
             </View>
             
             {/*<Rate 
-              like={this.props.data.like} hrnybn
+              like={this.props.data.like}
               dislike={this.props.data.dislike} 
             />*/}
-            
+
             {
               this.props.data.snippet.totalReplyCount===0 
                 ?

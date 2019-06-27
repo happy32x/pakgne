@@ -1,16 +1,15 @@
 import React, { Component } from 'react'
-import { 
+import {
   View,
-  Text, 
-  Image, 
+  Text,
+  Image,
   Dimensions,
   StyleSheet,
 } from 'react-native'
 
-import { 
-  LinearGradient, 
-  Font, 
-} from 'expo'
+import * as Font from 'expo-font'
+import { LinearGradient } from 'expo-linear-gradient'
+
 
 import DIMENSION from '../INFO/DIMENSION'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
