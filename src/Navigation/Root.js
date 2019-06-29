@@ -1,5 +1,6 @@
 // Import the screens
 import Main from '../Components/Main'
+import FavoriteViewer from '../Components/FavoriteViewer'
 import SearchViewer from '../Components/SearchViewer'
 import VideoViewer from '../Components/VideoViewer'
 import ImageViewer from '../Components/ImageViewer'
@@ -12,14 +13,15 @@ import About from '../Components/About'
 
 // Import React Navigation
 import { 
-  createAppContainer, 
-  createStackNavigator 
+  createAppContainer,
+  createStackNavigator
 } from 'react-navigation'
 
 // Create the navigator
 const Navigator = createStackNavigator(
     {
       Main: Main,
+      FavoriteViewer: FavoriteViewer,
       SearchViewer: SearchViewer,
       VideoViewer: VideoViewer,
       ImageViewer: ImageViewer,

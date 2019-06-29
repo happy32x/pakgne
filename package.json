@@ -1,6 +1,6 @@
 {
   "name": "pakgne",
-  "version": "0.1.1",
+  "version": "2.0.0",
   "private": true,
   "devDependencies": {
     "jest-expo": "^33.0.0",

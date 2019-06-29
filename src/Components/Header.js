@@ -43,6 +43,18 @@ class Header extends React.Component {
 
         </View>
         <View style={styles.option_container}>   
+				  <TouchableNativeFeedback
+            background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
+            onPress={() => {
+              this.props.navigateTo('FavoriteViewer', {
+								id: 'favorite',								
+            	})
+            }}
+          >
+            <View style={styles.favorite_container} >
+              <Icon style={styles.favorite} name="md-star" />
+            </View>
+          </TouchableNativeFeedback>
           <TouchableNativeFeedback
             background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
@@ -109,6 +121,20 @@ const styles = StyleSheet.create({
 		alignItems:'center', 
 		justifyContent:'flex-end', 
 		flexDirection:'row' 
+	},
+	favorite_container: {
+		width: 45, 
+		height: DIMENSION.MIN_HEADER_HEIGHT, 
+		alignItems: 'center', 
+		justifyContent: 'center', 
+		flexDirection: 'row',
+		paddingBottom: 2,
+	},
+	favorite: {
+		fontWeight:'bold', 
+		fontFamily:'normal', 
+		color: THEME.PRIMARY.COLOR, 
+		fontSize:25 
 	},
 	search_container: {
 		width: 45, 

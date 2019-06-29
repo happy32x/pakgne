@@ -74,7 +74,7 @@ class SearchViewer extends Component {
         <View style={styles.main_container}>
           <View style={styles.arrow_back_container}>
             <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
+              background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
               onPress={() => {
                 this.props.navigation.goBack()
               }}

@@ -14,6 +14,8 @@ import ParameterHeader from './ParameterHeader'
 import ParameterViewerContent from './ParameterViewerContent'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
+import { LinearGradient } from 'expo-linear-gradient'
+import { black } from 'ansi-colors';
 
 const USER_IMG = '../assets/Pakgne-Poupi-Muriel-Blanche.jpg'
 const HEADER_MAX_HEIGHT = 300
@@ -126,6 +128,24 @@ class ParameterViewer extends Component {
               },
             ]}
             source={require(USER_IMG)}
+          />          
+        </Animated.View>
+
+        <Animated.View  
+          style={[
+            styles.tranparentBar,
+            {
+              opacity: 1,
+              height: 3,
+              transform: [{ translateY: headerTranslate }],            
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={['rgba(0,0,0,0.3)', 'transparent']}
+            style={{
+              flex: 1
+            }}      
           />
         </Animated.View>
 
@@ -188,6 +208,13 @@ const styles = StyleSheet.create({
     width: null,
     height: HEADER_MAX_HEIGHT,
     resizeMode: 'cover',
+  },
+  tranparentBar: {    
+    position: 'absolute',
+    width: '100%',  
+    top: HEADER_MAX_HEIGHT,
+    left: 0,
+    right: 0,
   },
   /*bar: {
     backgroundColor: 'transparent',

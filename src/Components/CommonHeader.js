@@ -39,7 +39,7 @@ function CommonHeader(props) {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: THEME.PRIMARY.BACKGROUND_COLOR,
+    backgroundColor: THEME.PRIMARY.COLOR,
 		height: DIMENSION.MAX_HEADER_HEIGHT,
     width: '100%',
     alignItems: 'center', 
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   arrow_back_icon: {
     fontWeight:'bold', 
 		fontFamily:'normal', 
-		color: THEME.PRIMARY.COLOR, 
+		color: THEME.PRIMARY.BACKGROUND_COLOR, 
 		fontSize:25,
   },
   header_container_right: {
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    color: THEME.PRIMARY.COLOR,
+    color: THEME.PRIMARY.BACKGROUND_COLOR,
   }, 
 })
 

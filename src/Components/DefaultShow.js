@@ -104,8 +104,7 @@ class DefaultShow extends Component {
                 </View>
                 : <Text style={styles.loading_candice_police}>Loading candice police ... </Text>
           }
-        </View>
-        
+        </View>        
 
         <LinearGradient
           colors={['rgba(0,0,0,0.5)', 'transparent']}

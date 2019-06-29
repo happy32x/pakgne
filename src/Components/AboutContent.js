@@ -19,7 +19,7 @@ function AboutContent(props) {
         </View>
 
         <View style={styles.version_content}>
-          <Text style={styles.version}>Ver 0.1.0</Text>
+          <Text style={styles.version}>Ver 2.0.0</Text>
         </View>
 
         {/*
