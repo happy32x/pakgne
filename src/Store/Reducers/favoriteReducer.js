@@ -1,3 +1,7 @@
+import {   
+  ToastAndroid, 
+} from "react-native"
+
 // Store/Reducers/favoriteReducer.js
 
 const initialState = { favoritesVideo: [], favoritesNews: [] }
@@ -13,6 +17,7 @@ function toggleFavorite(state = initialState, action) {
           ...state,
           favoritesVideo: state.favoritesVideo.filter( (item, index) => index !== favoriteVideoIndex)
         }
+        ToastAndroid.show('Supprimé', ToastAndroid.SHORT)
       }
       else {
         // Le film n'est pas dans les films favoris, on l'ajoute à la liste
@@ -20,6 +25,7 @@ function toggleFavorite(state = initialState, action) {
           ...state,
           favoritesVideo: [...state.favoritesVideo, action.value]
         }
+        ToastAndroid.show('Ajouté', ToastAndroid.SHORT)
       }
       return nextState || state
   default:

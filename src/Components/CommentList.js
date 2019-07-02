@@ -177,7 +177,7 @@ class CommentList extends Component {
 
               this.setState({
                 isEmpty: false,
-                isLoading: false,    
+                isLoading: false,
                 commentCount,
                 canWeHandleOrder: true,                           
               })
@@ -187,12 +187,12 @@ class CommentList extends Component {
               : null
 
               //On vérifie pour raison de sécurité si this.requestId à été modifié
-              /*this.requestId === requestId 
+              /*this.requestId === requestId
                 ? this.setState({ isLoading: false })
                 : this.setState({ isLoading: true })*/
             }
           })
-        }                
+        }             
       }
     })
   }

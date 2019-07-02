@@ -5,7 +5,7 @@ import {
   Animated,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,    
+  ActivityIndicator,     
 } from "react-native"
 
 import { withNavigation } from 'react-navigation'
@@ -13,7 +13,7 @@ import { connect } from 'react-redux'
 import DIMENSION from '../INFO/DIMENSION'
 import EmptyDynamic from './EmptyDynamic'
 import THEME from '../INFO/THEME'
-import Favorite from "./Favorite"
+import Favorite from './Favorite'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
@@ -33,7 +33,7 @@ class FavoriteList extends Component {
 
   _toggleFavorite(firstData, secondData) {
     const action = { type: "TOGGLE_FAVORITE", value: [firstData,secondData] }
-    this.props.dispatch(action)
+    this.props.dispatch(action)    
   }  
 
   _isFavorite(firstData) {
