@@ -9,6 +9,7 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
+import likeConverter from '../Helpers/likeConverter'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import DIMENSION from '../INFO/DIMENSION'
@@ -32,7 +33,7 @@ class VideoViewerList_CommentHeader extends Component {
         <View style={styles.header_commentCount}>  
           {
             !this.props.isLoading 
-              ? <Text style={styles.header_text_two}>{this.props.commentCount}</Text>
+              ? <Text style={styles.header_text_two}>{likeConverter(this.props.commentCount)}</Text>
               : <ActivityIndicator style={styles.isloading} size="small" color={THEME.SECONDARY.COLOR}/>
           }
         </View>                

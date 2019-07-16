@@ -296,7 +296,8 @@ class VideoViewerList extends Component {
       <View style={styles.main_container}>  
         <ModalCommentTopRecent
           toggleModal={this.toggleModal}
-          orderComment={this.orderComment}
+          order={this.state.order}
+          orderComment={this.orderComment}          
           isModalVisible={this.state.isModalVisible}
           modalPosition={this.state.modalPosition}
         />

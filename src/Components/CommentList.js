@@ -219,6 +219,7 @@ class CommentList extends Component {
 
         <ModalCommentTopRecentStatic
           toggleModal={this.toggleModal}
+          order={this.state.order}
           orderComment={this.orderComment}
           isModalVisible={this.state.isModalVisible}
         />
@@ -264,7 +265,7 @@ class CommentList extends Component {
                     {...this.props}
                   />                  
                 </View>
-
+                
         }
 
       </View>

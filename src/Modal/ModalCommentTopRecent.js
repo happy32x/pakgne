@@ -8,6 +8,7 @@ import {
   TouchableNativeFeedback,
 } from "react-native"
 
+import Icon from 'react-native-vector-icons/Ionicons'
 import DIMENSION from '../INFO/DIMENSION'
 import Modal from "react-native-modal"
 import THEME from '../INFO/THEME'
@@ -18,47 +19,49 @@ class ModalCommentTopRecent extends Component {
   }
 
   render() {
-  return (
-    <Modal
-      style={[
-        styles.modal, 
-        {
-          top: 
-          this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT < 200 
-            ? 200
-            : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT > Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
-              ? Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
-              : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT
-        }
-      ]}
-      isVisible={this.props.isModalVisible} 
-      onBackdropPress={() => this.props.toggleModal()} 
-      backdropColor='transparent'
-      animationIn='pulse'
-      animationInTiming={1}
-      animationOut='pulse'
-      animationOutTiming={1}
-    >
-      <View style={styles.modal_option_container}>
-        <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-          onPress={() => this.props.orderComment('relevance')}
-        >
-          <View style={styles.modal_option}>               
-            <Text style={styles.modal_option_text}>Top commentaires</Text>
-          </View>
-        </TouchableNativeFeedback>
-        <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-          onPress={() => this.props.orderComment('time')}
-        >
-          <View style={styles.modal_option}>               
-            <Text style={styles.modal_option_text}>Les plus récents</Text>
-          </View>
-        </TouchableNativeFeedback>            
-      </View>  
-    </Modal> 
-  )
+    return (
+      <Modal
+        style={[
+          styles.modal, 
+          {
+            top: 
+            this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT < 200 
+              ? 200
+              : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT > Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
+                ? Dimensions.get('window').height -100 -10 -10 -DIMENSION.STATUSBAR_HEIGHT
+                : this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT
+          }
+        ]}
+        isVisible={this.props.isModalVisible} 
+        onBackdropPress={() => this.props.toggleModal()} 
+        backdropColor='transparent'
+        animationIn='pulse'
+        animationInTiming={1}
+        animationOut='pulse'
+        animationOutTiming={1}
+      >
+        <View style={styles.modal_option_container}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => this.props.orderComment('relevance')}
+          >
+            <View style={styles.modal_option}>  
+              { this.props.order == 'relevance' ? <Icon style={styles.md_checkmark_icon} name="md-checkmark" /> : null }
+              <Text style={styles.modal_option_text}>  Top commentaires</Text>
+            </View>
+          </TouchableNativeFeedback>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => this.props.orderComment('time')}
+          >
+            <View style={styles.modal_option}> 
+              { this.props.order == 'time' ? <Icon style={styles.md_checkmark_icon} name="md-checkmark" /> : null }
+              <Text style={styles.modal_option_text}>  Les plus récents</Text>
+            </View>
+          </TouchableNativeFeedback>            
+        </View>  
+      </Modal> 
+    )
   }
 }
 
@@ -87,6 +90,7 @@ const styles = StyleSheet.create({
   },
   modal_option: {
     flex:1,
+    flexDirection: 'row',
     alignItems: 'center', 
     justifyContent: 'center',
     paddingLeft:10,
@@ -95,6 +99,10 @@ const styles = StyleSheet.create({
   },
   modal_option_text: {
     fontSize: 16
+  },
+  md_checkmarkn_icon: {
+    color: THEME.SECONDARY.COLOR,
+    fontSize: 20
   },
 })
 

@@ -11,6 +11,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import BarStatus from './BarStatus'
+import likeConverter from '../Helpers/likeConverter'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
@@ -24,7 +25,7 @@ function CommentHeader(props) {
         <View style={styles.header_commentCount}>  
           {
             !props.isLoading 
-              ? <Text style={styles.header_text_two}>{props.commentCount}</Text>
+              ? <Text style={styles.header_text_two}>{likeConverter(props.commentCount)}</Text>
               : <ActivityIndicator style={styles.isloading} size="small" color={THEME.SECONDARY.COLOR}/>
           }
         </View>                

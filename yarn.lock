@@ -5141,6 +5141,10 @@ react-native-animatable@^1.3.1:
   dependencies:
     prop-types "^15.5.10"
 
+react-native-app-intro-slider@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-app-intro-slider/-/react-native-app-intro-slider-2.0.1.tgz#947fece38d2332d9cdc5381344b0c47ab822984b"
+
 react-native-autolink@^1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/react-native-autolink/-/react-native-autolink-1.8.1.tgz#ce44e8fe706d7535de13698510e3944e4514454e"
