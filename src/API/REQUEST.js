@@ -17,7 +17,7 @@ export function getVideoListFromApi (order, pageToken) {
 export function getVideoListMiniFromApi (keyWord, pageToken) {  
   const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet&q=${keyWord}&maxResults=${results}${pageToken}`
   return fetch(url)
-    .then((response) =>  response.json())
+    .then((response) => response.json())
     .catch((error) => console.error(error))
 }
 
@@ -25,7 +25,7 @@ export function getVideoListMiniFromApi (keyWord, pageToken) {
 export function getVideoListMiniRelatedToVideoIdFromApi (videoId) {  
   const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet&type=video&maxResults=${resultsRelatedToVideoId}&relatedToVideoId=${videoId}`
   return fetch(url)
-    .then((response) =>  response.json())
+    .then((response) => response.json())
     .catch((error) => console.error(error))
 }
 

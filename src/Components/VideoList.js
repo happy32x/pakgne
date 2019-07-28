@@ -24,7 +24,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 class VideoList extends Component {
   _isMounted = false
 
-  constructor(props) {
+  constructor(props) {    
     super(props);    
     this.state = {
       updateVideoList: false,
@@ -88,7 +88,7 @@ class VideoList extends Component {
     this.fetchData(responseJson => {
       if(this._isMounted && this.requestId === requestId) {      
         const data = this._data.concat(shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)))      
-        console.log("dataLength : " + data.length)
+        console.log("VideoList :: dataLength : " + data.length)
 
         this._data = data,
         this._dataAfter = responseJson.nextPageToken,
@@ -112,8 +112,8 @@ class VideoList extends Component {
           //if(this._isMounted && this.requestId === requestId && this.props.updateVideoList !== false && this.props.updateVideoList === this.state.updateVideoList) {
           if(this._isMounted && this.requestId === requestId) {
             const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-            console.log("order : " + order)
-            console.log("dataLength : " + data.length)
+            console.log("VideoList :: order : " + order)
+            console.log("VideoList :: dataLength : " + data.length)
       
             this._data = data,
             this._dataAfter = responseJson.nextPageToken,
@@ -135,32 +135,7 @@ class VideoList extends Component {
           }            
         })
       })
-  }
-
-  componentDidMount() {    
-    this._isMounted = true
-
-    this.randomVideoListOrder()
-      .then((order) => {
-        this.fetchData(responseJson => {
-          if(this._isMounted) {
-            //const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-            const data = responseJson.items.filter(item => item.id.videoId !== undefined)
-            console.log("order : " + order)
-            console.log("dataLength : " + data.length)
-      
-            this._data = data,
-            this._dataAfter = responseJson.nextPageToken,
-
-            this.setState({ isLoading: false })
-
-            responseJson.nextPageToken===undefined 
-              ? this.setState({ stopLoadingMore: true })  
-              : null            
-          }        
-        })
-      })    
-  }
+  }  
 
   /*
   componentDidUpdate(prevProps) {
@@ -221,22 +196,52 @@ class VideoList extends Component {
   }
   */
 
+  componentDidMount() {    
+    //console.log("VideoList :: componentDidMount")
+    this._isMounted = true
+
+    this.randomVideoListOrder()
+      .then((order) => {
+        this.fetchData(responseJson => {
+          if(this._isMounted) {
+            //const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+            const data = responseJson.items.filter(item => item.id.videoId !== undefined)
+            
+            console.log("VideoList :: order : " + order)
+            console.log("VideoList :: dataLength : " + data.length)
+
+            this._data = data,
+            this._dataAfter = responseJson.nextPageToken,
+            
+            this.setState({ isLoading: false })
+
+            responseJson.nextPageToken===undefined 
+              ? this.setState({ stopLoadingMore: true })  
+              : null            
+          }        
+        })
+      })
+  }
+
   componentDidUpdate(prevProps) {
-    console.log('componentDidUpdate')  
-    console.log('this.props.updateVideoList :: ' + this.props.updateVideoList)  
-    console.log('this.props.updateVideoListToggle :: ' + this.props.updateVideoListToggle)  
-    console.log('prevProps.updateVideoListToggle :: ' + prevProps.updateVideoListToggle)  
+    /*console.log('VideoList :: componentDidUpdate')  
+    console.log('VideoList :: this.props.updateVideoList :: ' + this.props.updateVideoList)  
+    console.log('VideoList :: this.props.updateVideoListToggle :: ' + this.props.updateVideoListToggle)  
+    console.log('VideoList :: prevProps.updateVideoListToggle :: ' + prevProps.updateVideoListToggle)  */
 
     //On appui sur VIDEO une deuxième fois
-    if(this.props.updateVideoList && (this.props.updateVideoListToggle !== prevProps.updateVideoListToggle) ) {          
+    //(this.props.updateVideoListToggle !== prevProps.updateVideoListToggle) //Ceci à été ajouter pour éviter la boucle infini lors du re-rendu
+    //Car quand "componentDidUpdate" fini de s'executer, on passe par "shouldComponentUpdate" puis "render" pour revenir à "componentDidUpdate",
+    //ainsi (this.props.updateVideoListToggle !== prevProps.updateVideoListToggle) empêche donc un rendu supplémentaire
+    if(this.props.updateVideoList && (this.props.updateVideoListToggle !== prevProps.updateVideoListToggle) ) {              
       this._dataAfter = ''
       this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())      
     }
   }  
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldComponentUpdate') 
-    console.log('nextProps.scrollTopVideoList :: ' + nextProps.scrollTopVideoList) 
+    /*console.log('VideoList :: shouldComponentUpdate') 
+    console.log('VideoList :: nextProps.scrollTopVideoList :: ' + nextProps.scrollTopVideoList) */
 
     if(nextProps.index != 0 || nextProps.indexOLD != 0) return false
 
@@ -260,7 +265,7 @@ class VideoList extends Component {
   }
 
   render() {
-    {console.log('render')}
+    {console.log('VideoList :: render')}
     if (this.state.isLoading) {
       return (
         <View style={styles.isloading_container}> 
@@ -307,7 +312,7 @@ class VideoList extends Component {
             }
             keyExtractor={(item,e) => e.toString()}
             onEndReachedThreshold={.1}
-            {...this.props}
+            {...this.props}    
           />
         </View>
       );

@@ -8,6 +8,8 @@ import IconIonicons from 'react-native-vector-icons/Ionicons'
 import IconFeather from 'react-native-vector-icons/Feather'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import IconOcticons from 'react-native-vector-icons/Octicons'
+
 import DIMENSION from '../INFO/DIMENSION'
 
 function HeaderContentIndicator(props) {
@@ -24,7 +26,8 @@ function HeaderContentIndicator(props) {
           : props.type === 'Feather' ? <IconFeather style={[styles.icon, {color: props.color}]} name={props.icon} /> 
             : props.type === 'Ionicons' ? <IconIonicons style={[styles.icon, {color: props.color}]} name={props.icon} />
               : props.type === 'MaterialIcons' ? <IconMaterialIcons style={[styles.icon, {color: props.color}]} name={props.icon} />
-                : <Text>the specified font is not supported</Text>
+                : props.type === 'Octicons' ? <IconOcticons style={[styles.icon, {color: props.color}]} name={props.icon} />
+                  : <Text>the specified font is not supported</Text>
       }
     </View>
   );

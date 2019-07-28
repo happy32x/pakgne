@@ -69,9 +69,6 @@ class RootTab extends React.Component {
     this.index = 0
     this.navigateTo = this._navigateTo.bind(this)
 
-    this._scrollAnimVideoList = 0
-    this._scrollAnimChatList = 0
-
     this.firstRoute = () => (
       <VideoList
         index = {this.state.index}
@@ -80,20 +77,12 @@ class RootTab extends React.Component {
         updateVideoList = {this.state.updateVideoList}
         updateVideoListToggle = {this.state.updateVideoListToggle}
 
-        onScroll={
+        onScroll = {
           Animated.event(
             [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
-            {
-              useNativeDriver: true,
-              listener: event => {
-                this._scrollAnimVideoList = event.nativeEvent.contentOffset.y
-                // console.log("RootTab :: firstRoute :: thid._scrollAnimVideoList :: " + this._scrollAnimVideoList)
-                // do something special
-              },
-            },
+            { useNativeDriver: true }
           )
         }
-
         onScrollEndDrag={this._onScrollEndDrag}
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
@@ -103,27 +92,32 @@ class RootTab extends React.Component {
       <ChatList   
         index = {this.state.index}        
         indexOLD = {this.state.indexOLD}
-        scrollTopChatList = {this.state.scrollTopChatList}                 
+        scrollTopChatList = {this.state.scrollTopChatList}         
 
-        onScroll={
+        onScroll = {
           Animated.event(
             [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
-            {
-              useNativeDriver: true,
-              listener: event => {
-                this._scrollAnimChatList = event.nativeEvent.contentOffset.y
-                // console.log("RootTab :: firstRoute :: this._scrollAnimChatList :: " + this._scrollAnimChatList)
-                // do something special
-              },
-            },
+            { useNativeDriver: true }
           )
         }
-        
         onScrollEndDrag={this._onScrollEndDrag}
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
     )
+    /*this.secondRoute = () => (
+      <ArticleList        
+        onScroll = {
+          Animated.event(
+            [{ nativeEvent: { contentOffset: { y: this.state.scrollAnim } } }],
+            { useNativeDriver: true }
+          )
+        }
+        onScrollEndDrag={this._onScrollEndDrag}
+        onMomentumScrollBegin={this._onMomentumScrollBegin}
+        onMomentumScrollEnd={this._onMomentumScrollEnd}
+      />
+    )*/
     //this.secondRoute = () => ( <Default /> )
     this.thirdRoute = () => ( <DefaultShow /> )     
   }
@@ -143,8 +137,8 @@ class RootTab extends React.Component {
   _handleIndexChange = index => {
     this.index = index 
     this.setState({ index, indexOLD: this.state.index })    
-    //console.log('RootTab :: _handleIndexChange')
-    //console.log('RootTab :: index : ' + index )
+    console.log('RootTab :: _handleIndexChange')
+    console.log('RootTab :: index : ' + index )
   }
 
   _onTabPress = ({ route }) => { 
@@ -155,12 +149,11 @@ class RootTab extends React.Component {
     //scroll to top && update VideoList
     if(route.key == 0){ //On vérifie de la plus simple des manières si on a cliqué sur l'onglet VIDEO
       if(this.state.index === 0){ //On vérifie si on à appuyer sur Tab video plus d'une fois (ou une fois si on se trouve au lancement de l'app)
-        if( JSON.stringify(this.state.scrollAnim) != 0 || this._scrollAnimVideoList != 0 ){ //videoList n'est pas encore au top
-          //scroll to top VideoList          
+        if( JSON.stringify(this.state.scrollAnim) != 0 ){ //videoList n'est pas encore au top
+          //scroll to top VideoList
           this.setState({ scrollTopVideoList: true, updateVideoList: false, indexOLD: this.state.index })
-          this._scrollAnimVideoList = 0 //initialisation au point zero (tout les indiateurs sont au top)
         }     
-        else if( JSON.stringify(this.state.scrollAnim) == 0 || this._scrollAnimVideoList == 0 ){ //videoList est déjà au top
+        if( JSON.stringify(this.state.scrollAnim) == 0 ){ //videoList est déjà au top
           //update VideoList
           this.setState({ scrollTopVideoList: false, updateVideoList: true, updateVideoListToggle: !this.state.updateVideoListToggle, indexOLD: this.state.index })
         }
@@ -168,10 +161,9 @@ class RootTab extends React.Component {
     }  
     else if(route.key == 1){ //On vérifie de la plus simple des manières si on a cliqué sur l'onglet TALK
       if(this.state.index === 1){ //On vérifie si on à appuyer sur Tab TALK plus d'une fois (ou une fois si on se trouve au lancement de l'app)
-        if( JSON.stringify(this.state.scrollAnim) != 0 || this._scrollAnimChatList != 0){ //chatList n'est pas encore au top
-          //scroll to top ChatList
+        if( JSON.stringify(this.state.scrollAnim) != 0 ){ //chatList n'est pas encore au top
+          //scroll to top VideoList
           this.setState({ scrollTopChatList: true, indexOLD: this.state.index })
-          this._scrollAnimChatList = 0 //initialisation au point zero (tout les indiateurs sont au top)
         }                          
       }    
     }  
@@ -249,8 +241,8 @@ class RootTab extends React.Component {
       toValue,
       duration: 350,
       useNativeDriver: true,
-    }).start()         
-  }
+    }).start();
+  };
 
   render() {
     const { clampedScroll } = this.state;
