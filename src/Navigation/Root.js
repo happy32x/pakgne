@@ -9,6 +9,7 @@ import CommentList from '../Components/CommentList'
 import CommentListReply from '../Components/CommentListReply'
 import ParameterViewer from '../Components/ParameterViewer'
 import ParameterElement from '../Components/ParameterElement'
+import ChatViewer from '../Components/CHAT/ChatViewer'
 import About from '../Components/About'
 
 // Import React Navigation
@@ -30,6 +31,7 @@ const Navigator = createStackNavigator(
       CommentListReply: CommentListReply,       
       ParameterViewer: ParameterViewer,     
       ParameterElement: ParameterElement,  
+      ChatViewer: ChatViewer,
       About: About,    
     },
     {

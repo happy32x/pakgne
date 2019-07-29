@@ -1,10 +1,15 @@
 import React, { Component } from 'react'
-import { View, StyleSheet } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+} from 'react-native'
+
+import ChatViewerHeader from './ChatViewerHeader'
+import TransparentBar from '../TransparentBar'
+
 import Fire from './Fire'
-
 import { GiftedChat } from 'react-native-gifted-chat'
-
-const NAME = "Pakgne"
 
 class ChatViewer extends Component {
   /*static navigationOptions = ({ navigation }) => ({
@@ -15,13 +20,27 @@ class ChatViewer extends Component {
     header: null
   }
 
-  state = {
-    messages: [],
+  constructor(props) {
+    super(props)    
+    this.state = {
+      messages: [],
+    }
+
+    this.navigateBack = this._navigateBack.bind(this)
+    this.navigateTo = this._navigateTo.bind(this)
+  }
+
+  _navigateBack() {
+    this.props.navigation.goBack()
+  }
+
+  _navigateTo(destination, data) {
+    this.props.navigation.navigate(destination, data)
   }
 
   get user() {
     return {
-      name: NAME,   
+      name: this.props.navigation.state.params.name,
       _id: Fire.shared.uid,
     }
   }
@@ -40,11 +59,23 @@ class ChatViewer extends Component {
 
   render() {
     return (
-      <GiftedChat 
-        messages={this.state.messages}
-        onSend={Fire.shared.send}
-        user={this.user}
-      />
+      <View style={{flex:1}}>
+        <ChatViewerHeader 
+          title={this.props.navigation.state.params.name} 
+          type={this.props.navigation.state.params.type}
+          navigateBack={this.navigateBack} 
+          navigateTo={this.navigateTo} 
+        />
+        <View style={{flex:1}}>        
+          <GiftedChat
+            messages={this.state.messages}
+            onSend={Fire.shared.send}
+            user={this.user}
+          />
+          <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={85}/>
+        </View> 
+        <TransparentBar />
+      </View>    
     )
   }
 }

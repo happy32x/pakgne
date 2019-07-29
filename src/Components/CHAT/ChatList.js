@@ -29,7 +29,7 @@ class ChatList extends Component {
     this._data = null
     //this._dataAfter = ''
 
-    this.navigateTo = this._navigateTo.bind(this)
+    this.navigateTo = this._navigateTo.bind(this)    
   }  
 
   _navigateTo(destination, data) {
@@ -57,7 +57,7 @@ class ChatList extends Component {
   shouldComponentUpdate(nextProps, nextState) {    
     if(nextProps.index == 1) {
       if(this.state.isLoading /*|| nextState.isLoading*/) return true
-      
+
       if(nextProps.scrollTopChatList && nextProps.index == 1 && nextProps.indexOLD == 1) {   
         this.scrollTopChatList = nextProps.scrollTopChatList
         this.scrollTop()
@@ -100,8 +100,7 @@ class ChatList extends Component {
                 data={item}                                
                 navigateTo={this.navigateTo}          
               />
-            }      
-     
+            }                  
             keyExtractor={(item,e) => e.toString()}            
             {...this.props}
           />
@@ -115,6 +114,7 @@ const styles = StyleSheet.create({
   main_container: {
     flex: 1,
     paddingTop: DIMENSION.MEDIUM_HEADER_HEIGHT,
+    backgroundColor: "#fcfcfc",
   },
   content_container: {
     marginTop: 0
@@ -124,14 +124,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: DIMENSION.STATUSBAR_HEIGHT,
-    backgroundColor: THEME.PRIMARY.COLOR,
+    backgroundColor: "#fcfcfc",
   },  
-  render_separator: {
-    height: 1,
-    width: "80%",
-    backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
-    marginLeft: "20%"
-  },
 })
 
 export default withNavigation( ChatList )

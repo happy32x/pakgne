@@ -3,7 +3,7 @@ const DATATEST = [
     id: "0",
     nom: "Pakgne Group",
     type: "group",
-    img: "",
+    img: "../../../assets/default_100.jpg",
     last_comment: "Dernier commentaire",
   },
   {
