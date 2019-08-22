@@ -2,11 +2,16 @@ import {
   ToastAndroid, 
 } from "react-native"
 
-// Store/Reducers/favoriteReducer.js
+import firebase from 'firebase'
 
 const initialState = { favoritesVideo: [], favoritesNews: [] }
 
-function toggleFavorite(state = initialState, action) {
+function toggleFavorite(state = initialState, action) {    
+
+  /*firebase.auth().onAuthStateChanged( (firebaseUser) => {      
+    console.log('UID : ' + firebase.auth().currentUser.uid) 
+  }) */
+
   let nextState
   switch (action.type) {
     case 'TOGGLE_FAVORITE':
@@ -18,14 +23,23 @@ function toggleFavorite(state = initialState, action) {
           favoritesVideo: state.favoritesVideo.filter( (item, index) => index !== favoriteVideoIndex)
         }
         ToastAndroid.show('Supprimé', ToastAndroid.SHORT)
+
+        firebase.database().ref('/users/63JpatZJxRXZL1wFATDjzXd9Tex1').update({
+          favorites: nextState
+        })
       }
       else {
-        // Le film n'est pas dans les films favoris, on l'ajoute à la liste
+        // Le film n'est pas dans les films favoris, on l'ajoute à la liste      
         nextState = {
           ...state,
           favoritesVideo: [...state.favoritesVideo, action.value]
-        }
-        ToastAndroid.show('Ajouté', ToastAndroid.SHORT)
+        }        
+        ToastAndroid.show('Ajouté', ToastAndroid.SHORT)          
+
+        //firebase_database_add_favorite_video(action.value)
+        firebase.database().ref('/users/63JpatZJxRXZL1wFATDjzXd9Tex1').update({
+          favorites: nextState
+        })
       }
       return nextState || state
   default:

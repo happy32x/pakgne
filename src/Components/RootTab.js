@@ -15,7 +15,7 @@ import {
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
 import DefaultShow from './DefaultShow'
 import VideoList from './VideoList'
-import ChatList from './CHAT/ChatList'
+//import ChatList from './CHAT/ChatList'
 import Default from './Default'
 import Header from './Header'
 import DIMENSION from '../INFO/DIMENSION'
@@ -47,7 +47,7 @@ class RootTab extends React.Component {
       routes: [
         { key: '0', title: 'FEED' },
         { key: '1', title: 'TALK' },
-        { key: '2', icon: 'show' },
+        //{ key: '2', icon: 'show' },
       ],
 
       scrollAnim,
@@ -99,7 +99,7 @@ class RootTab extends React.Component {
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
     )
-    this.secondRoute = () => (
+    /*this.secondRoute = () => (
       <ChatList   
         index = {this.state.index}        
         indexOLD = {this.state.indexOLD}
@@ -123,9 +123,9 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )
-    //this.secondRoute = () => ( <Default /> )
-    this.thirdRoute = () => ( <DefaultShow /> )     
+    )*/
+    this.secondRoute = () => ( <Default /> )
+    //this.thirdRoute = () => ( <DefaultShow /> )     
   }
 
   _navigateTo(destination, data) {
@@ -177,11 +177,11 @@ class RootTab extends React.Component {
     }  
   }
 
-  _renderIcon = ({ route }) => {
+  /*_renderIcon = ({ route }) => {
     return (route.icon === "show" ?
     <IconFontAwesome style={styles.icon_tv} name="tv" />
     : null)
-  }
+  }*/
 
   _renderScene = ({ route }) => {
     switch (route.key) {
@@ -189,8 +189,8 @@ class RootTab extends React.Component {
         return this.firstRoute()
       case '1':
         return this.secondRoute()
-      case '2':
-        return this.thirdRoute()
+      /*case '2':
+        return this.thirdRoute()*/
       default:
         return null;
     }
@@ -277,7 +277,7 @@ class RootTab extends React.Component {
             <Animated.View style={[ styles.tabbar_container ,{ transform: [{ translateY: translateY }] }]}>
               <TabBar
                 {...props} 
-                renderIcon={this._renderIcon}
+                //renderIcon={this._renderIcon}
                 onTabPress={this._onTabPress}
                 indicatorStyle={styles.tabbar_indicator_style} 
                 style={styles.tabbar_style}

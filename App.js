@@ -10,11 +10,16 @@ import {
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import THEME from './src/INFO/THEME'
-import AppIntroSlider from 'react-native-app-intro-slider';
-import Entry from './Entry'
+import AppIntroSlider from 'react-native-app-intro-slider'
+import Navigation from './Auth/Navigation'
 
-const STATUSBAR_HEIGHT = StatusBar.currentHeight;
-const IMAGE_SIZE = Dimensions.get('window').width*70/100;
+/*import * as firebase from 'firebase'
+import { firebaseConfig } from './Auth/config'
+
+firebase.initializeApp(firebaseConfig)*/
+
+const STATUSBAR_HEIGHT = StatusBar.currentHeight
+const IMAGE_SIZE = Dimensions.get('window').width*70/100
 
 const slides = [
   {
@@ -43,7 +48,7 @@ const slides = [
     color: THEME.PRIMARY.COLOR,
     backgroundColor: '#febe29',
   }
-];
+]
 
 export default class App extends React.Component {
   constructor(props) {
@@ -60,7 +65,7 @@ export default class App extends React.Component {
         <Image source={item.image} style={styles.image} />
         <Text style={[styles.text, {color:item.color}]}>{item.text}</Text>
       </View>
-    );
+    )
   }
   _renderNextButton = () => {
     return (
@@ -94,8 +99,8 @@ export default class App extends React.Component {
   }
 
   render() {
-    if (this.state.showRealApp) {
-      return <Entry />
+    if (this.state.showRealApp) {      
+      return <Navigation />
     } else {
       return <AppIntroSlider 
                 renderItem={this._renderItem}
@@ -112,7 +117,7 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-around',    
+    justifyContent: 'space-around',
     paddingTop: STATUSBAR_HEIGHT,
   },
   image: {
@@ -141,4 +146,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-});
+})
