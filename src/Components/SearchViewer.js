@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import {
-  View,  
-  StatusBar,
+  View,
   Platform,
+  Keyboard,
   TextInput,
+  StatusBar,
   StyleSheet,
   TouchableNativeFeedback,
 } from 'react-native'
@@ -14,6 +15,7 @@ import BarStatus from './BarStatus'
 import VideoListMini from './VideoListMini'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
+import SearchViewerList from './SearchViewerList'
 
 const FLEX_TEXT_INPUT_EMPTY = 12
 const FLEX_TEXT_INPUT_FILLED = 10
@@ -30,19 +32,43 @@ class SearchViewer extends Component {
       searchText: '',
       cross_display: false,
       flex_text_input: FLEX_TEXT_INPUT_EMPTY, 
-    }
+      SearchViewerListIsDisplaying: true,
+      VideoListMiniIsDisplaying: false,      
+    }      
 
     this.index = this.props.navigation.getParam('searchId', 0)
     //console.log("searchViewer :: " + this.index)
 
-    this.launchResearh = this._launchResearh.bind(this)
+    this.launchResearhParam = this._launchResearhParam.bind(this)    
+    this.launchResearh = this._launchResearh.bind(this)  
+
+    this.navigateBack = this._navigateBack.bind(this)
   }
 
-  _launchResearh() {
-    this.setState({searchText: this.state.text}, () => console.log('SearchViewer :: searchtext :: ' + this.state.text))
+  _navigateBack() {    
+    if ( this.state.SearchViewerListIsDisplaying && !this.state.VideoListMiniIsDisplaying || 
+        !this.state.SearchViewerListIsDisplaying && this.state.VideoListMiniIsDisplaying ) {
+      this.props.navigation.goBack()        
+    } else {
+      Keyboard.dismiss()
+      this.setState({SearchViewerListIsDisplaying: false})
+    }    
   }
 
-  changeText = (text) => {    
+  _launchResearhParam(research) {
+    console.log("SearchViewer :: _launchResearhParam :: research :: " + research)    
+    this.text_input.setNativeProps({text: research})
+
+    this.setState({text: research, searchText: research, SearchViewerListIsDisplaying: false, VideoListMiniIsDisplaying: true}, 
+      () => console.log("SearchViewer :: _launchResearhParam :: research : " + research))   
+  }
+
+  _launchResearh() {     
+    this.setState({searchText: this.state.text, SearchViewerListIsDisplaying: false, VideoListMiniIsDisplaying: true}, 
+      () => console.log('SearchViewer :: searchtext :: ' + this.state.text))    
+  }
+
+  changeText = (text) => {        
     this.setState({text}, () => console.log('SearchViewer :: text :: ' + this.state.text))
     if(text !== '' && this.state.cross_display === false)
       this.setState({cross_display: true, flex_text_input: FLEX_TEXT_INPUT_FILLED})
@@ -76,7 +102,7 @@ class SearchViewer extends Component {
             <TouchableNativeFeedback
               background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
               onPress={() => {
-                this.props.navigation.goBack()
+                this.navigateBack()
               }}
             >
               <View style={styles.arrow_back_container_one} >
@@ -99,13 +125,32 @@ class SearchViewer extends Component {
               returnKeyType={'search'}
               onChangeText={this.changeText}
               onSubmitEditing={() => this.launchResearh()}
+              onFocus={() => this.setState({SearchViewerListIsDisplaying: true, 
+                                            cross_display: true, 
+                                            flex_text_input: FLEX_TEXT_INPUT_FILLED
+                                          })}
               value={this.state.text}
             />
           </View>
           {this.state.cross_display ? this.crossTextInput() : null}
-        </View>
-
+        </View>        
+        
         <VideoListMini searchText={this.state.searchText} />
+
+        {/*
+          this.state.SearchViewerListIsDisplaying  
+          ? <SearchViewerList 
+              launchResearhParam={this.launchResearhParam}            
+              searchText={this.state.searchText}
+            />
+          : null
+        */}
+
+        <SearchViewerList 
+          launchResearhParam={this.launchResearhParam}           
+          text={this.state.text}
+          SearchViewerListIsDisplaying={this.state.SearchViewerListIsDisplaying}
+        />    
 
         { Platform.OS === 'android' ? <BarStatus color={THEME.PRIMARY.COLOR}/> : null }
       </View>

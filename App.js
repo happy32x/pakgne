@@ -12,11 +12,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import THEME from './src/INFO/THEME'
 import AppIntroSlider from 'react-native-app-intro-slider'
 import Navigation from './Auth/Navigation'
+import Entry from './Auth/Entry'
 
-/*import * as firebase from 'firebase'
+import firebase from 'firebase'
 import { firebaseConfig } from './Auth/config'
 
-firebase.initializeApp(firebaseConfig)*/
+/*firebase.app().delete().then(function() {
+  firebase.initializeApp(firebaseConfig)
+  console.log('FIREBASE INITIALIZASION')
+})*/
 
 const STATUSBAR_HEIGHT = StatusBar.currentHeight
 const IMAGE_SIZE = Dimensions.get('window').width*70/100
@@ -56,6 +60,8 @@ export default class App extends React.Component {
     this.state = {
       showRealApp: false
     }
+    if(!firebase.apps.length) 
+      firebase.initializeApp(firebaseConfig)
   }
 
   _renderItem = (item) => {

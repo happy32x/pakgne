@@ -10,8 +10,7 @@ import firebase from 'firebase'
 export default class DashBoard extends React.Component {
 
   constructor(props){
-    super(props)
-    //console.log('UID/DashBoard : ' + firebase.auth().currentUser.uid)       
+    super(props)      
   }
 
   static navigationOptions = {

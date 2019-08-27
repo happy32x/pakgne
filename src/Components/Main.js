@@ -9,7 +9,14 @@ import BarStatus from './BarStatus'
 import RootTab from './RootTab'
 import THEME from '../INFO/THEME'
 
+import firebase from 'firebase'
+
 class Main extends React.Component {
+
+  constructor(props) {
+    super(props)            
+  }
+
   static navigationOptions = {
     header: null
   }

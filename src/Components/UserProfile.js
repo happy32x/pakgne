@@ -5,12 +5,13 @@ import {
 } from 'react-native'
 
 import CommonHeader from './CommonHeader'
-import EmptyDynamic from './EmptyDynamic'
 import THEME from '../INFO/THEME'
+import UserProfileList from './UserProfileList'
 
-class ParameterElement extends Component {
+class UserProfile extends Component {
   constructor(props) {
-    super(props)
+    super(props)    
+    this.title = 'Profil'
     this.navigateBack = this._navigateBack.bind(this)
   }
 
@@ -23,17 +24,17 @@ class ParameterElement extends Component {
   }
 
   render() {   
-    const { navigation } = this.props
+    /*const { navigation } = this.props
     const title = navigation.getParam('title', 'NO-DATA')  
     const type = navigation.getParam('type', 'NO-DATA') 
     const icon = navigation.getParam('icon', 'NO-DATA') 
     const color = navigation.getParam('color', 'NO-DATA') 
-    const message = navigation.getParam('message', 'NO-DATA') 
+    const message = navigation.getParam('message', 'NO-DATA') */
 
     return (
       <View style={styles.main_container}>                
-        <CommonHeader title={title} navigateBack={this.navigateBack} />
-        <EmptyDynamic type={type} icon={icon} color={color} message={message} />      
+        <CommonHeader title={this.title} navigateBack={this.navigateBack} />
+        <UserProfileList />      
       </View>
     )
   }
@@ -46,5 +47,5 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ParameterElement
+export default UserProfile
 

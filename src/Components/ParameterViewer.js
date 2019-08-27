@@ -15,7 +15,8 @@ import ParameterViewerContent from './ParameterViewerContent'
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 import { LinearGradient } from 'expo-linear-gradient'
-import { black } from 'ansi-colors';
+import { black } from 'ansi-colors'
+import firebase from 'firebase'
 
 const USER_IMG = '../assets/Pakgne-Poupi-Muriel-Blanche.jpg'
 const HEADER_MAX_HEIGHT = 300
@@ -127,7 +128,7 @@ class ParameterViewer extends Component {
                 transform: [{ translateY: imageTranslate }],            
               },
             ]}
-            source={require(USER_IMG)}
+            source={{uri: firebase.auth().currentUser.photoURL}}
           />          
         </Animated.View>
 

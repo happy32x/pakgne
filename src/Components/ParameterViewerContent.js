@@ -19,6 +19,8 @@ import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommun
 import THEME from '../INFO/THEME'
 import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewanda.jpg'
 
+import firebase from 'firebase'
+
 const DEFAULT_IMG = '../assets/default_100.jpg'
 const REDVALUE = 60
 const MESSAGE = 'Option indisponible dans cette version'
@@ -39,31 +41,37 @@ class ParameterViewerContent extends React.Component{
           flex: 1,
         }}
       >
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            onPress={() => { 
+              this.props.navigation.navigate('UserProfile', {}) 
+            }}
+          >
+            <View style={styles.user_info_container}>
+              <View style={styles.user_pic_container}>
 
-          <View style={styles.user_info_container}>
-            <View style={styles.user_pic_container}>
-         
-              <BounceUpAndDownStatic
-                scale={.8}
-                onPress={() => {
-                  this.props.navigation.navigate('ImageViewer', { 
-                    title: '',
-                    imgURLPreview: user_profile_pic,                
-                  })
-                }}
-              >
-                <View style={styles.user_pic_container_one}>
-                  <Image style={styles.user_pic_background} source={require(DEFAULT_IMG)} />
-                  <Image style={styles.user_pic} source={user_profile_pic} />
-                </View>
-              </BounceUpAndDownStatic>
+                <BounceUpAndDownStatic
+                  scale={.8}
+                  onPress={() => {
+                    this.props.navigation.navigate('ImageViewer', { 
+                      title: firebase.auth().currentUser.displayName,
+                      imgURLPreview: firebase.auth().currentUser.photoURL,                
+                    })
+                  }}
+                >
+                  <View style={styles.user_pic_container_one}>
+                    <Image style={styles.user_pic_background} source={require(DEFAULT_IMG)} />
+                    <Image style={styles.user_pic} source={{uri: firebase.auth().currentUser.photoURL}} />
+                  </View>
+                </BounceUpAndDownStatic>
 
+              </View>
+              <View style={styles.user_name_container}>
+                <Text style={styles.user_name}>{firebase.auth().currentUser.displayName}</Text>
+                <Text style={styles.user_description}>Je suis votre fan N°1</Text>          
+              </View>
             </View>
-            <View style={styles.user_name_container}>
-              <Text style={styles.user_name}>Jane doe</Text>
-              <Text style={styles.user_description}>Je suis votre première fan</Text>
-            </View>
-          </View>
+          </TouchableNativeFeedback>
 
           <TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}

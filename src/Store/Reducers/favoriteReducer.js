@@ -8,10 +8,6 @@ const initialState = { favoritesVideo: [], favoritesNews: [] }
 
 function toggleFavorite(state = initialState, action) {    
 
-  /*firebase.auth().onAuthStateChanged( (firebaseUser) => {      
-    console.log('UID : ' + firebase.auth().currentUser.uid) 
-  }) */
-
   let nextState
   switch (action.type) {
     case 'TOGGLE_FAVORITE':
@@ -24,7 +20,8 @@ function toggleFavorite(state = initialState, action) {
         }
         ToastAndroid.show('Supprimé', ToastAndroid.SHORT)
 
-        firebase.database().ref('/users/63JpatZJxRXZL1wFATDjzXd9Tex1').update({
+        console.log('UID/FavoriteReducer : ' + firebase.auth().currentUser.uid) 
+        firebase.database().ref('/users/' + firebase.auth().currentUser.uid).update({
           favorites: nextState
         })
       }
@@ -34,10 +31,10 @@ function toggleFavorite(state = initialState, action) {
           ...state,
           favoritesVideo: [...state.favoritesVideo, action.value]
         }        
-        ToastAndroid.show('Ajouté', ToastAndroid.SHORT)          
+        ToastAndroid.show('Ajouté', ToastAndroid.SHORT)                    
 
-        //firebase_database_add_favorite_video(action.value)
-        firebase.database().ref('/users/63JpatZJxRXZL1wFATDjzXd9Tex1').update({
+        console.log('UID/FavoriteReducer : ' + firebase.auth().currentUser.uid)         
+        firebase.database().ref('/users/' + firebase.auth().currentUser.uid).update({
           favorites: nextState
         })
       }

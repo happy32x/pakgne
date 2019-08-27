@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 
 import THEME from '../INFO/THEME'
+import firebase from 'firebase'
 
 const USER_IMG_SIZE = Dimensions.get('window').width
 
@@ -15,7 +16,7 @@ class ImageContentSimple extends Component {
     return (     
       <View style={styles.main_container}>
         <ImageBackground 
-          source={this.props.imgURLPreview} 
+          source={{uri: this.props.imgURLPreview}}
           style={styles.image_background}
         />                        
       </View>

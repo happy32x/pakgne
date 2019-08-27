@@ -11,15 +11,13 @@ import ParameterViewer from '../Components/ParameterViewer'
 import ParameterElement from '../Components/ParameterElement'
 //import ChatViewer from '../../SandBox/CHAT/ChatViewer'
 import About from '../Components/About'
+import UserProfile from '../Components/UserProfile'
 
 // Import React Navigation
-import { 
+import {
   createAppContainer,
-  createStackNavigator
+  createStackNavigator,
 } from 'react-navigation'
-
-import Fire from '../../Auth/Fire'
-//console.log('UID/Root : ' + Fire.shared.uid)
 
 // Create the navigator
 const Navigator = createStackNavigator(
@@ -29,13 +27,14 @@ const Navigator = createStackNavigator(
       SearchViewer: SearchViewer,
       VideoViewer: VideoViewer,
       ImageViewer: ImageViewer,
-      ImageViewerDynamic: ImageViewerDynamic,      
+      ImageViewerDynamic: ImageViewerDynamic,
       CommentList: CommentList,
-      CommentListReply: CommentListReply,       
-      ParameterViewer: ParameterViewer,     
-      ParameterElement: ParameterElement,  
+      CommentListReply: CommentListReply,
+      ParameterViewer: ParameterViewer,
+      ParameterElement: ParameterElement,
       //ChatViewer: ChatViewer,
-      About: About,    
+      About: About,
+      UserProfile: UserProfile,
     },
     {
       initialRouteName: 'Main',

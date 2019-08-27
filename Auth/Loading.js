@@ -16,9 +16,8 @@ export default class Loading extends React.Component {
 
   checkIfLoggedIn = () => {
     firebase.auth().onAuthStateChanged( (firebaseUser) => {
-      if(firebaseUser){
-        //console.log('UID/Loading : ' + firebase.auth().currentUser.uid)  
-        this.props.navigation.navigate('DashBoard')
+      if(firebaseUser){        
+        this.props.navigation.navigate('Entry')
       }
       else{        
         this.props.navigation.navigate('Login')
