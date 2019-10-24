@@ -23,6 +23,11 @@ import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewand
 import YoutubeSubscribeButton from './YoutubeSubscribeButton'
 import firebase from 'firebase'
 
+import { 
+  getAccessToken,
+  setAccessToken,
+} from '../Store/storeData'
+
 const DEFAULT_IMG = '../assets/default_100.jpg'
 const REDVALUE = 100
 const MESSAGE = 'Option indisponible dans cette version'
@@ -34,6 +39,19 @@ class UserProfileList extends React.Component{
       <View style={styles.render_separator} />
     )
   }
+
+  /*
+  componentDidMount() {
+  
+    getAccessToken().then(accessToken => {
+      console.log("UserProfileList :: componentDidMount() :: getAccessToken() :: accessToken :: " + accessToken)       
+      setAccessToken(accessToken).then(() => {
+        console.log('UserProfileList :: componentDidMount() :: setAccessToken() :: accessToken successful saved !')        
+      })
+    })  
+  
+  }
+  */
 
   render() {
     return (
@@ -167,7 +185,7 @@ class UserProfileList extends React.Component{
 
             </View>
           </TouchableNativeFeedback>                                         
-          
+
           {this.renderSeparator()}
 
           <YoutubeSubscribeButton />
@@ -175,15 +193,10 @@ class UserProfileList extends React.Component{
           {this.renderSeparator()}
 
           <BounceUpAndDownStatic
-            scale={.8}
-            onPress={() => { 
-              this.props.navigation.navigate('ParameterElement', { 
-                title: 'Déconnexion',
-                type: 'MaterialCommunityIcons',
-                icon: 'logout',
-                color: THEME.TERTIARY.COLOR,
-                message: MESSAGE,
-              }) 
+            scale={.8}            
+            onPress={() => {               
+              //this.props.navigation.navigate('Main') 
+              firebase.auth().signOut()
             }}
           >
             <View style={styles.logOut_container}>
@@ -207,8 +220,8 @@ const styles = StyleSheet.create({
   },
 
   main_container: {
-    alignItems:'center', 
-    justifyContent:'center', 
+    alignItems:'center',
+    justifyContent:'center',
     paddingTop: 15,
     paddingBottom: 15,
   },

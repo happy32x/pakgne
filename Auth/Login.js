@@ -3,23 +3,39 @@ import {
   View,
   Button,
   StyleSheet,
+  ActivityIndicator,  
 } from 'react-native'
 
+import THEME from '../src/INFO/THEME'
 import firebase from 'firebase'
 import * as Google from 'expo-google-app-auth'
 import * as AppAuth from 'expo-app-auth'
+import { connect } from 'react-redux'
+import { 
+  setAccessToken,
+  setRefreshToken,
+  setAccessTokenTimeOut,
+} from '../src/Store/storeData'
 
-export default class Login extends React.Component {
+import {
+  setAccessTokenRequest,
+  setAccessTokenTimeOutRequest,
+} from '../src/API/REQUEST' 
+
+class Login extends React.Component {
 
   constructor(props) {
     super(props)    
-    this.state = {}
+    this.state = {
+      loading: false
+    }    
+    this.accessTokenTimeOut = null
   }
 
   static navigationOptions = {
     header: null
   }
-  
+
   isUserEqual = (googleUser, firebaseUser) => {
     if (firebaseUser) {
       var providerData = firebaseUser.providerData;
@@ -49,23 +65,25 @@ export default class Login extends React.Component {
         // Sign in with credential from the Google user.
         firebase.auth().signInWithCredential(credential).then(function(result){
           console.log('user signed in')
-          if(result.additionalUserInfo.isNewUser) {          
+          if(result.additionalUserInfo.isNewUser) {   
+            console.log('user is new')               
             firebase.database().ref('/users/' + result.user.uid).set({
               gmail: result.user.email,
               profile_picture: result.additionalUserInfo.profile.picture, 
               locale: result.additionalUserInfo.profile.locale, 
               first_name: result.additionalUserInfo.profile.given_name, 
               last_name: result.additionalUserInfo.profile.family_name, 
-              created_at: Date.now(),              
+              created_at: Date.now(),
             })
             .then(function(snapshot) {
               //console.log('snapshot', snapshot)
             })
-          } else {                        
+          } else {      
+            console.log('user is old')                        
             firebase.database().ref('/users/' + result.user.uid).update({
-              last_logged_in: Date.now()
+              last_logged_in: Date.now()              
             })
-          }          
+          }                         
         })
         .catch(function(error) {
           // Handle Errors here.
@@ -92,20 +110,43 @@ export default class Login extends React.Component {
         scopes: [
           'profile',
           'email',
-          'https://www.googleapis.com/auth/youtube'
+          'https://www.googleapis.com/auth/youtube',
+          'https://www.googleapis.com/auth/youtube.readonly'
         ],
-        redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`
+        redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`,
+        accesstType: 'offline'
       })
 
-      if (result.type === 'success') {        
-        console.log("fuck you second time")  
-        this.onSignIn(result)         
-        return result.accessToken
+      if (result.type === 'success') { 
+        this.accessTokenTimeOut = Math.floor(Date.now() / 1000)         
+        console.log("fuck you second time")      
+
+        //We keep user 'access_token', 'refresh_token' & 'access_token_timeout'
+        //in AsyncStorage local storage            
+        setRefreshToken(result.refreshToken).then(() => {
+          console.log('Login :: signInWithGoogleAsync :: setRefreshToken :: refreshToken successful saved !')
+        })        
+        setAccessTokenTimeOut( this.accessTokenTimeOut ).then(() => {
+          setAccessTokenTimeOutRequest( this.accessTokenTimeOut )
+          console.log('Login :: signInWithGoogleAsync :: setAccessTokenTimeOut :: AccessTokenTimeOut successful saved !')
+        })
+        setAccessToken(result.accessToken).then(() => {
+          setAccessTokenRequest(result.accessToken)
+          console.log('Login :: signInWithGoogleAsync :: setAccessToken :: accessToken successful saved !')  
+
+          const action = { type: "UPDATE_USER_INFO", value: result }
+          this.props.dispatch(action)
+
+          this.onSignIn(result)                     
+          return result.accessToken
+        })        
       } else {
+        this.setState({loading: false}) 
         console.log("ERROR")
         return { cancelled: true }
       }
     } catch (e) {
+      this.setState({loading: false}) 
       console.log("CATCH !")
       console.log(e)
       return { error: true }
@@ -115,10 +156,14 @@ export default class Login extends React.Component {
   render() {          
     return (
       <View style={styles.main_container}> 
-        <Button 
-          title = 'Sign In with Google'
-          onPress = { () => this.signInWithGoogleAsync() }
-        />            
+        {
+          this.state.loading
+            ? <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
+            : <Button 
+                title = 'Sign In with Google'
+                onPress = { () => this.setState( {loading: true}, () => this.signInWithGoogleAsync() ) }                              
+              />   
+        }                 
       </View>
     )  
   }
@@ -133,3 +178,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF", //"#fcfcfc",
   },
 })
+
+const mapStateToProps = (state) => {
+  return {
+    currentUser: state.UserInfoReducer.currentUser
+  }
+}
+
+export default connect(mapStateToProps)(Login)

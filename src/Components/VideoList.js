@@ -12,7 +12,10 @@ import uuidv1 from 'uuid/v1'
 
 import Video from './Video'
 import { shuffleArray } from '../AI/Randomizer'
-import { getVideoListFromApi } from '../API/REQUEST'
+import { 
+  getVideoListFromApi,
+  getOneCommentFromApi,
+} from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
 import { connect } from 'react-redux'
 import DIMENSION from '../INFO/DIMENSION'
@@ -31,9 +34,12 @@ class VideoList extends Component {
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
-      stopLoadingMore: false,
-    }
+      stopLoadingMore: false,   
+      
+      order: 'relevance',
+    }    
 
+    this.id = 0
     this.requestId = null
 
     this._data = null
@@ -87,17 +93,19 @@ class VideoList extends Component {
 
     this.fetchData(responseJson => {
       if(this._isMounted && this.requestId === requestId) {      
-        const data = this._data.concat(shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)))      
-        console.log("VideoList :: dataLength : " + data.length)
+        const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))          
+        this._dataAfter = responseJson.nextPageToken
 
-        this._data = data,
-        this._dataAfter = responseJson.nextPageToken,
+        console.log("VideoList :: dataLength :: " + data.length)
 
-        this.setState({ isLoadingMore: false })
+        this.async_getOneCommentFromApiMore(data).then( () => {
+          this.setState({ isLoadingMore: false })
 
-        responseJson.nextPageToken===undefined
-          ? this.setState({ stopLoadingMore: true })
-          : null
+          responseJson.nextPageToken===undefined
+            ? this.setState({ stopLoadingMore: true })
+            : null
+        })
+        
       }
     })
   }
@@ -111,27 +119,29 @@ class VideoList extends Component {
         this.fetchData(responseJson => {
           //if(this._isMounted && this.requestId === requestId && this.props.updateVideoList !== false && this.props.updateVideoList === this.state.updateVideoList) {
           if(this._isMounted && this.requestId === requestId) {
-            const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-            console.log("VideoList :: order : " + order)
-            console.log("VideoList :: dataLength : " + data.length)
-      
-            this._data = data,
-            this._dataAfter = responseJson.nextPageToken,
+            const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))                           
+            this._dataAfter = responseJson.nextPageToken
 
-            this.setState({
-              isLoading: false,
-              isLoadingMore: false,
-              isRefreshing: false,
+            console.log("VideoList :: order :: " + order)
+            console.log("VideoList :: dataLength :: " + data.length)
+
+            this.async_getOneCommentFromApi(data).then( () => {
+              this.setState({
+                isLoading: false,
+                isLoadingMore: false,
+                isRefreshing: false,
+              })
+  
+              responseJson.nextPageToken===undefined 
+                ? this.setState({ stopLoadingMore: true })  
+                : this.setState({ stopLoadingMore: false })
+
+              //On vérifie pour raison de sécurité si this.requestId à été modifié
+              /*this.requestId === requestId 
+                ? this.setState({ isLoading: false })
+                : this.setState({ isLoading: true })*/
             })
 
-            responseJson.nextPageToken===undefined 
-              ? this.setState({ stopLoadingMore: true })  
-              : this.setState({ stopLoadingMore: false })  
-              
-            //On vérifie pour raison de sécurité si this.requestId à été modifié
-            /*this.requestId === requestId 
-              ? this.setState({ isLoading: false })
-              : this.setState({ isLoading: true })*/
           }            
         })
       })
@@ -196,8 +206,33 @@ class VideoList extends Component {
   }
   */
 
+ async async_getOneCommentFromApiMore(data) {
+    
+  for(let i=0; i<data.length; i++) {                      
+    await getOneCommentFromApi(data[i].id.videoId, this.state.order).then(responseJsonOneComment => {              
+      data[i].oneComment = responseJsonOneComment.items   
+      if(!this._isMounted) return
+    })
+  }
+
+  this._data = this._data.concat(data)
+}
+
+  //on complete les elements du tableau avec chacun un commentaire
+  async async_getOneCommentFromApi(data) {
+    for(let i=0; i<data.length; i++) {                      
+      await getOneCommentFromApi(data[i].id.videoId, this.state.order).then(responseJsonOneComment => {   
+        console.log(i)
+        data[i].oneComment = responseJsonOneComment.items   
+        if(!this._isMounted) return
+      })
+    }
+
+    this._data = data
+  }
+
   componentDidMount() {    
-    //console.log("VideoList :: componentDidMount")
+    console.log("VideoList :: componentDidMount")
     this._isMounted = true
 
     this.randomVideoListOrder()
@@ -205,19 +240,21 @@ class VideoList extends Component {
         this.fetchData(responseJson => {
           if(this._isMounted) {
             //const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-            const data = responseJson.items.filter(item => item.id.videoId !== undefined)
-            
-            console.log("VideoList :: order : " + order)
-            console.log("VideoList :: dataLength : " + data.length)
+            const data = responseJson.items.filter(item => item.id.videoId !== undefined)        
+            this._dataAfter = responseJson.nextPageToken  
 
-            this._data = data,
-            this._dataAfter = responseJson.nextPageToken,
-            
-            this.setState({ isLoading: false })
+            console.log("VideoList :: order :: " + order)
+            console.log("VideoList :: dataLength :: " + data.length)            
 
-            responseJson.nextPageToken===undefined 
-              ? this.setState({ stopLoadingMore: true })  
-              : null            
+            this.async_getOneCommentFromApi(data).then( () => {
+              console.log('LE RESPECT A FOUTU LE CAMP !!!')           
+              this.setState({ isLoading: false })
+
+              responseJson.nextPageToken===undefined 
+                ? this.setState({ stopLoadingMore: true }) //pourquoi ici on n'ajoute pas "this.setState({ isLoading: false })"
+                : null   
+            })
+                   
           }        
         })
       })
@@ -287,7 +324,8 @@ class VideoList extends Component {
                 toggleFavorite={this.toggleFavorite} 
                 recoverFavorite={this.recoverFavorite}
                 isFavorite={this.isFavorite}
-                navigateTo={this.navigateTo}          
+                navigateTo={this.navigateTo}  
+                id={++this.id}      
               />
             }
             ListFooterComponent={() => {
@@ -315,7 +353,7 @@ class VideoList extends Component {
             {...this.props}    
           />
         </View>
-      );
+      )
     }
   }
 }
@@ -343,7 +381,8 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {
   return {
-    favoritesVideo: state.toggleFavorite.favoritesVideo
+    favoritesVideo: state.toggleFavorite.favoritesVideo,
+    currentUser: state.UserInfoReducer.currentUser,
   }
 }
 

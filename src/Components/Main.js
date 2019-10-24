@@ -14,11 +14,15 @@ import firebase from 'firebase'
 class Main extends React.Component {
 
   constructor(props) {
-    super(props)            
+    super(props)                 
   }
 
   static navigationOptions = {
     header: null
+  }
+
+  componentDidMount() {
+    console.log("Main :: componentDidMount :: OKKKKKKKKKKKKKKKKKKKK")    
   }
 
   render() {

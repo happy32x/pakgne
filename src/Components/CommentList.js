@@ -14,7 +14,10 @@ import Comment from './Comment'
 import CommentHeader from './CommentHeader'
 import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
-import { getCommentListFromApi,getVideoInfoFromApi } from '../API/REQUEST'
+import { 
+  getCommentListFromApi,
+  getVideoInfoFromApi, 
+} from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import ModalCommentTopRecentStatic from '../Modal/ModalCommentTopRecentStatic'
 import { connect } from 'react-redux'

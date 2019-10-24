@@ -72,6 +72,7 @@ class RootTab extends React.Component {
     this._scrollAnimVideoList = 0
     this._scrollAnimChatList = 0
 
+    //this.firstRoute = () => ( <Default /> )
     this.firstRoute = () => (
       <VideoList
         index = {this.state.index}
@@ -99,6 +100,7 @@ class RootTab extends React.Component {
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
     )
+    this.secondRoute = () => ( <Default /> )
     /*this.secondRoute = () => (
       <ChatList   
         index = {this.state.index}        
@@ -123,8 +125,7 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )*/
-    this.secondRoute = () => ( <Default /> )
+    )*/    
     //this.thirdRoute = () => ( <DefaultShow /> )     
   }
 
@@ -150,13 +151,13 @@ class RootTab extends React.Component {
   _onTabPress = ({ route }) => { 
     /*console.log("this.state.scrollAnim : " + JSON.stringify(this.state.scrollAnim))
     console.log("this.state.index : " + this.state.index)
-    console.log("route.key : " + route.key)  */  
+    console.log("route.key : " + route.key)  */ 
 
     //scroll to top && update VideoList
     if(route.key == 0){ //On vérifie de la plus simple des manières si on a cliqué sur l'onglet VIDEO
       if(this.state.index === 0){ //On vérifie si on à appuyer sur Tab video plus d'une fois (ou une fois si on se trouve au lancement de l'app)
         if( JSON.stringify(this.state.scrollAnim) != 0 || this._scrollAnimVideoList != 0 ){ //videoList n'est pas encore au top
-          //scroll to top VideoList          
+          //scroll to top VideoList
           this.setState({ scrollTopVideoList: true, updateVideoList: false, indexOLD: this.state.index })
           this._scrollAnimVideoList = 0 //initialisation au point zero (tout les indiateurs sont au top)
         }     

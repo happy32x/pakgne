@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { 
   View,
   Text,
@@ -6,12 +6,11 @@ import {
   StatusBar,
   Dimensions,
   StyleSheet, 
-} from 'react-native';
+} from 'react-native'
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import THEME from './src/INFO/THEME'
 import AppIntroSlider from 'react-native-app-intro-slider'
-import Navigation from './Auth/Navigation'
 import Entry from './Auth/Entry'
 
 import firebase from 'firebase'
@@ -106,7 +105,7 @@ export default class App extends React.Component {
 
   render() {
     if (this.state.showRealApp) {      
-      return <Navigation />
+      return <Entry />
     } else {
       return <AppIntroSlider 
                 renderItem={this._renderItem}

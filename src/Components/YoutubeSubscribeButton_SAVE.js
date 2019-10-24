@@ -9,19 +9,13 @@ import {
 } from 'react-native'
 
 import { 
-  getNewTokenFromApi_Filter,
-
   getSubscriptionStatusFromApi,
+  getNewTokenFromApi,
   subscribeToChannel,
-  unSubscribeToChannel,  
+  unSubscribeToChannel,
 } from '../API/REQUEST'
 
-import { 
-  getAccessToken,
-} from '../Store/storeData'
-
 import { connect } from 'react-redux'
-
 import THEME from '../INFO/THEME'
 import DATA from '../API/DATA'
 
@@ -39,31 +33,23 @@ class YoutubeSubscribeButton extends React.Component {
       isLoading: true,
       subscribe: false,
     }    
-    this.subscriptionID = null
-    this.accessToken = null
+    this.subscriptionID = null    
+    console.log("YoutubeSubscribeButton :: constructor :: this.props.currentUser :: " + this.props.currentUser.accessToken)
 
-    console.log("YoutubeSubscribeButton :: constructor :: this.props.currentUser :: " + this.props.currentUser.accessToken) 
-
-    this.updateAccessToken = this._updateAccessToken.bind(this)
-
-    this.fetchData_getSubscriptionStatusFromApi = this._fetchData_getSubscriptionStatusFromApi.bind(this)            
+    this.fetchData_getSubscriptionStatusFromApi = this._fetchData_getSubscriptionStatusFromApi.bind(this)    
+    this.fetchData_getNewTokenFromApi = this._fetchData_getNewTokenFromApi.bind(this) 
     this.fetchData_subscribeToChannel = this._fetchData_subscribeToChannel.bind(this) 
-    this.fetchData_unSubscribeToChannel = this._fetchData_unSubscribeToChannel.bind(this)     
+    this.fetchData_unSubscribeToChannel = this._fetchData_unSubscribeToChannel.bind(this) 
   }  
 
-  _updateAccessToken(accessToken) {
-    this.accessToken = accessToken
-  }
+  _fetchData_getSubscriptionStatusFromApi() {     
 
-  _fetchData_getSubscriptionStatusFromApi(accessToken) {      
-    this.updateAccessToken(accessToken)
-
-    getSubscriptionStatusFromApi(accessToken).then( responseJson => {
+    getSubscriptionStatusFromApi(this.props.currentUser.accessToken).then( responseJson => {
       if(this._isMounted) {                
         console.log("YoutubeSubscribeButton :: _fetchData_getSubscriptionStatusFromApi :: responseJson :: " + JSON.stringify(responseJson))
 
         if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token
-          getNewTokenFromApi_Filter(this.fetchData_getSubscriptionStatusFromApi)          
+          this.fetchData_getNewTokenFromApi(this.fetchData_getSubscriptionStatusFromApi)
         } else { //Success
           console.log(" AMERICAN DREAM !!! ")
 
@@ -76,17 +62,37 @@ class YoutubeSubscribeButton extends React.Component {
         } 
       }        
     })
-  }  
+  }
 
-  _fetchData_subscribeToChannel(accessToken) {    
-    this.updateAccessToken(accessToken) 
+  _fetchData_getNewTokenFromApi(callback) {  
 
-    subscribeToChannel(accessToken).then( responseJson => {
+    getNewTokenFromApi(this.props.currentUser.refreshToken).then( responseJson => {
+      if(this._isMounted) {                
+        console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: " + JSON.stringify(responseJson))
+
+        if(responseJson.access_token) { //Success        
+          //global save
+          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: this.props.currentUser.accessToken :: OLD :: " + this.props.currentUser.accessToken)
+          const action = { type: "ADD_NEW_ACCESS__ID_TOKEN", value: responseJson }
+          this.props.dispatch(action)
+          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: this.props.currentUser.accessToken :: NEW :: " + this.props.currentUser.accessToken)
+
+          callback()
+        } else { //Invalid Grant <> Refresh Token
+          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: L'obtention du newRefreshToken a échoué !!!")
+        }
+      }        
+    })    
+  }
+
+  _fetchData_subscribeToChannel() {     
+
+    subscribeToChannel(this.props.currentUser.accessToken).then( responseJson => {
       if(this._isMounted) {                
         console.log("YoutubeSubscribeButton :: _fetchData_subscribeToChannel :: responseJson :: " + JSON.stringify(responseJson))
 
-        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token          
-          getNewTokenFromApi_Filter(this.fetchData_subscribeToChannel)  
+        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token
+          this.fetchData_getNewTokenFromApi(this.fetchData_subscribeToChannel)
         } else { //Success
           console.log(" AMERICAN DREAM !!! ")
 
@@ -101,19 +107,18 @@ class YoutubeSubscribeButton extends React.Component {
     })
   }
 
-  _fetchData_unSubscribeToChannel(accessToken) {    
-    this.updateAccessToken(accessToken) 
+  _fetchData_unSubscribeToChannel() {     
 
-    unSubscribeToChannel(accessToken, this.subscriptionID).then( responseJson => {
+    unSubscribeToChannel(this.props.currentUser.accessToken, this.subscriptionID).then( response => {
       if(this._isMounted) {                        
-        console.log("YoutubeSubscribeButton :: _fetchData_unSubscribeToChannel :: responseJson :: " + JSON.stringify(responseJson))
+        console.log("YoutubeSubscribeButton :: _fetchData_unSubscribeToChannel :: response :: " + JSON.stringify(response))
 
-        if(responseJson.status && responseJson.status === 401) { //Invalid Credentials <> Access Token          
-          getNewTokenFromApi_Filter(this.fetchData_unSubscribeToChannel) 
+        if(response.status && response.status === 401) { //Invalid Credentials <> Access Token
+          this.fetchData_getNewTokenFromApi(this.fetchData_unSubscribeToChannel)
         } else { //Success
           console.log(" AMERICAN DREAM !!! ")
 
-          if(responseJson.status && responseJson.status === 204) { //Success                
+          if(response.status && response.status === 204) { //Success                
             this.setState({ isLoading: false, subscribe: false }) //il n'est pas encore abonné à la chaine     
           } else {
             console.log(" SORCERY !!! ")
@@ -123,41 +128,10 @@ class YoutubeSubscribeButton extends React.Component {
     })
   }
 
-  /*_fetchData_getNewTokenFromApi() {  
-    
-    getNewTokenFromApi(this.props.currentUser.refreshToken).then( responseJson => {
-      if(this._isMounted) {                
-        console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: " + JSON.stringify(responseJson))
-        console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: this.props.currentUser.refreshToken :: " + this.props.currentUser.refreshToken)
-
-        if(responseJson.access_token) { //Success  
-
-          //old global save
-          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: this.props.currentUser.accessToken :: OLD :: " + this.props.currentUser.accessToken)
-          const action = { type: "ADD_NEW_ACCESS__ID_TOKEN", value: responseJson }
-          this.props.dispatch(action)
-          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: responseJson :: this.props.currentUser.accessToken :: NEW :: " + this.props.currentUser.accessToken)          
-
-          //callback(responseJson.access_token)
-          getNewTokenFromApi_Succeed(responseJson.access_token)
-          
-        } else { //Invalid Grant <> Refresh Token
-          console.log("YoutubeSubscribeButton :: _fetchData_getNewTokenFromApi :: L'obtention du newRefreshToken a échoué !!!")
-          //Alors on notifie tous ceux qui nous attendaient
-          getNewTokenFromApi_Failed()
-        }
-      }        
-    })    
-  }*/
-
   componentDidMount() {
     console.log("YoutubeSubscribeButton :: componentDidMount")
-    this._isMounted = true
-
-    getAccessToken().then(accessToken => {
-      console.log("YoutubeSubscribeButton :: componentDidMount :: getAccessToken :: accessToken :: " + accessToken)
-      this.fetchData_getSubscriptionStatusFromApi(accessToken)
-    })
+    this._isMounted = true    
+    this.fetchData_getSubscriptionStatusFromApi()
   }
 
   componentWillUnmount() {
@@ -172,10 +146,8 @@ class YoutubeSubscribeButton extends React.Component {
           </View>  
         : this.state.subscribe                                                                                                                      
           ? <TouchableNativeFeedback 
-              background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}                      
-              onPress={ () => this.setState( {isLoading: true}, () => getAccessToken().then(accessToken => {
-                                                                        this.fetchData_unSubscribeToChannel(accessToken)
-                                                                      }))}
+              background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+              onPress={ () => this.setState( {isLoading: true}, () => this.fetchData_unSubscribeToChannel() ) }        
             >
               <View style={styles.subscribe_button_container}>
                 <Image
@@ -188,10 +160,7 @@ class YoutubeSubscribeButton extends React.Component {
 
           : <TouchableNativeFeedback 
               background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-              onPress={ () => this.setState( {isLoading: true}, () => getAccessToken().then(accessToken => {
-                                                                        this.fetchData_subscribeToChannel(accessToken)
-                                                                      }))}              
-              
+              onPress={ () => this.setState( {isLoading: true}, () => this.fetchData_subscribeToChannel() ) }              
             >
               <View style={styles.subscribe_button_container}>
                 <Image

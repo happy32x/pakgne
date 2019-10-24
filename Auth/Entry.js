@@ -5,7 +5,7 @@ import { persistStore } from 'redux-persist'
 import { PersistGate } from 'redux-persist/es/integration/react'
 
 import Store from '../src/Store/configureStore'
-import Root from '../src/Navigation/Root'
+import Navigation from './Navigation'
 
 export default class Entry extends React.Component {
 
@@ -18,7 +18,7 @@ export default class Entry extends React.Component {
     return (
       <Provider store={Store}>
         <PersistGate persistor={persistor}>
-          <Root />
+          <Navigation />
         </PersistGate>
       </Provider>
     )

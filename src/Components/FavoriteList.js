@@ -5,7 +5,7 @@ import {
   Animated,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,     
+  ActivityIndicator,
 } from "react-native"
 
 import { withNavigation } from 'react-navigation'

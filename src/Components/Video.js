@@ -1,28 +1,49 @@
 import React from 'react'
 import {
-  View, 
-  Text, 
+  View,
+  Text,
   Image,
   Share,
   StyleSheet,
-  TouchableNativeFeedback, 
-  TouchableWithoutFeedback,   
+  TouchableNativeFeedback,
+  TouchableWithoutFeedback,
 } from 'react-native'
 
+import Autolink from 'react-native-autolink'
 import Constants from 'expo-constants'
 import Icon from 'react-native-vector-icons/Ionicons'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Star from './Star'
 import timeConverter from '../Helpers/timeConverter'
 import likeConverter from '../Helpers/likeConverter'
 import MomentConverter from './MomentConverter'
-import { getVideoInfoFromApi } from '../API/REQUEST'
-import VideoLoader from './VideoLoader'
 import { connect } from 'react-redux'
 import THEME from '../INFO/THEME'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
 
+import firebase from 'firebase'
+import uuidv1 from 'uuid/v1'
+
+import {  
+  getVideoInfoFromApi,
+  getNewTokenFromApi_Filter,
+
+  getVideoRateDataFromApi,
+  rateVideoFromApi,    
+} from '../API/REQUEST'
+
+import { 
+  getAccessToken,
+} from '../Store/storeData'
+
+import { youtubeImageResizer } from '../AI/YoutubeImageResizer'
+
 const SCALE = .7
 const TENSION = 100
+
+const REDVALUE = 50-10
+const USER_IMG_SIZE = 100
+const DEFAULT_IMG = '../assets/default_100.jpg'
 
 class Video extends React.Component{
   _isMounted = false
@@ -31,18 +52,98 @@ class Video extends React.Component{
     super(props)
     this.state = {
       isLoading: true,
+      isFirstLoading: true,
       secondData: undefined,
-      isLike: false,
+
+      like: false,
+      dislike: false,
+      none: false,
+
+      rate: 'none',
+      isRateGot: false,      
     }
 
+    this.preventInfinitePass = false
+    this.requestId = null
+    this.accessToken = null
+
+    this.rate = 'none'
+    this.secondData = undefined
+
+    this.toggleFavorite = this._toggleFavorite.bind(this)  
+
+    this.updateAccessToken = this._updateAccessToken.bind(this)
+
     this.fetchData = this._fetchData.bind(this)
-    this.toggleFavorite = this._toggleFavorite.bind(this)
-    this.toggleLike = this._toggleLike.bind(this) //Provisoire    
+    this.fetchData_rateVideoFromApi = this._fetchData_rateVideoFromApi.bind(this) 
+    this.fetchData_getVideoRateDataFromApi = this._fetchData_getVideoRateDataFromApi.bind(this)  
+        
+    this.componentDidMountClone = this._componentDidMountClone.bind(this)
   }
 
-  _toggleLike() {
-    this.setState({ isLike: !this.state.isLike })
+  _updateAccessToken(accessToken) {
+    this.accessToken = accessToken
   }
+
+  _fetchData_getVideoRateDataFromApi(accessToken) {   
+    this.updateAccessToken(accessToken)
+
+    getVideoRateDataFromApi(accessToken, this.props.firstData.id.videoId).then( responseJson => {
+      if(this._isMounted) {                
+        console.log("Video :: _fetchData_getVideoRateDataFromApi :: responseJson :: " + JSON.stringify(responseJson))
+
+        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token                        
+          getNewTokenFromApi_Filter(this.fetchData_getVideoRateDataFromApi)                       
+        } else { //Success
+          console.log(" AMERICAN DREAM !!! ")
+
+          if(responseJson.items.length && responseJson.items[0].rating) {
+            this.rate = responseJson.items[0].rating
+            console.log(this.rate)
+            this.rate === 'like'
+              ? this.setState({ rate: 'like', like: true, dislike: false, none: false, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur like
+              : this.rate === 'dislike'
+                ? this.setState({ rate: 'dislike', like: false, dislike: true, none: false, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur dislike
+                : this.rate === 'none'
+                  ? this.setState({ rate: 'none', like: false, dislike: false, none: true, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur none
+                  : null
+          } else {
+            console.log(" SORCERY !!! ")
+          }
+        } 
+      }        
+    })
+  }
+
+  _fetchData_rateVideoFromApi(accessToken) {   
+    this.updateAccessToken(accessToken)  
+    const requestId = this.requestId = uuidv1()
+
+    rateVideoFromApi(accessToken, this.props.firstData.id.videoId, this.state.rate).then( responseJson => {
+      if(this._isMounted && this.requestId === requestId) {                
+        console.log("Video :: _fetchData_rateVideoFromApi :: responseJson :: " + JSON.stringify(responseJson))
+
+        if(responseJson.status && responseJson.status === 401) { //Invalid Credentials <> Access Token         
+          getNewTokenFromApi_Filter(this.fetchData_rateVideoFromApi)                          
+        } else { //Success
+          console.log(" AMERICAN DREAM !!! ")
+
+          if(responseJson.status && responseJson.status === 204) { //Success               
+            //Evaluer rate pour savoir quoi afficher
+            this.state.rate === 'like'
+              ? this.setState({ like: true, dislike: false, none: false, isLoading: false, }) //il like la video
+              : this.state.rate === 'dislike'
+                ? this.setState({ like: false, dislike: true, none: false, isLoading: false, }) //il dislike la video
+                : this.state.rate === 'none'
+                  ? this.setState({ like: false, dislike: false, none: true, isLoading: false, }) //il annule le rate de la video
+                  : null
+          } else {
+            console.log(" SORCERY !!! ")
+          }
+        }       
+      }                 
+    })
+  }  
 
   _toggleFavorite() {
     this.props.toggleFavorite(this.props.firstData, this.state.secondData)
@@ -52,27 +153,28 @@ class Video extends React.Component{
     getVideoInfoFromApi(this.props.firstData.id.videoId).then(callback)
   }
 
-  componentDidMount() {
-    this._isMounted = true
-    
-    const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
-    if (favoriteVideoIndex !== -1) {
-      this.setState({ 
-        isLoading: false,
-        secondData: this.props.recoverFavorite(favoriteVideoIndex),
-      })
-      return
-    }
+  _componentDidMountClone() { 
+    getAccessToken().then(accessToken => {              
+      if(this._isMounted) {            
+        this.setState({ secondData: this.secondData }, () => this.fetchData_getVideoRateDataFromApi(accessToken))
+      }  
+    })     
+  }
 
-    this.fetchData(responseJson => {
-      if(this._isMounted) {
-        const secondData = responseJson.items[0]
-        this.setState({
-          isLoading: false,
-          secondData,
-        })
-      }      
-    })
+  componentDidMount() {
+    console.log('Video :: componentDidMount :: ' + this.props.id)
+    this._isMounted = true
+    const favoriteVideoIndex = this.props.isFavorite(this.props.firstData)
+
+    if (favoriteVideoIndex !== -1) {
+      this.secondData = this.props.recoverFavorite(favoriteVideoIndex) 
+      this.componentDidMountClone()
+    } else {
+      this.fetchData(responseJson => {
+        this.secondData = responseJson.items[0]
+        this.componentDidMountClone()
+      })
+    }    
   }
 
   componentWillUnmount() {
@@ -80,11 +182,7 @@ class Video extends React.Component{
   }
 
   render() {
-    if (this.state.isLoading) {
-      return (
-          <VideoLoader />
-      )
-    } else {
+   
       return (
         <View style={styles.main_container}>
 
@@ -116,7 +214,9 @@ class Video extends React.Component{
 
           <View style={styles.middle_element_container}>
             <TouchableWithoutFeedback onPress={() => {
-              this.props.navigateTo( 'VideoViewer', { video: [this.props.firstData,this.state.secondData] } )
+              this.state.secondData
+                ? this.props.navigateTo( 'VideoViewer', { video: [this.props.firstData,this.state.secondData] } )    
+                : console.log("Video :: render :: Element not load yet")
             }}>
               <View style={styles.image_container}>
                 <Image 
@@ -124,32 +224,98 @@ class Video extends React.Component{
                   style={styles.image}
                 />
                 <Text style={styles.duration}>
-                  {timeConverter(this.state.secondData.contentDetails.duration)}
+                  {
+                    this.state.secondData
+                      ? timeConverter(this.state.secondData.contentDetails.duration)
+                      : null
+                  }
                 </Text>
               </View>
             </TouchableWithoutFeedback>
           </View>
 
-          <View style={styles.bottom_element_container}>
-          
+          <View style={styles.bottom_element_container}>     
+
+            <BounceUpAndDownStatic
+              scale={SCALE} 
+              tension={TENSION} 
+              style={[styles.same_element, { opacity: this.state.isLoading ? 0.4 : 1 }]} 
+              onPress={() => {                 
+                this.state.isLoading || !this.state.isRateGot
+                  ? console.log("Video :: render :: Element not load yet")
+                  : this.state.rate === 'like'
+                    ? this.setState({ isLoading: true,  rate: 'none'}, () => getAccessToken().then(accessToken => {
+                                                                               this.fetchData_rateVideoFromApi(accessToken)
+                                                                             })) 
+                    : this.setState({ isLoading: true,  rate: 'like'}, () => getAccessToken().then(accessToken => {
+                                                                               this.fetchData_rateVideoFromApi(accessToken)
+                                                                             }))
+              }} 
+            >
+              <View style={styles.same_element}>
+                {
+                  this.state.rate === 'like'
+                    ? this.state.isLoading
+                      ? <MaterialCommunityIcons style={[styles.same_element_one, {color:THEME.TERTIARY.COLOR}]} name="heart" />
+                      : <MaterialCommunityIcons style={styles.same_element_one} name="heart" />
+                    : this.state.rate === 'like'
+                      ? <MaterialCommunityIcons style={styles.same_element_one} name="heart" />
+                      : <MaterialCommunityIcons style={[styles.same_element_one, {color:THEME.TERTIARY.COLOR}]} name="heart-outline" />
+                }                                  
+              </View>              
+              <View style={styles.same_element_two}>
+                {
+                  !this.state.isRateGot
+                    ? <Text style={styles.same_element_four}>...</Text>  
+                    : this.state.rate === 'like'
+                      ? this.state.isLoading 
+                        ? <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
+                        : <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(Number(this.state.secondData.statistics.likeCount)+1)}</Text>
+                      : this.state.rate === 'like'
+                        ? <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(Number(this.state.secondData.statistics.likeCount)+1)}</Text>
+                        : <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>                    
+                }                 
+              </View>              
+            </BounceUpAndDownStatic>
+
             <BounceUpAndDownStatic 
               scale={SCALE} 
               tension={TENSION} 
-              style={styles.same_element}
-              onPress={() => { this.toggleLike() }}  
+              style={[styles.same_element, { opacity: this.state.isLoading ? 0.4 : 1 }]}
+              onPress={() => {                               
+                this.state.isLoading || !this.state.isRateGot
+                  ? console.log("Video :: render :: Element not load yet")
+                  : this.state.rate === 'dislike'
+                    ? this.setState({ isLoading: true, rate: 'none' }, () => getAccessToken().then(accessToken => {
+                                                                               this.fetchData_rateVideoFromApi(accessToken)
+                                                                             })) 
+                    : this.setState({ isLoading: true, rate: 'dislike' }, () => getAccessToken().then(accessToken => {
+                                                                               this.fetchData_rateVideoFromApi(accessToken)
+                                                                             })) 
+              }}
             >
               <View style={styles.same_element}>
-                { 
-                  this.state.isLike
-                    ? <Icon style={styles.same_element_one} name="md-heart" />
-                    : <Icon style={styles.same_element_one} name="md-heart-empty" /> 
-                }                                               
+                {
+                  this.state.rate === 'dislike'                  
+                    ? this.state.isLoading 
+                      ? <MaterialCommunityIcons style={[styles.same_element_one, {color:THEME.TERTIARY.COLOR}]} name="heart-broken" />
+                      : <MaterialCommunityIcons style={styles.same_element_one} name="heart-broken" />
+                    : this.state.rate === 'dislike'
+                      ? <MaterialCommunityIcons style={styles.same_element_one} name="heart-broken" />
+                      : <MaterialCommunityIcons style={[styles.same_element_one, {color:THEME.TERTIARY.COLOR}]} name="heart-broken-outline" /> 
+                }                                  
               </View>
               <View style={styles.same_element_two}>
                 { 
-                  this.state.isLike
-                    ? <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
-                    : <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.likeCount)}</Text>
+                  !this.state.isRateGot
+                    ? <Text style={styles.same_element_four}>...</Text> 
+                    : this.state.rate === 'dislike'
+                      ? this.state.isLoading 
+                        ? <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.dislikeCount)}</Text>                          
+                        : <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(Number(this.state.secondData.statistics.dislikeCount)+1)}</Text>
+                      : this.state.rate === 'dislike'
+                        ? <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(Number(this.state.secondData.statistics.dislikeCount)+1)}</Text>
+                        : <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.dislikeCount)}</Text>                    
                 }                 
               </View>              
             </BounceUpAndDownStatic>
@@ -159,21 +325,143 @@ class Video extends React.Component{
               tension={TENSION}
               style={styles.same_element}
               onPress={() => {
-                this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                this.state.secondData
+                  ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                  : console.log("Video :: render :: Element not load yet")               
               }}     
             >
-              <View style={styles.same_element}>
-                <Icon style={styles.same_element_one} name="md-chatbubbles" />
+              <View style={styles.same_element}>     
+                {
+                  this.state.secondData
+                    ? this.state.secondData.statistics.commentCount === 0
+                      ? <Icon style={[styles.same_element_one, {color:THEME.TERTIARY.COLOR}]} name="md-chatbubbles" />
+                      : <Icon style={styles.same_element_one} name="md-chatbubbles" />  
+                    : <Icon style={styles.same_element_one} name="md-chatbubbles" />      
+                }        
               </View>
               <View style={styles.same_element_two}>
-                <Text style={styles.same_element_four}>{likeConverter(this.state.secondData.statistics.commentCount)}</Text>
+                <Text style={styles.same_element_four}>
+                  {
+                    this.state.secondData
+                      ? likeConverter(this.state.secondData.statistics.commentCount)
+                      : '...'                      
+                  }
+                </Text>
               </View>
-            </BounceUpAndDownStatic>
+            </BounceUpAndDownStatic>            
+          </View>
 
+          { 
+            this.props.firstData.oneComment.length === 0
+            ? null
+            : <View style={styles.comment_container}>    
+
+                <View style={styles.comment_container_left}>
+                  <BounceUpAndDownStatic 
+                    scale={.8}
+                    onPress={() => {
+                      this.props.navigateTo('ImageViewerDynamic', { 
+                        title: this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorDisplayName,
+                        imgURLPreview: youtubeImageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
+                      })
+                    }}
+                  >
+                    <View style={styles.comment_container_left_img_container}>
+                      <Image
+                        style={styles.comment_container_left_img_background}
+                        source={require(DEFAULT_IMG)}
+                      />
+                      <Image
+                        style={styles.comment_container_left_img}
+                        source={{ uri: youtubeImageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
+                      />
+                    </View>
+                  </BounceUpAndDownStatic>
+                </View>
+
+                <View style={styles.comment_container_right}>
+                  <BounceUpAndDownStatic
+                    scale={.9}                     
+                    style={styles.comment_area}
+                    onPress={() => {
+                      this.state.secondData
+                        ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                        : console.log("Video :: render :: Element not load yet")               
+                    }}
+                  >                
+                    <Text style={styles.comment_area_name}>
+                      {this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorDisplayName}
+                    </Text>
+                    <Autolink
+                      style={styles.comment_area_text}
+                      text={this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.textOriginal}
+                      hashtag="instagram"
+                      mention="twitter"
+                    />          
+                  </BounceUpAndDownStatic>
+                </View>
+
+              </View>
+          }
+
+          <View style={[styles.comment_container, {marginTop: 0} ]}>    
+
+            <View style={styles.comment_container_left}>
+              <BounceUpAndDownStatic 
+                scale={.8}
+                onPress={() => {
+                  this.props.navigateTo('ImageViewerDynamic', { 
+                    title: firebase.auth().currentUser.displayName,
+                    imgURLPreview: firebase.auth().currentUser.photoURL,                
+                  })
+                }}
+              >
+                <View style={styles.comment_container_left_img_container}>
+                  <Image
+                    style={styles.comment_container_left_img_background}
+                    source={require(DEFAULT_IMG)}
+                  />
+                  <Image
+                    style={styles.comment_container_left_img}
+                    source={{ uri: firebase.auth().currentUser.photoURL }}
+                  />
+                </View>
+              </BounceUpAndDownStatic>
+            </View>
+
+            <View style={styles.comment_container_right}>
+              <BounceUpAndDownStatic
+                scale={.9}                 
+                style={[styles.comment_area, {                   
+                  width: '100%',
+                  borderWidth: 1,
+                  borderRadius: REDVALUE,
+                  borderColor: THEME.TERTIARY.WAVE_COLOR
+                }]}
+                onPress={() => {
+                  this.state.secondData
+                    ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                    : console.log("Video :: render :: Element not load yet")               
+                }}
+              >
+                <Text style={{                              
+                  fontWeight: 'normal',
+                  fontSize: 16,
+                  color: THEME.TERTIARY.WAVE_COLOR,
+                  marginTop: -2                  
+                }}>
+                  commenter...
+                </Text>                        
+              </BounceUpAndDownStatic>
+            </View>
+
+          </View>
+
+          <View style={styles.bottom_share_container}>
             <BounceUpAndDownStatic
               scale={SCALE} 
               tension={TENSION}
-              style={styles.same_element}
+              style={styles.share_main}
               onPress={() => {
                 Share.share({
                   message: `https://www.youtube.com/watch?v=${this.props.firstData.id.videoId}`,
@@ -186,19 +474,17 @@ class Video extends React.Component{
                   ]
                 })
               }} 
-            >
-              <View style={styles.same_element}>
+            >              
+              <View style={styles.share_button_container}>
                 <Icon style={styles.same_element_one} name="md-share-alt" />
-              </View>
-              <View style={styles.same_element_two}>
-                <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3 }]}>partager</Text>
-              </View>
+                <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3, }]}>  PARTAGER</Text> 
+              </View>             
             </BounceUpAndDownStatic>
           </View>
 
         </View>
       )
-    }
+
   }
 }
 
@@ -212,7 +498,8 @@ const styles = StyleSheet.create({
   },
   main_container: { 
     alignSelf:'stretch', 
-    marginBottom:10 
+    marginBottom:10,
+    backgroundColor: THEME.PRIMARY.COLOR, 
   },
   top_element_container: { 
     backgroundColor: THEME.PRIMARY.COLOR, 
@@ -280,10 +567,31 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
     flexDirection:'row', 
-    height:45 
+    height:45,
+    marginLeft: 10,
+    marginRight: 10,    
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.TERTIARY.SEPARATOR_COLOR,    
+  },
+  bottom_share_container: { 
+    backgroundColor: THEME.PRIMARY.COLOR, 
+    alignSelf:'stretch', 
+    alignItems:'center', 
+    justifyContent:'center',
+    flexDirection:'row', 
+    height: 45,
+    marginLeft: 10,
+    marginRight: 10,
+    borderTopWidth: 1,
+    borderTopColor: THEME.TERTIARY.SEPARATOR_COLOR,
   },
   same_element: { 
     flex:1, 
+    alignItems:'center', 
+    justifyContent:'center', 
+    flexDirection:'row'
+  },
+  share_main: {     
     alignItems:'center', 
     justifyContent:'center', 
     flexDirection:'row'
@@ -292,25 +600,89 @@ const styles = StyleSheet.create({
     fontWeight:'bold', 
     fontFamily:'normal', 
     color: THEME.PRIMARY.BACKGROUND_COLOR, 
-    fontSize:20 
+    fontSize:20
   },
   same_element_two: { 
     flex:1, 
-    alignItems:'center', 
-    justifyContent:'flex-start', 
-    flexDirection:'row'
+    alignItems:'center',
+    justifyContent:'flex-start',
+    flexDirection:'row',
   },
   same_element_four: { 
-    color: THEME.TERTIARY.COLOR, 
-    fontSize: 14 
+    color: THEME.TERTIARY.COLOR,
+    fontSize: 14,
+  },
+  share_button_container: {    
+    alignItems:'center',
+    justifyContent:'center',
+    flexDirection:'row',
+    borderWidth: 0,
+    borderColor: THEME.PRIMARY.BACKGROUND_COLOR,
+    borderRadius: 5,
+    padding: 5,
+  },
+
+  comment_container: {
+    marginTop: 15,
+    marginBottom: 15,
+    width: '100%',
+    height: null,
+    flexDirection: 'row',
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
+  comment_container_left: {
+    width: REDVALUE,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  comment_container_left_img_container: {
+    width: REDVALUE,
+    height: REDVALUE,
+  },
+  comment_container_left_img_background: {
+    flex: 1, 
+    borderRadius: REDVALUE, 
+    height: null, 
+    width: null 
+  },
+  comment_container_left_img: {
+    position: "absolute",
+    borderRadius: REDVALUE, 
+    width: REDVALUE,
+    height: REDVALUE,
+  },
+  comment_container_right: {
+    flex: 1,
+    alignItems: 'flex-start', 
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+
+  comment_area: {
+    width: null,
+    height: null,
+    borderRadius: 10,
+    backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
+    padding: 10,
+    alignItems: 'flex-start', 
+    justifyContent: 'center',
+  },
+  comment_area_name: {
+    lineHeight: 22,
+    fontWeight: 'bold',
+  },
+  comment_area_text: {
+    fontSize: 16, 
+    lineHeight: 22,
   },
 })
 
 const mapStateToProps = (state) => {
   return {
-    favoritesVideo: state.toggleFavorite.favoritesVideo
+    favoritesVideo: state.toggleFavorite.favoritesVideo,
+    currentUser: state.UserInfoReducer.currentUser,
   }
 }
 
 export default connect(mapStateToProps)(Video)
-
