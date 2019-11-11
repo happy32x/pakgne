@@ -16,11 +16,6 @@ import Entry from './Auth/Entry'
 import firebase from 'firebase'
 import { firebaseConfig } from './Auth/config'
 
-/*firebase.app().delete().then(function() {
-  firebase.initializeApp(firebaseConfig)
-  console.log('FIREBASE INITIALIZASION')
-})*/
-
 const STATUSBAR_HEIGHT = StatusBar.currentHeight
 const IMAGE_SIZE = Dimensions.get('window').width*70/100
 

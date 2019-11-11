@@ -1,5 +1,5 @@
 import React from 'react'
-import { 
+import {
   View,
   Dimensions,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
 import {
   TabView,
   TabBar,
-  SceneMap
+  SceneMap,
 } from 'react-native-tab-view'
 
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
@@ -31,8 +31,8 @@ class RootTab extends React.Component {
   constructor(props) {
     super(props)
 
-    const scrollAnim = new Animated.Value(0);
-    const offsetAnim = new Animated.Value(0);
+    const scrollAnim = new Animated.Value(0)
+    const offsetAnim = new Animated.Value(0)
 
     this.state = {
 
@@ -45,8 +45,8 @@ class RootTab extends React.Component {
       index: 0,
       indexOLD: 0,
       routes: [
-        { key: '0', title: 'FEED' },
-        { key: '1', title: 'TALK' },
+        { key: '0', title: 'VIDEO' },
+        { key: '1', title: 'SHOP' },
         //{ key: '2', icon: 'show' },
       ],
 
@@ -208,7 +208,6 @@ class RootTab extends React.Component {
   }*/
 
   //Animation
-
   _clampedScrollValue = 0;
   _offsetValue = 0;
   _scrollValue = 0;

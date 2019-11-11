@@ -6,7 +6,7 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,    
-} from "react-native"
+} from 'react-native'
 
 import uuidv1 from 'uuid/v1'
 
@@ -38,8 +38,6 @@ class VideoList extends Component {
       
       order: 'relevance',
     }    
-
-    this.id = 0
     this.requestId = null
 
     this._data = null
@@ -89,22 +87,24 @@ class VideoList extends Component {
   }
 
   _fetchMore() {
+    return
     const requestId = this.requestId = uuidv1()
 
     this.fetchData(responseJson => {
       if(this._isMounted && this.requestId === requestId) {      
-        const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))          
+        const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
+        this._data = this._data.concat(data) //FOR TEST ONLY          
         this._dataAfter = responseJson.nextPageToken
 
         console.log("VideoList :: dataLength :: " + data.length)
-
-        this.async_getOneCommentFromApiMore(data).then( () => {
+        
+        //this.async_getOneCommentFromApiMore(data).then( () => {
           this.setState({ isLoadingMore: false })
 
           responseJson.nextPageToken===undefined
             ? this.setState({ stopLoadingMore: true })
             : null
-        })
+        //})
         
       }
     })
@@ -119,13 +119,14 @@ class VideoList extends Component {
         this.fetchData(responseJson => {
           //if(this._isMounted && this.requestId === requestId && this.props.updateVideoList !== false && this.props.updateVideoList === this.state.updateVideoList) {
           if(this._isMounted && this.requestId === requestId) {
-            const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))                           
+            const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)) 
+            this._data = data //FOR TEST ONLY                          
             this._dataAfter = responseJson.nextPageToken
 
             console.log("VideoList :: order :: " + order)
             console.log("VideoList :: dataLength :: " + data.length)
 
-            this.async_getOneCommentFromApi(data).then( () => {
+            //this.async_getOneCommentFromApi(data).then( () => {
               this.setState({
                 isLoading: false,
                 isLoadingMore: false,
@@ -140,7 +141,7 @@ class VideoList extends Component {
               /*this.requestId === requestId 
                 ? this.setState({ isLoading: false })
                 : this.setState({ isLoading: true })*/
-            })
+            //})
 
           }            
         })
@@ -240,21 +241,22 @@ class VideoList extends Component {
         this.fetchData(responseJson => {
           if(this._isMounted) {
             //const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
-            const data = responseJson.items.filter(item => item.id.videoId !== undefined)        
-            this._dataAfter = responseJson.nextPageToken  
+            const data = responseJson.items.filter(item => item.id.videoId !== undefined)   
+            this._data = data //FOR TEST ONLY
+            this._dataAfter = responseJson.nextPageToken              
 
             console.log("VideoList :: order :: " + order)
             console.log("VideoList :: dataLength :: " + data.length)            
 
-            this.async_getOneCommentFromApi(data).then( () => {
-              console.log('LE RESPECT A FOUTU LE CAMP !!!')           
+            //this.async_getOneCommentFromApi(data).then( () => {
+              console.log('EN ATTENTE DE CHARGEMENT DE LA LISTE DES VIDEOS ...')           
               this.setState({ isLoading: false })
 
               responseJson.nextPageToken===undefined 
                 ? this.setState({ stopLoadingMore: true }) //pourquoi ici on n'ajoute pas "this.setState({ isLoading: false })"
                 : null   
-            })
-                   
+            //})
+     
           }        
         })
       })
@@ -319,13 +321,13 @@ class VideoList extends Component {
             data={this._data}  
             ListHeaderComponent={() => <HeaderContentIndicator type="MaterialCommunityIcons" icon="movie" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
             renderItem={
-              ({item}) => <Video 
+              ({item, index}) => <Video 
                 firstData={item}                
                 toggleFavorite={this.toggleFavorite} 
                 recoverFavorite={this.recoverFavorite}
                 isFavorite={this.isFavorite}
-                navigateTo={this.navigateTo}  
-                id={++this.id}      
+                navigateTo={this.navigateTo} 
+                id={index}                     
               />
             }
             ListFooterComponent={() => {
@@ -348,7 +350,7 @@ class VideoList extends Component {
                 }}
               /> 
             }
-            keyExtractor={(item,e) => e.toString()}
+            keyExtractor={(item, index) => index.toString()}
             onEndReachedThreshold={.1}
             {...this.props}    
           />

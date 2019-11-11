@@ -7,186 +7,214 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
+import { 
+  getAccessToken,
+} from '../Store/storeData'
+
 import Icon from 'react-native-vector-icons/Ionicons'
 import IconFoundation from 'react-native-vector-icons/Foundation'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
 import likeConverter from '../Helpers/likeConverter'
 import THEME from '../INFO/THEME'
 
-const SCALE = .5
-const TENSION = 100
+import uuidv1 from 'uuid/v1'
 
-const LIKE = 'like'
-const DISLIKE = 'dislike'
+import {  
+  getNewTokenFromApi_Filter,
+
+  getVideoRateDataFromApi,
+  rateVideoFromApi,    
+} from '../API/REQUEST'
 
 class RateVideoViewer extends Component {
+  _isMounted = false
+
   constructor(props) {
     super(props)
     this.state = {
-      like: this.props.like ? this.props.like : 0,
-      dislike: this.props.dislike ? this.props.dislike : 0,
-      color_like: THEME.TERTIARY.COLOR,
-      color_dislike: THEME.TERTIARY.COLOR,
-    }
+      isLoading: true,
+      rate: 'none',
+      isRateGot: false,  
 
-    this.rating = 'none',
-
-    this.toggle_like = false,
-    this.toggle_dislike = false,
-
-    this.single_rate = this._single_rate.bind(this)
-    this.infinite_rate = this._infinite_rate.bind(this)
-  }
-
-  _single_rate(rating) {
-    if( rating === LIKE ) {
-      color_like = THEME.PRIMARY.BACKGROUND_COLOR
-      this.toggle_like = true     
-    } else {
-      color_like = THEME.TERTIARY.COLOR
-      this.toggle_like = false      
-    }
-
-    if( rating === DISLIKE ) {
-      color_dislike = THEME.PRIMARY.BACKGROUND_COLOR
-      this.toggle_dislike = true       
-    } else {
-      color_dislike = THEME.TERTIARY.COLOR
-      this.toggle_dislike = false
-    }
-
-    this.setState({
-      color_like,
-      color_dislike,
-    })
-  }
-
-  _infinite_rate(rating) {
-    let {like,dislike,color_like,color_dislike} = this.state
-
-    const _like = like
-    const _dislike = dislike
-    const _color_like = color_like
-    const _color_dislike = color_dislike
-
-    if( rating === LIKE && this.toggle_like === false ) {
-      like++
-      color_like = THEME.PRIMARY.BACKGROUND_COLOR 
-      this.toggle_like = true
-    } else {
-      if(this.toggle_like === true) {
-        like--
-        like<0?0:like
-      }      
-      color_like = THEME.TERTIARY.COLOR
-      this.toggle_like = false
+      like: false, 
+      dislike: false,
+      none: false,
     }
     
-    if( rating === DISLIKE && this.toggle_dislike === false ) {
-      dislike++
-      color_dislike = THEME.PRIMARY.BACKGROUND_COLOR
-      this.toggle_dislike = true       
-    } else {
-      if(this.toggle_dislike === true) {
-        dislike--
-        dislike<0?0:dislike
-      }      
-      color_dislike = THEME.TERTIARY.COLOR
-      this.toggle_dislike = false      
-    }
+    this.rate = 'none'
+    this.requestId = null
 
-    console.log(like)
-    console.log(color_like)
-    console.log(this.toggle_like)
+    this.accessToken = null
+    this.updateAccessToken = this._updateAccessToken.bind(this)
 
-    console.log(' ')
+    this.componentDidMountClone = this._componentDidMountClone.bind(this)
+    this.fetchData_rateVideoFromApi = this._fetchData_rateVideoFromApi.bind(this)
+    this.fetchData_getVideoRateDataFromApi = this._fetchData_getVideoRateDataFromApi.bind(this) 
+  }
 
-    console.log(dislike)
-    console.log(color_dislike)
-    console.log(this.toggle_dislike)
+  _updateAccessToken(accessToken) {
+    this.accessToken = accessToken
+  }
 
-    this.setState({
-      like,
-      dislike,
-      color_like,
-      color_dislike,
+  _fetchData_getVideoRateDataFromApi(accessToken) {   
+    this.updateAccessToken(accessToken)
+
+    getVideoRateDataFromApi(accessToken, this.props.videoId).then( responseJson => {
+      if(this._isMounted) {                
+        console.log("RateVideoViewer :: _fetchData_getVideoRateDataFromApi :: responseJson :: " + JSON.stringify(responseJson))
+
+        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token                        
+          getNewTokenFromApi_Filter(this.fetchData_getVideoRateDataFromApi)                       
+        } else { //Success
+          console.log(" AMERICAN DREAM !!! ")
+
+          if(responseJson.items.length && responseJson.items[0].rating) {
+            this.rate = responseJson.items[0].rating
+            console.log(this.rate)
+            this.rate === 'like'
+              ? this.setState({ rate: 'like', like: true, dislike: false, none: false, isRateGot: true, isLoading: false }) //le rating de la video est sur like
+              : this.rate === 'dislike'
+                ? this.setState({ rate: 'dislike', like: false, dislike: true, none: false, isRateGot: true, isLoading: false }) //le rating de la video est sur dislike
+                : this.rate === 'none'
+                  ? this.setState({ rate: 'none', like: false, dislike: false, none: true, isRateGot: true, isLoading: false }) //le rating de la video est sur none
+                  : null
+          } else {
+            console.log(" SORCERY !!! ")
+          }
+        } 
+      }        
     })
+  }
 
-    //Après le setState, (cad au callback), on lance la requete avec "rate"
-    //Pour mettre à jour le "rating"
+  _fetchData_rateVideoFromApi(accessToken) {   
+    this.updateAccessToken(accessToken)  
+    const requestId = this.requestId = uuidv1()
 
-    //Si la requête se passe bien, le processus fini bien
-    //Sinon on refait un setState avec les anciennes valeurs
+    rateVideoFromApi(accessToken, this.props.videoId, this.state.rate).then( responseJson => {
+      if(this._isMounted && this.requestId === requestId) {                
+        console.log("RateVideoViewer :: _fetchData_rateVideoFromApi :: responseJson :: " + JSON.stringify(responseJson))
 
-    /*
-      this.setState({
-        like: _like,
-        dislike: _dislike,
-        color_like: _color_like,
-        color_dislike: _color_dislike,
-      })
-    */
+        if(responseJson.status && responseJson.status === 401) { //Invalid Credentials <> Access Token         
+          getNewTokenFromApi_Filter(this.fetchData_rateVideoFromApi)                          
+        } else { //Success
+          console.log(" AMERICAN DREAM !!! ")
+
+          if(responseJson.status && responseJson.status === 204) { //Success               
+            //Evaluer rate pour savoir quoi afficher
+            this.state.rate === 'like'
+              ? this.setState({ like: true, dislike: false, none: false, isLoading: false, }) //il like la video
+              : this.state.rate === 'dislike'
+                ? this.setState({ like: false, dislike: true, none: false, isLoading: false, }) //il dislike la video
+                : this.state.rate === 'none'
+                  ? this.setState({ like: false, dislike: false, none: true, isLoading: false, }) //il annule le rate de la video
+                  : null
+          } else {
+            console.log(" SORCERY !!! ")
+          }
+        }       
+      }                 
+    })
+  }  
+
+  _componentDidMountClone() { 
+    getAccessToken().then(accessToken => {              
+      if(this._isMounted) {            
+        this.fetchData_getVideoRateDataFromApi(accessToken)
+      }  
+    })     
   }
 
   componentDidMount() {
-    //On lance la requete avec "getRating"
-    //Pour récupérer le "rating" de l'utilisateur
-    let rating = 'none'
+    this._isMounted = true 
+    this.componentDidMountClone()
+  }
 
-    //Ensuite on évalue le rating [like or dislike or none or unspecified]
-    this.single_rate(rating)
+  componentWillUnmount() {
+    this._isMounted = false
   }
 
   render() {
     return (
 
-      <View style={styles.option_area_macro}>
-
-        {/*<BounceUpAndDownStatic scale={SCALE} tension={TENSION} style={styles.option_area_mini}
-          onPress={() => this.infinite_rate(LIKE)}
-        >
-          <IconFoundation style={[styles.option_area_icon, {color: this.state.color_like} ]} name="like" />
-          <Text style={[styles.option_area_text, {color: this.state.color_like} ]}>{this.state.like}</Text>
-        </BounceUpAndDownStatic>   
-
-        <BounceUpAndDownStatic scale={SCALE} tension={TENSION} style={styles.option_area_mini}
-          onPress={() => this.infinite_rate(DISLIKE)}
-        >
-          <IconFoundation style={[styles.option_area_icon, {color: this.state.color_dislike} ]} name="dislike" />
-          <Text style={[styles.option_area_text, {color: this.state.color_dislike} ]}>{this.state.dislike}</Text>
-        </BounceUpAndDownStatic>*/}              
+      <View style={[ styles.option_area_macro, {opacity: this.state.isLoading ? 0.4 : 1} ]}> 
 
         <TouchableNativeFeedback 
           background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                    
-          onPress={() => {            
-            !this.toggle_like ? ToastAndroid.show(LIKE, ToastAndroid.SHORT) : ToastAndroid.show('annulé', ToastAndroid.SHORT)
-            this.infinite_rate(LIKE)            
+          onPress={() => {                 
+            this.state.isLoading || !this.state.isRateGot
+              ? console.log("RateVideoViewer :: render :: Element not load yet")
+              : this.state.rate === 'like'
+                ? this.setState({ isLoading: true,  rate: 'none'}, () => getAccessToken().then(accessToken => {
+                                                                           this.fetchData_rateVideoFromApi(accessToken)
+                                                                         })) 
+                : this.setState({ isLoading: true,  rate: 'like'}, () => getAccessToken().then(accessToken => {
+                                                                           this.fetchData_rateVideoFromApi(accessToken)
+                                                                         }))
           }} 
         >
           <View style={styles.same_element_one}>
-            <MaterialCommunityIcons style={[styles.like_icon, {color: this.state.color_like} ]} name="heart" />
-            <Text style={[styles.like_text, {color: this.state.color_like} ]}>{likeConverter(this.state.like)}</Text>
+            {
+              this.state.rate === 'like'
+                ? this.state.isLoading                  
+                  ? <MaterialCommunityIcons style={[styles.like_icon, {color:THEME.TERTIARY.COLOR} ]} name="heart" />
+                  : <MaterialCommunityIcons style={styles.like_icon} name="heart" />
+                : this.state.rate === 'like'
+                  ? <MaterialCommunityIcons style={styles.like_icon} name="heart" />
+                  : <MaterialCommunityIcons style={[styles.like_icon, {color:THEME.TERTIARY.COLOR}]} name="heart-outline" />
+            }
+            {  
+              !this.state.isRateGot
+                ? <Text style={[styles.like_text, {color:THEME.TERTIARY.COLOR} ]}>...</Text>  
+                : this.state.rate === 'like'               ? this.state.isLoading 
+                    ? <Text style={[styles.like_text, {color:THEME.TERTIARY.COLOR} ]}>{likeConverter(this.props.like)}</Text>                    
+                    : <Text style={styles.like_text}>{likeConverter(Number(this.props.like)+1)}</Text>
+                  : this.state.rate === 'like'
+                    ? <Text style={styles.like_text}>{likeConverter(Number(this.props.like)+1)}</Text>
+                    : <Text style={[styles.like_text, {color:THEME.TERTIARY.COLOR} ]}>{likeConverter(this.props.like)}</Text>                    
+            }                            
           </View>        
         </TouchableNativeFeedback>
 
         <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                    
-          onPress={() => {            
-            !this.toggle_dislike ? ToastAndroid.show(DISLIKE, ToastAndroid.SHORT) : ToastAndroid.show('annulé', ToastAndroid.SHORT)     
-            this.infinite_rate(DISLIKE)                   
+          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                              
+          onPress={() => {                               
+            this.state.isLoading || !this.state.isRateGot
+              ? console.log("RateVideoViewer :: render :: Element not load yet")
+              : this.state.rate === 'dislike'
+                ? this.setState({ isLoading: true, rate: 'none' }, () => getAccessToken().then(accessToken => {
+                                                                            this.fetchData_rateVideoFromApi(accessToken)
+                                                                          })) 
+                : this.setState({ isLoading: true, rate: 'dislike' }, () => getAccessToken().then(accessToken => {
+                                                                            this.fetchData_rateVideoFromApi(accessToken)
+                                                                          })) 
           }} 
         >
           <View style={styles.same_element_one}>
-            <MaterialCommunityIcons style={[styles.same_element_two, {color: this.state.color_dislike} ]} name="heart-off" />
-            <Text style={[styles.same_element, {color: this.state.color_dislike} ]}>{likeConverter(this.state.dislike)}</Text>
+            {
+              this.state.rate === 'dislike'                  
+                ? this.state.isLoading 
+                  ? <MaterialCommunityIcons style={[styles.dislike_icon, {color:THEME.TERTIARY.COLOR}]} name="heart-broken" />           
+                  : <MaterialCommunityIcons style={styles.dislike_icon} name="heart-broken" />
+                : this.state.rate === 'dislike'
+                  ? <MaterialCommunityIcons style={styles.dislike_icon} name="heart-broken" />
+                  : <MaterialCommunityIcons style={[styles.dislike_icon, {color:THEME.TERTIARY.COLOR}]} name="heart-broken-outline" /> 
+            }              
+            { 
+              !this.state.isRateGot
+                ? <Text style={styles.dislike_text}>...</Text> 
+                : this.state.rate === 'dislike'
+                  ? this.state.isLoading 
+                    ? <Text style={[styles.dislike_text, {color:THEME.TERTIARY.COLOR} ]}>{likeConverter(this.props.dislike)}</Text>
+                    : <Text style={styles.dislike_text}>{likeConverter(Number(this.props.dislike)+1)}</Text>
+                  : this.state.rate === 'dislike'
+                    ? <Text style={styles.dislike_text}>{likeConverter(Number(this.props.dislike)+1)}</Text>
+                    : <Text style={[styles.dislike_text, {color:THEME.TERTIARY.COLOR} ]}>{likeConverter(this.props.dislike)}</Text>
+            }                
           </View>        
         </TouchableNativeFeedback>
 
       </View>
-
-      
 
     )
   }
@@ -196,35 +224,21 @@ const styles = StyleSheet.create({
   option_area_macro: {
     flex: 2,
     flexDirection: 'row',
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  /*option_area_mini: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center', 
-    justifyContent: 'center',
-  },
-  option_area_text: {
-    fontSize: 14,
-  },
-  option_area_icon: {
-    fontSize:25,
-    marginRight: 5
-  },*/
-
   same_element_one: { 
-    flex:1, 
-    alignItems:'center', 
+    flex:1,
+    alignItems:'center',
     justifyContent:'center'
   },
-  same_element_two: { 
-    color: THEME.TERTIARY.COLOR, 
+  dislike_icon: { 
+    color: THEME.PRIMARY.BACKGROUND_COLOR,  
     fontSize:20 
   },
-  same_element: { 
+  dislike_text: { 
     fontSize:12, 
-    color: THEME.TERTIARY.COLOR
+    color: THEME.PRIMARY.BACKGROUND_COLOR, 
   },
   like_icon: { 
     color: THEME.PRIMARY.BACKGROUND_COLOR, 

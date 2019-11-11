@@ -1,10 +1,9 @@
 import React from 'react'
 import {
-  View,
-  Text,
+  View, 
+  Text, 
   Image,
   StyleSheet,
-  TouchableNativeFeedback,
 } from 'react-native'
 
 import ViewMoreText from 'react-native-view-more-text'
@@ -20,8 +19,6 @@ import THEME from '../INFO/THEME'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 
-import ModalSignalCommentReply from '../Modal/ModalSignalCommentReply'
-
 const REDVALUE = 50-10
 const USER_IMG_SIZE = 100
 const DEFAULT_IMG = '../assets/default_100.jpg'
@@ -30,38 +27,28 @@ class CommentReply extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      loadingImage: true,
-      isModalVisible: false,
+      loadingImage: true
     }
     this.element_on = THEME.PRIMARY.BACKGROUND_COLOR
     this.element_off = THEME.TERTIARY.COLOR
 
+    //console.log(JSON.stringify(this.props.data) + "\n\n")
+
     this.renderViewMore = this._renderViewMore.bind(this)
     this.renderViewLess = this._renderViewLess.bind(this)
-
-    this.hideModal = this._hideModal.bind(this)
-    this.showModal = this._showModal.bind(this)
   }
 
-  _hideModal() {
-    this.setState({isModalVisible: false}, () => console.log('commentaire signalé avec succes !'))
-  }
-
-  _showModal() {
-    this.setState({isModalVisible: true}, () => console.log('voulez-vous signaler ce commentaire ?'))
-  }
-
-  _renderViewMore(handlePress) {
+  _renderViewMore = (handlePress) => {
     return (
       <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
-        Voir plus
+        Read more
       </Text>
     )
   }
-  _renderViewLess(handlePress) {
+  _renderViewLess = (handlePress) => {
     return (
       <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
-        Voir moins
+        Show less
       </Text>
     )
   }
@@ -73,29 +60,24 @@ class CommentReply extends React.Component {
       */
       <View style={styles.comment_container}>
 
-        <ModalSignalCommentReply
-          isModalVisible={this.state.isModalVisible}
-          hideModal={this.hideModal}
-        />
-
         <View style={styles.comment_container_left}>
-          <BounceUpAndDownStatic
+          <BounceUpAndDownStatic 
             scale={.8}
             onPress={() => {
-              this.props.navigateTo('ImageViewerDynamic', {
+              this.props.navigateTo('ImageViewerDynamic', { 
                 title: this.props.data.snippet.authorDisplayName,
-                imgURLPreview: imageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE),
+                imgURLPreview: imageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
               })
             }}
           >
             <View style={styles.comment_container_left_img_container}>
               <Image
                 style={styles.comment_container_left_img_background}
-                source={require(DEFAULT_IMG)}
+                source = {require(DEFAULT_IMG)}
               />
               <Image
                 style={styles.comment_container_left_img}
-                source={{ uri: imageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
+                source = {{ uri: imageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
               />
             </View>
           </BounceUpAndDownStatic>
@@ -103,40 +85,20 @@ class CommentReply extends React.Component {
 
         <View style={styles.comment_container_right}>
           <View style={styles.comment_area}>
-            <View style={styles.comment_area_name_icon}>
-              <View style={{flex:1}}>
-                <Text style={styles.comment_area_name}>
-                  {this.props.data.snippet.authorDisplayName}
-                </Text>
-              </View>        
-              <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
-                onPress={() => this.showModal()}
-              >                
-                <View style={{
-                  //backgroundColor: 'green',
-                  alignItems:'center',
-                  justifyContent:'center',
-                  width: 24,
-                  marginRight: -10,
-                }}>
-                  <Icon style={styles.comment_area_icon} name="md-more" />
-                </View>
-              </TouchableNativeFeedback>           
-            </View>
+            <Text style={styles.comment_area_name}>
+              {this.props.data.snippet.authorDisplayName}
+            </Text>
             <ViewMoreText
               numberOfLines={3}
               renderViewMore={this.renderViewMore}
-              renderViewLess={this.renderViewLess} 
-              key={this.props.data.snippet.textOriginal.length}              
+              renderViewLess={this.renderViewLess}              
             >
               <Autolink
                 style={styles.comment_area_text}
                 text={this.props.data.snippet.textOriginal}
                 hashtag="instagram"
-                mention="twitter"
+                mention="twitter" 
               />
-              {/*<Text>{this.props.data.snippet.textOriginal}</Text>*/}            
             </ViewMoreText>
           </View>
 
@@ -154,7 +116,7 @@ class CommentReply extends React.Component {
             {/*<Rate 
               like={this.props.data.like}
               dislike={this.props.data.dislike} 
-            />*/}
+            />*/}           
           </View>
         </View>
 
@@ -183,11 +145,11 @@ const styles = StyleSheet.create({
     flex: 1, 
     borderRadius: REDVALUE, 
     height: null, 
-    width: null,
+    width: null 
   },
   comment_container_left_img: {
     position: "absolute",
-    borderRadius: REDVALUE,
+    borderRadius: REDVALUE, 
     width: REDVALUE,
     height: REDVALUE,
   },
@@ -203,28 +165,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
     padding: 10,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
+    alignItems: 'flex-start', 
     justifyContent: 'center',
-  },
-
-  comment_area_name_icon: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-end',
-    //backgroundColor: 'red',
   },
   comment_area_name: {
     lineHeight: 22,
     fontWeight: 'bold',
-    //backgroundColor: 'blue'
   },
-  comment_area_icon: {
-    color: 'black',
-    fontSize: 24,    
-  },
-
   comment_area_text: {
     fontSize: 16, 
     lineHeight: 22,
@@ -234,7 +181,7 @@ const styles = StyleSheet.create({
     width: 10*2,
     height: 10,
     backgroundColor: 'transparent',
-    top: 1,
+    top: 0,
     left: -10,
     alignItems: 'center', 
     justifyContent: 'center',
@@ -248,14 +195,15 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: 'transparent',
     flexDirection: 'row',
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center',
   },
   option_area_mini: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center', 
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 10,
   },
   option_area_text: {
     color: THEME.TERTIARY.COLOR, 
@@ -267,5 +215,6 @@ const styles = StyleSheet.create({
     marginRight: 5
   },
 })
-  
+
 export default CommentReply
+

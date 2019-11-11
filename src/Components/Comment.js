@@ -1,22 +1,27 @@
 import React from 'react'
 import {
-  View, 
-  Text, 
+  View,
+  Text,
   Image,
   StyleSheet,
+  TouchableNativeFeedback,
 } from 'react-native'
+
+import ViewMoreText from 'react-native-view-more-text'
 
 import Autolink from 'react-native-autolink'
 import MomentConverter from './MomentConverter'
 import likeConverter from '../Helpers/likeConverter'
 import { connect } from 'react-redux'
 import Rate from './Rate'
-import { youtubeImageResizer } from '../AI/YoutubeImageResizer'
+import { imageResizer } from '../AI/ImageResizer'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
 import THEME from '../INFO/THEME'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
+
+import ModalSignalComment from '../Modal/ModalSignalComment'
 
 const SCALE = .5
 const TENSION = 100
@@ -29,26 +34,61 @@ class Comment extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      loadingImage: true
+      loadingImage: true,
+      isModalVisible: false,
     }
     this.element_on = THEME.PRIMARY.BACKGROUND_COLOR
     this.element_off = THEME.TERTIARY.COLOR
+
+    this.renderViewMore = this._renderViewMore.bind(this)
+    this.renderViewLess = this._renderViewLess.bind(this)
+
+    this.hideModal = this._hideModal.bind(this)
+    this.showModal = this._showModal.bind(this)
+  }
+
+  _hideModal() {
+    this.setState({isModalVisible: false}, () => console.log('commentaire signalé avec succes !'))
+  }
+
+  _showModal() {
+    this.setState({isModalVisible: true}, () => console.log('voulez-vous signaler ce commentaire ?'))
+  }
+
+  _renderViewMore(handlePress) {
+    return (
+      <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
+        Voir plus
+      </Text>
+    )
+  }
+  _renderViewLess(handlePress) {
+    return (
+      <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
+        Voir moins
+      </Text>
+    )
   }
 
   render() {
-    return ( 
+    return (
       /*
       <View style={styles.comment_container} key={this.props.rowId}>
       */
-      <View style={styles.comment_container}>    
+      <View style={styles.comment_container}>
+
+        <ModalSignalComment
+          isModalVisible={this.state.isModalVisible}
+          hideModal={this.hideModal}
+        />
 
         <View style={styles.comment_container_left}>
-          <BounceUpAndDownStatic 
+          <BounceUpAndDownStatic
             scale={.8}
             onPress={() => {
-              this.props.navigateTo('ImageViewerDynamic', { 
+              this.props.navigateTo('ImageViewerDynamic', {
                 title: this.props.data.snippet.topLevelComment.snippet.authorDisplayName,
-                imgURLPreview: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
+                imgURLPreview: imageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE),
               })
             }}
           >
@@ -59,7 +99,7 @@ class Comment extends React.Component {
               />
               <Image
                 style={styles.comment_container_left_img}
-                source={{ uri: youtubeImageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
+                source={{ uri: imageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
               />
             </View>
           </BounceUpAndDownStatic>
@@ -67,15 +107,41 @@ class Comment extends React.Component {
 
         <View style={styles.comment_container_right}>
           <View style={styles.comment_area}>
-            <Text style={styles.comment_area_name}>
-              {this.props.data.snippet.topLevelComment.snippet.authorDisplayName}
-            </Text>
-            <Autolink
-              style={styles.comment_area_text}
-              text={this.props.data.snippet.topLevelComment.snippet.textOriginal}
-              hashtag="instagram"
-              mention="twitter"
-            />
+            <View style={styles.comment_area_name_icon}>
+              <View style={{flex:1}}>
+                <Text style={styles.comment_area_name}>
+                  {this.props.data.snippet.topLevelComment.snippet.authorDisplayName}
+                </Text>
+              </View>        
+              <TouchableNativeFeedback
+                background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
+                onPress={() => this.showModal()}
+              >                
+                <View style={{
+                  //backgroundColor: 'green',
+                  alignItems:'center',
+                  justifyContent:'center',
+                  width: 24,
+                  marginRight: -10,
+                }}>
+                  <Icon style={styles.comment_area_icon} name="md-more" />
+                </View>
+              </TouchableNativeFeedback>           
+            </View>
+            <ViewMoreText
+              numberOfLines={3}
+              renderViewMore={this.renderViewMore}
+              renderViewLess={this.renderViewLess} 
+              key={this.props.data.snippet.topLevelComment.snippet.textOriginal.length}              
+            >
+              <Autolink
+                style={styles.comment_area_text}
+                text={this.props.data.snippet.topLevelComment.snippet.textOriginal}
+                hashtag="instagram"
+                mention="twitter"
+              />
+              {/*<Text>{this.props.data.snippet.topLevelComment.snippet.textOriginal}</Text>*/}            
+            </ViewMoreText>
           </View>
 
           <View style={styles.design_fix_area}>
@@ -95,7 +161,7 @@ class Comment extends React.Component {
             />*/}
 
             {
-              this.props.data.snippet.totalReplyCount===0 
+              this.props.data.snippet.totalReplyCount===0
                 ?
                   <BounceUpAndDownStatic 
                     scale={SCALE} tension={TENSION} style={styles.option_area_mini}
@@ -148,11 +214,11 @@ const styles = StyleSheet.create({
     flex: 1, 
     borderRadius: REDVALUE, 
     height: null, 
-    width: null 
+    width: null,
   },
   comment_container_left_img: {
     position: "absolute",
-    borderRadius: REDVALUE, 
+    borderRadius: REDVALUE,
     width: REDVALUE,
     height: REDVALUE,
   },
@@ -168,13 +234,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: THEME.TERTIARY.SEPARATOR_COLOR,
     padding: 10,
-    alignItems: 'flex-start', 
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     justifyContent: 'center',
+  },
+
+  comment_area_name_icon: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    //backgroundColor: 'red',
   },
   comment_area_name: {
     lineHeight: 22,
     fontWeight: 'bold',
+    //backgroundColor: 'blue'
   },
+  comment_area_icon: {
+    color: 'black',
+    fontSize: 24,    
+  },
+
   comment_area_text: {
     fontSize: 16, 
     lineHeight: 22,
@@ -184,7 +265,7 @@ const styles = StyleSheet.create({
     width: 10*2,
     height: 10,
     backgroundColor: 'transparent',
-    top: 0,
+    top: 1,
     left: -10,
     alignItems: 'center', 
     justifyContent: 'center',

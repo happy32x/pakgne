@@ -21,14 +21,6 @@ import Cgu from '../src/Components/Cgu'
 import BugReport from '../src/Components/BugReport'
 import UserProfile from '../src/Components/UserProfile'
 
-//import firebase from 'firebase'
-//import { firebaseConfig } from './config'
-/*firebase.app().delete().then(function() {
-  firebase.initializeApp({})
-})*/
-//!firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app()
-//!firebase.apps.length ? firebase.initializeApp(firebaseConfig) : null
-
 // Import React Navigation
 import { 
   createAppContainer,

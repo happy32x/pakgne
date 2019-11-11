@@ -1,20 +1,26 @@
 import React, { Component } from 'react'
-import {  
+import {
   View,
   FlatList,
   Animated,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,  
+  ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native'
 
+import firebase from 'firebase'
+
 import CommentReply from './CommentReply'
+import MyCommentReply from './MyCommentReply'
 import CommentReplyHeader from './CommentReplyHeader'
 import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
 import { getCommentListReplyFromApi } from '../API/REQUEST'
 import THEME from '../INFO/THEME'
 import { connect } from 'react-redux'
+
+import CommentCommentPostYoutube from './CommentCommentPostYoutube'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
@@ -24,6 +30,7 @@ class CommentListReply extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      data:[],
       isEmpty: true,
       isLoading: true,
       isLoadingMore: false,
@@ -42,11 +49,27 @@ class CommentListReply extends Component {
 
     this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
+
+    this.addComment = this._addComment.bind(this)
+    this.deleteComment = this._deleteComment.bind(this)
   }
 
   static navigationOptions = {
     header: null
-  };
+  }
+
+  async _deleteComment(commentId) {
+    this._data = await this._data.filter( item =>                                                                          
+                                          item.id !== commentId
+                                        )
+    this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
+  }
+
+  async _addComment(newComment) {        
+    //await this._data.splice(0, 0, newComment) //or
+    await this._data.unshift(newComment)
+    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))        
+  }
 
   _navigateTo(destination, data) {
     this.props.navigation.navigate(destination, data)
@@ -67,7 +90,10 @@ class CommentListReply extends Component {
         this._data = this._data.concat(responseJson.items)
         this._dataAfter = responseJson.nextPageToken
 
-        this.setState({ isLoadingMore: false })
+        this.setState({ 
+          data: this._data,
+          isLoadingMore: false,
+        })
 
         responseJson.nextPageToken===undefined
           ? this.setState({ stopLoadingMore: true })
@@ -83,6 +109,7 @@ class CommentListReply extends Component {
         this._dataAfter = responseJson.nextPageToken
 
         this.setState({
+          data: this._data,
           isLoading: false,
           isLoadingMore: false,
           isRefreshing: false,            
@@ -110,6 +137,7 @@ class CommentListReply extends Component {
           this._dataAfter = responseJson.nextPageToken
           
           this.setState({
+            data: this._data,
             isEmpty: false,
             isLoading: false,
           })
@@ -128,14 +156,14 @@ class CommentListReply extends Component {
 
   render() {   
     return (
-      <View style={styles.main_container}>
+      <KeyboardAvoidingView style={styles.main_container} behavior="padding" enabled>
 
         <CommentReplyHeader           
           navigateBack={this.navigateBack}
         />
 
-        { 
-          this.state.isLoading           
+        {
+          this.state.isLoading
             ? <CommentLoading color={THEME.SECONDARY.COLOR} />           
             : this.state.isEmpty
               ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur
@@ -143,12 +171,23 @@ class CommentListReply extends Component {
                   <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}
-                    data={this._data}
+                    keyboardShouldPersistTaps='always'
+                    data={this.state.data}
                     renderItem={
-                      ({item}) => <CommentReply
-                        data={item}
-                        navigateTo={this.navigateTo}
-                      />
+                      ({item}) => { return (
+                        item.kind == "youtube#comment" && item.snippet.authorDisplayName === firebase.auth().currentUser.displayName
+                          ? <MyCommentReply
+                              data={item}
+                              navigateTo={this.navigateTo}
+                              deleteComment={this.deleteComment}
+                            />
+                          : item.kind == "youtube#comment" && item.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
+                            ? <CommentReply
+                                data={item}
+                                navigateTo={this.navigateTo}
+                              />
+                            : null                      
+                      )}
                     }
                     ListFooterComponent={() => {
                       return (
@@ -177,7 +216,12 @@ class CommentListReply extends Component {
                 </View>
         }
 
-      </View>
+        <CommentCommentPostYoutube 
+          addComment={this.addComment}                                                
+          commentId={this.commentId}
+          autoFocus={false}
+        />
+      </KeyboardAvoidingView>
     )
   }
 }

@@ -48,9 +48,13 @@ class VideoViewerList_HeaderComponent extends React.Component{
               <Text style={styles.title}>{this.props.video[0].snippet.title}</Text>
               <Text style={styles.same_element}>{likeConverter(this.props.video[1].statistics.viewCount)} vues</Text>
             </View>
-            <View style={styles.bottom_element} >
+            <View style={styles.bottom_element}>
 
-              <RateVideoViewer like={this.props.video[1].statistics.likeCount} dislike={this.props.video[1].statistics.dislikeCount} />
+              <RateVideoViewer 
+                videoId={this.props.video[0].id.videoId}
+                like={this.props.video[1].statistics.likeCount} 
+                dislike={this.props.video[1].statistics.dislikeCount} 
+              />
 
               <TouchableNativeFeedback 
                 background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                    
@@ -69,7 +73,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
               >
                 <View style={styles.same_element_one}>
                   <Icon style={styles.same_element_two} name="md-share-alt" />
-                  <Text style={styles.same_element}>partager</Text>
+                  <Text style={styles.same_element} numberOfLines={1}>partager</Text>
                 </View>
               </TouchableNativeFeedback>                                      
 
@@ -81,7 +85,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
               >
                 <View style={styles.same_element_one}>
                   <Icon style={styles.same_element_two} name="md-download" />
-                  <Text style={styles.same_element}>télécharger</Text>
+                  <Text style={styles.same_element} numberOfLines={1}>télécharger</Text>
                 </View>        
               </TouchableNativeFeedback>
 
@@ -93,7 +97,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
               >
                 <View style={styles.same_element_one}>
                   <MaterialCommunityIcons style={styles.same_element_two} name="playlist-plus" />
-                  <Text style={styles.same_element}>favori</Text>
+                  <Text style={styles.same_element} numberOfLines={1}>favori</Text>
                 </View>        
               </TouchableNativeFeedback>
 
@@ -103,10 +107,10 @@ class VideoViewerList_HeaderComponent extends React.Component{
 
         <View style={styles.continued_container}>
           <View style={styles.continued_container_one}>
-            <Text style={styles.continued}>A suivre</Text>
+            <Text style={styles.continued} numberOfLines={1}>A suivre</Text>
           </View>
           <View style={styles.continued_container_two}>
-            <Text style={styles.continued}>Lecture automatique</Text>             
+            <Text style={styles.continued} numberOfLines={1}>Lecture automatique</Text>             
           </View>
           <View style={styles.continued_container_three}>                 
             <Switch
@@ -136,11 +140,12 @@ class VideoViewerList_HeaderComponent extends React.Component{
 const styles = StyleSheet.create({
   bottom_info_container: { 
     alignSelf:"stretch", 
-    height:125,
   },
   bottom_info: { 
-    alignSelf:"stretch", 
-    padding:15 
+    alignSelf:"stretch",
+    height: 150,
+    padding:15,
+    backgroundColor: THEME.PRIMARY.COLOR,
   },
   title_container: { 
     alignSelf:"stretch" 
@@ -151,7 +156,7 @@ const styles = StyleSheet.create({
   bottom_element: { 
     alignSelf:"stretch", 
     marginTop:15, 
-    flexDirection:'row' 
+    flexDirection:'row',
   },
   same_element: { 
     fontSize:12, 

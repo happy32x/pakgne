@@ -22,7 +22,7 @@ class ModalCommentTopRecent extends Component {
     return (
       <Modal
         style={[
-          styles.modal, 
+          styles.modal,
           {
             top: 
             this.props.modalPosition-DIMENSION.STATUSBAR_HEIGHT < 200 

@@ -7,7 +7,7 @@ import {
   ActivityIndicator, 
 } from 'react-native'
 
-import { youtubeImageResizer } from '../AI/YoutubeImageResizer'
+import { imageResizer } from '../AI/ImageResizer'
 import THEME from '../INFO/THEME'
 
 const USER_IMG_SIZE = Dimensions.get('window').width
@@ -35,7 +35,7 @@ class ImageContent extends Component {
           style={styles.image_background}
         >
           <ImageBackground 
-            source={{ uri: youtubeImageResizer(this.props.imgURLPreview, USER_IMG_SIZE) }}
+            source={{ uri: imageResizer(this.props.imgURLPreview, USER_IMG_SIZE) }}
             style={styles.image}
             onLoad={() => this.loadEnd()}
           >

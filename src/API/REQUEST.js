@@ -49,6 +49,14 @@ export function getVideoInfoFromApi (videoId) {
     .catch((error) => console.error(error))
 }
 
+//Récupérer une liste de sous-comentaires (commentId : UgyfGyvTA8OzJ3ilUOd4AaABAg , UgwLj19LmkKZddNcdJh4AaABAg, UgzTt0YulIuUMp5DslN4AaABAg)
+export function getCommentListReplyFromApi (commentId, pageToken) {
+  const url = `https://www.googleapis.com/youtube/v3/comments?key=${apiKey}&parentId=${commentId}&part=snippet&maxResults=${results}${pageToken}`
+  return fetch(url)
+    .then((response) => response.json())
+    .catch((error) => console.error(error))
+}
+
 //Récupérer une liste de commentaires
 export function getCommentListFromApi (videoId, order, pageToken) {
   const url = `https://www.googleapis.com/youtube/v3/commentThreads?key=${apiKey}&videoId=${videoId}&order=${order}&part=snippet&maxResults=${results}${pageToken}`
@@ -149,6 +157,132 @@ export async function rateVideoFromApi (accessToken, videoId, rating) {
   return json                
 }
 
+//commenter une video
+export async function commentVideo (accessToken, videoId, textOriginal) {
+  const url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet`  
+  const data = `{
+                  "snippet": {
+                    "videoId": "${videoId}",
+                    "topLevelComment": {
+                      "snippet": {
+                        "textOriginal": "${textOriginal}"
+                      }
+                    }
+                  }
+                }`
+  const response = await fetch(url, {  
+                          method: 'POST',
+                          headers: {                 
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`,
+                          },
+                          body: data                          
+                        })
+  const json = await response.json()
+  return json   
+}  
+
+//Supprimer un commentaire
+export async function deleteCommentFromApi (accessToken, commentId) { 
+  const url = `https://www.googleapis.com/youtube/v3/comments?id=${commentId}`
+
+  const response = await fetch(url, {  
+                    method: 'DELETE',
+                    headers: {
+                      'Accept': 'application/json',
+                      'Authorization': `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                  })
+  const json = await response
+  return json                
+}
+
+//editer un top Commentaire
+export async function editTopCommentFromApi (accessToken, commentId, textOriginal) {
+  const url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet`  
+  const data = `{
+                  "id": "${commentId}",
+                  "snippet": {
+                    "topLevelComment": {
+                      "snippet": {
+                        "textOriginal": "${textOriginal}"
+                      }
+                    }
+                  }
+                }`
+  const response = await fetch(url, {  
+                          method: 'PUT',
+                          headers: {                 
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`,
+                          },
+                          body: data                    
+                        })
+  const json = await response.json()
+  return json
+}
+
+//commenter un commentaire
+export async function commentComment (accessToken, topCommentId, textOriginal) {
+  const url = `https://www.googleapis.com/youtube/v3/comments?part=snippet`
+  const data = `{
+                  "snippet": {
+                    "parentId": "${topCommentId}",
+                    "textOriginal": "${textOriginal}"
+                  }
+                }`
+  const response = await fetch(url, {
+                          method: 'POST',
+                          headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`,
+                          },
+                          body: data
+                        })
+  const json = await response.json()
+  return json
+}
+
+//editer un Commentaire
+export async function editCommentFromApi (accessToken, commentId, textOriginal) {
+  const url = `https://www.googleapis.com/youtube/v3/comments?part=snippet`  
+  const data = `{
+                  "id": "${commentId}",
+                  "snippet": {
+                    "textOriginal": "${textOriginal}"
+                  }
+                }`
+  const response = await fetch(url, {  
+                          method: 'PUT',
+                          headers: {                 
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`,
+                          },
+                          body: data                    
+                        })
+  const json = await response.json()
+  return json
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//=========================================================
+
 //Pour eviter les doublons, il faut s'assurer 
 //qu'en amont, on n'execute pas getNewTokenFromApi_Filter()
 //plus d'une fois au cours d'un process
@@ -167,6 +301,7 @@ export function getNewTokenFromApi_Filter(callback) {
     } 
 
   } else if (isAccessTokenValid() === true) { //true
+    //__waterloo.push(callback)
     __waiters__second++
     console.log('REQUEST :: getNewTokenFromApi_Filter :: __waiters__second :: ' + __waiters__second)
     callback(__accessToken)
@@ -175,30 +310,49 @@ export function getNewTokenFromApi_Filter(callback) {
 }
 
 //Récupérer un nouveau token
-function getNewTokenFromApi () { 
+function getNewTokenFromApi () {
 
   getRefreshToken().then( refreshToken => {
     const url = `https://www.googleapis.com/oauth2/v4/token?client_id=${androidClientID}&grant_type=refresh_token&refresh_token=${refreshToken}`
 
     getTokenDataAccess(url)
-      .then((res) => {        
+      .then((res) => {  
         console.log('REQUEST :: getRefreshToken :: getTokenDataAccess :: res :: ' + JSON.stringify(res))        
-        __accessToken__timeout = Math.floor(Date.now() / 1000)
-        __accessToken = res.access_token              
+        __accessToken__timeout_presave = Math.floor(Date.now() / 1000)                    
+        return res
 
-        setAccessTokenTimeOut( __accessToken__timeout ).then(() => {
-          console.log('REQUEST :: getNewTokenFromApi :: getRefreshToken :: getTokenDataAccess :: setAccessTokenTimeOut :: AccessTokenTimeOut successful saved !')
-        })
-        setAccessToken(res.access_token).then(() => {
-          getNewTokenFromApi_Succeed(res.access_token) 
-        })
+        //(async () => {
+          //__accessToken = res.access_token
+        //})().then( () => {
+          //__accessToken__timeout =  __accessToken__timeout_presave 
+        //})
+        
+      })
+      .then((res) => { 
+        __accessToken = res.access_token 
+        console.log('WWW 1')
+        return res
+      })
+      .then((res) => {        
+        __accessToken__timeout =  __accessToken__timeout_presave
+        console.log('WWW 2')
+        return res
+      })
+      .then((res) => {  
+        console.log('WWW 3')      
+        setAccessTokenTimeOut( __accessToken__timeout_presave ).then(() => {
+          console.log('REQUEST :: getNewTokenFromApi :: getRefreshToken :: getTokenDataAccess :: setAccessTokenTimeOut :: accessTokenTimeOut successful saved !')                                                   
+          setAccessToken(res.access_token).then(() => {      
+            console.log('REQUEST :: getNewTokenFromApi :: getRefreshToken :: getTokenDataAccess :: setAccessTokenTimeOut ::  setAccessToken :: accessToken successful saved !')                                                                         
+            getNewTokenFromApi_Succeed(res.access_token) 
+          }) 
+        })                 
       })
       .catch((err) => {
         console.error("REQUEST :: getNewTokenFromApi :: getRefreshToken :: ERROR :: " + err)
         //Il y a perte de connection
         //getNewTokenFromApi_Initialize()
       })
-
   })
 
 }
@@ -217,14 +371,15 @@ async function getTokenDataAccess(url) {
 
 function getNewTokenFromApi_Succeed(newAccessToken) {  
   let __waiters__callback
-
-  do {
+  console.log("BEGIN ::" + __waiters.length)
+  //do {
     __waiters__callback = __waiters
     for(let i=0; i<__waiters__callback.length; i++) {
       __waiters__callback[i](newAccessToken)
-      __waiters.shift()
-    }  
-  }while(__waiters.length !== 0)
+      //__waiters.shift()
+    }
+  console.log("END ::" + __waiters.length)
+  //}while(__waiters.length !== 0)  
 
   getNewTokenFromApi_Initialize()
 
@@ -273,7 +428,8 @@ function getNewTokenFromApi_Initialize() {
         }
     }
   })()
-  __gettingNewTokenInProgress = false  
+  __waiters = []  
+  __gettingNewTokenInProgress = false 
 
   //BLOC OBSOLETE MAIS A RELIRE AVANT DE SUPPRIMER
   /*if(__waiters.length !== 0) { //Ceci siginfie que La boucle [do ... while] dans 
@@ -322,21 +478,30 @@ let __gettingNewTokenInProgress = false
 
 let __accessToken = null
 let __accessToken__timeout = null 
+let __accessToken__timeout_presave = null
 
 //Avant Authentification
 getAccessToken().then((accessToken) => {
   if(accessToken) {
     console.log('REQUEST :: getAccessToken :: accessToken :: ' + accessToken)
-    __accessToken = accessToken
+    __accessToken = accessToken //'reboot' Reboot accessToken
   }
 })
 
 getAccessTokenTimeOut().then((accessTokenTimeOut) => {
   if(accessTokenTimeOut) {
     console.log('REQUEST :: getAccessTokenTimeOut :: accessTokenTimeOut :: ' + accessTokenTimeOut)
-    __accessToken__timeout = Number(accessTokenTimeOut)
+    __accessToken__timeout = Number(accessTokenTimeOut) //0 Reboot accessToken
   }  
 })
+
+//Reboot accessToken
+/*setAccessToken('reboot').then(() => {
+  console.log('accesToken rebooted !')
+  setAccessTokenTimeOut( 0 ).then(() => {
+    console.log('accesTokenTimeOut rebooted !')
+  })
+}) */
 
 //Après Authentification
 export function setAccessTokenRequest(accessToken) {   

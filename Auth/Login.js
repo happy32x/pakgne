@@ -3,7 +3,7 @@ import {
   View,
   Button,
   StyleSheet,
-  ActivityIndicator,  
+  ActivityIndicator,
 } from 'react-native'
 
 import THEME from '../src/INFO/THEME'
@@ -111,11 +111,12 @@ class Login extends React.Component {
           'profile',
           'email',
           'https://www.googleapis.com/auth/youtube',
-          'https://www.googleapis.com/auth/youtube.readonly'
+          'https://www.googleapis.com/auth/youtube.readonly',
+          'https://www.googleapis.com/auth/youtube.force-ssl',
         ],
         redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`,
         accesstType: 'offline'
-      })
+      })   
 
       if (result.type === 'success') { 
         this.accessTokenTimeOut = Math.floor(Date.now() / 1000)         

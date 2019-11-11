@@ -21,39 +21,38 @@ class VideoViewerList_CommentHeader extends Component {
   }
 
   render() { 
-  return (     
-    <View 
-      style={styles.header} 
-      ref={(lv) => this._scroll = lv}
-    >
+    return ( 
+      <View 
+        style={styles.header} 
+        ref={(lv) => this._scroll = lv}
+      >
 
-      <View style={styles.header_container_left}>
-        <Text style={styles.header_text_one} >Commentaires </Text>
+        <View style={styles.header_container_left}>
+          <Text style={styles.header_text_one} >Commentaires </Text>
 
-        <View style={styles.header_commentCount}>  
-          {
-            !this.props.isLoading 
-              ? <Text style={styles.header_text_two}>{likeConverter(this.props.commentCount)}</Text>
-              : <ActivityIndicator style={styles.isloading} size="small" color={THEME.SECONDARY.COLOR}/>
-          }
-        </View>                
-      </View>
+          <View style={styles.header_commentCount}>  
+            {
+              !this.props.isLoading 
+                ? <Text style={styles.header_text_two}>{likeConverter(this.props.commentCount)}</Text>
+                : <ActivityIndicator style={styles.isloading} size="small" color={THEME.SECONDARY.COLOR}/>
+            }
+          </View>                
+        </View>
 
-      <View style={styles.header_container_right}>
-        <TouchableNativeFeedback 
-          background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
-          onPress={() => this.props.setModalPosition( this._scroll )}
-        >
-          <View style={styles.header_close}>
-            <Ionicons style={styles.close_icon} name="md-options" />
-          </View>
-        </TouchableNativeFeedback>
-      </View>     
-    
-    </View>
-  )
+        <View style={styles.header_container_right}>
+          <TouchableNativeFeedback 
+            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}
+            onPress={() => this.props.setModalPosition( this._scroll )}
+          >
+            <View style={styles.header_close}>
+              <Ionicons style={styles.close_icon} name="md-options" />
+            </View>
+          </TouchableNativeFeedback>
+        </View>   
+
+      </View>           
+    )
   }
-
 }
 
 const styles = StyleSheet.create({
@@ -64,10 +63,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
 		justifyContent: 'center',
 		flexDirection:'row',
-		marginTop:0,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.ON_LOAD_COLOR,
-    marginBottom: 15,
+    marginTop:0,        
   },
   header_container_left: {
     flex: 1,

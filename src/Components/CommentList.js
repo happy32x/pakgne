@@ -1,25 +1,32 @@
 import React, { Component } from 'react'
-import {  
+import {
   View,
   FlatList,
   Animated,
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native'
 
+import firebase from 'firebase'
 import uuidv1 from 'uuid/v1'
 
 import Comment from './Comment'
 import CommentHeader from './CommentHeader'
 import CommentLoading from './CommentLoading'
 import CommentEmpty from './CommentEmpty'
+
 import { 
   getCommentListFromApi,
   getVideoInfoFromApi, 
 } from '../API/REQUEST'
+
 import THEME from '../INFO/THEME'
 import ModalCommentTopRecentStatic from '../Modal/ModalCommentTopRecentStatic'
+import CommentPostYoutube from './CommentPostYoutube'
+
+import MyComment from './MyComment'
 import { connect } from 'react-redux'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -30,6 +37,7 @@ class CommentList extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      data: [],
       isEmpty: true,
       isLoading: true,
       isLoadingMore: false,
@@ -40,8 +48,9 @@ class CommentList extends Component {
       order: 'relevance',
       canWeHandleOrder: false,
 
-      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA')   
+      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA'),         
     }
+    this.autoFocus = this.props.navigation.getParam('autoFocus', 'NO-DATA'),
 
     this._data = null
     this._dataAfter = ''
@@ -62,10 +71,28 @@ class CommentList extends Component {
     this.orderComment = this._orderComment.bind(this)
 
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
+    
+    this.addComment = this._addComment.bind(this)
+    this.deleteComment = this._deleteComment.bind(this)
   }
 
   static navigationOptions = {
     header: null
+  }
+
+  async _deleteComment(commentId) {
+    this._data = await this._data.filter( item =>                                          
+                                          item.snippet &&
+                                          item.snippet.topLevelComment &&
+                                          item.snippet.topLevelComment.id !== commentId
+                                        )
+    this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
+  }
+
+  async _addComment(newComment) {        
+    //await this._data.splice(0, 0, newComment) //or
+    await this._data.unshift(newComment)
+    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))        
   }
 
   _toggleModal() {
@@ -117,7 +144,10 @@ class CommentList extends Component {
         this._data = this._data.concat(responseJson.items)
         this._dataAfter = responseJson.nextPageToken
 
-        this.setState({ isLoadingMore: false })
+        this.setState({ 
+          data: this._data,
+          isLoadingMore: false,
+        })
 
         responseJson.nextPageToken===undefined
           ? this.setState({ stopLoadingMore: true })
@@ -139,6 +169,7 @@ class CommentList extends Component {
           const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
           this.setState({
+            data: this._data,
             isLoading: false,
             isLoadingMore: false,
             isRefreshing: false,              
@@ -179,6 +210,7 @@ class CommentList extends Component {
               const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
               this.setState({
+                data: this._data,
                 isEmpty: false,
                 isLoading: false,
                 commentCount,
@@ -211,7 +243,7 @@ class CommentList extends Component {
 
   render() {   
     return (
-      <View style={styles.main_container}>
+      <KeyboardAvoidingView style={styles.main_container} behavior="padding" enabled>
 
         <CommentHeader 
           toggleModal={this.toggleModal}
@@ -232,16 +264,27 @@ class CommentList extends Component {
             ? <CommentLoading color={THEME.SECONDARY.COLOR}/>
             : this.state.isEmpty
               ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
-              : <View style={styles.listview_container}>
+              : <View style={styles.listview_container}>                  
                   <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
                     contentContainerStyle={styles.listview}
-                    showsVerticalScrollIndicator={true}                  
-                    data={this._data}
+                    showsVerticalScrollIndicator={true}      
+                    keyboardShouldPersistTaps='always'            
+                    data={this.state.data}
                     renderItem={
-                      ({item}) => <Comment
-                        data={item}
-                        navigateTo={this.navigateTo}
-                      />
+                      ({item}) => { return ( 
+                        item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName === firebase.auth().currentUser.displayName
+                          ? <MyComment
+                              data={item}
+                              navigateTo={this.navigateTo}                                                                                            
+                              deleteComment={this.deleteComment}
+                            />
+                          : item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
+                            ? <Comment
+                                data={item}
+                                navigateTo={this.navigateTo}                                                                                            
+                              />
+                            : null
+                      )}
                     }
                     ListFooterComponent={() => {
                       return (
@@ -266,12 +309,16 @@ class CommentList extends Component {
                     keyExtractor={(item,e) => e.toString()}
                     onEndReachedThreshold={.5}
                     {...this.props}
-                  />                  
+                  />                                    
                 </View>
-                
         }
 
-      </View>
+        <CommentPostYoutube 
+          addComment={this.addComment}                                                
+          videoId={this.videoId}
+          autoFocus={this.autoFocus}
+        />
+      </KeyboardAvoidingView>
     )
   }
 }
@@ -286,7 +333,7 @@ const styles = StyleSheet.create({
   },
   /*listview: {
     padding: 15,
-    backgroundColor: THEME.PRIMARY.COLOR,   
+    backgroundColor: THEME.PRIMARY.COLOR,
   },*/
   listview: {
     backgroundColor: THEME.PRIMARY.COLOR,  

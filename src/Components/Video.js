@@ -9,7 +9,9 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 
+import ViewMoreText from 'react-native-view-more-text'
 import Autolink from 'react-native-autolink'
+
 import Constants from 'expo-constants'
 import Icon from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -36,7 +38,7 @@ import {
   getAccessToken,
 } from '../Store/storeData'
 
-import { youtubeImageResizer } from '../AI/YoutubeImageResizer'
+import { imageResizer } from '../AI/ImageResizer'
 
 const SCALE = .7
 const TENSION = 100
@@ -51,8 +53,7 @@ class Video extends React.Component{
   constructor(props) {
     super(props)
     this.state = {
-      isLoading: true,
-      isFirstLoading: true,
+      isLoading: true,      
       secondData: undefined,
 
       like: false,
@@ -62,8 +63,7 @@ class Video extends React.Component{
       rate: 'none',
       isRateGot: false,      
     }
-
-    this.preventInfinitePass = false
+    
     this.requestId = null
     this.accessToken = null
 
@@ -79,6 +79,24 @@ class Video extends React.Component{
     this.fetchData_getVideoRateDataFromApi = this._fetchData_getVideoRateDataFromApi.bind(this)  
         
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
+
+    this.renderViewMore = this._renderViewMore.bind(this)
+    this.renderViewLess = this._renderViewLess.bind(this)
+  }
+
+  _renderViewMore = (handlePress) => {
+    return (
+      <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
+        Voir plus
+      </Text>
+    )
+  }
+  _renderViewLess = (handlePress) => {
+    return (
+      <Text style={{color: THEME.TERTIARY.COLOR, marginTop: 5}} onPress={handlePress}>
+        Voir moins
+      </Text>
+    )
   }
 
   _updateAccessToken(accessToken) {
@@ -101,11 +119,11 @@ class Video extends React.Component{
             this.rate = responseJson.items[0].rating
             console.log(this.rate)
             this.rate === 'like'
-              ? this.setState({ rate: 'like', like: true, dislike: false, none: false, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur like
+              ? this.setState({ rate: 'like', like: true, dislike: false, none: false, isRateGot: true, isLoading: false }) //le rating de la video est sur like
               : this.rate === 'dislike'
-                ? this.setState({ rate: 'dislike', like: false, dislike: true, none: false, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur dislike
+                ? this.setState({ rate: 'dislike', like: false, dislike: true, none: false, isRateGot: true, isLoading: false }) //le rating de la video est sur dislike
                 : this.rate === 'none'
-                  ? this.setState({ rate: 'none', like: false, dislike: false, none: true, isRateGot: true, isLoading: false, isFirstLoading: false }) //le rating de la video est sur none
+                  ? this.setState({ rate: 'none', like: false, dislike: false, none: true, isRateGot: true, isLoading: false }) //le rating de la video est sur none
                   : null
           } else {
             console.log(" SORCERY !!! ")
@@ -194,6 +212,7 @@ class Video extends React.Component{
             <View style={styles.title_video_container}>
               <Text style={styles.title_video}>
                 {this.props.firstData.snippet.title}
+                {/*this.props.firstData.id.videoId*/}
               </Text>
               <Text style={styles.publish_at_video}>
                 <MomentConverter publishAt={this.props.firstData.snippet.publishedAt} />
@@ -326,7 +345,7 @@ class Video extends React.Component{
               style={styles.same_element}
               onPress={() => {
                 this.state.secondData
-                  ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                  ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount, autoFocus: false } )
                   : console.log("Video :: render :: Element not load yet")               
               }}     
             >
@@ -351,7 +370,7 @@ class Video extends React.Component{
             </BounceUpAndDownStatic>            
           </View>
 
-          { 
+          {/*
             this.props.firstData.oneComment.length === 0
             ? null
             : <View style={styles.comment_container}>    
@@ -362,7 +381,7 @@ class Video extends React.Component{
                     onPress={() => {
                       this.props.navigateTo('ImageViewerDynamic', { 
                         title: this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorDisplayName,
-                        imgURLPreview: youtubeImageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
+                        imgURLPreview: imageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) ,                
                       })
                     }}
                   >
@@ -373,15 +392,14 @@ class Video extends React.Component{
                       />
                       <Image
                         style={styles.comment_container_left_img}
-                        source={{ uri: youtubeImageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
+                        source={{ uri: imageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
                       />
                     </View>
                   </BounceUpAndDownStatic>
                 </View>
 
                 <View style={styles.comment_container_right}>
-                  <BounceUpAndDownStatic
-                    scale={.9}                     
+                  <View                                      
                     style={styles.comment_area}
                     onPress={() => {
                       this.state.secondData
@@ -392,19 +410,29 @@ class Video extends React.Component{
                     <Text style={styles.comment_area_name}>
                       {this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorDisplayName}
                     </Text>
-                    <Autolink
-                      style={styles.comment_area_text}
-                      text={this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.textOriginal}
-                      hashtag="instagram"
-                      mention="twitter"
-                    />          
-                  </BounceUpAndDownStatic>
-                </View>
+                    <ViewMoreText
+                      numberOfLines={3}
+                      renderViewMore={this.renderViewMore}
+                      renderViewLess={this.renderViewLess}                      
+                    >
+                      <Autolink
+                        style={styles.comment_area_text}
+                        text={this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.textOriginal}
+                        hashtag="instagram"
+                        mention="twitter"
+                      />    
+                    </ViewMoreText>
+                  </View>
+
+                  <View style={styles.design_fix_area}>
+                    <Icon style={styles.arrow_dropdown_icon} name="md-arrow-dropdown" />
+                  </View>
+                </View>                
 
               </View>
-          }
+          */}
 
-          <View style={[styles.comment_container, {marginTop: 0} ]}>    
+          <View style={[styles.comment_container, {/*marginTop: 0*/} ]}>    
 
             <View style={styles.comment_container_left}>
               <BounceUpAndDownStatic 
@@ -440,7 +468,7 @@ class Video extends React.Component{
                 }]}
                 onPress={() => {
                   this.state.secondData
-                    ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount } )
+                    ? this.props.navigateTo( 'CommentList', { videoId: this.props.firstData.id.videoId, commentCount: this.state.secondData.statistics.commentCount, autoFocus: true } )
                     : console.log("Video :: render :: Element not load yet")               
                 }}
               >
@@ -450,7 +478,7 @@ class Video extends React.Component{
                   color: THEME.TERTIARY.WAVE_COLOR,
                   marginTop: -2                  
                 }}>
-                  commenter...
+                  laisser un commentaire ...
                 </Text>                        
               </BounceUpAndDownStatic>
             </View>
@@ -675,6 +703,21 @@ const styles = StyleSheet.create({
   comment_area_text: {
     fontSize: 16, 
     lineHeight: 22,
+  },
+
+  design_fix_area: {
+    position: 'absolute',
+    width: 10*2,
+    height: 10,
+    backgroundColor: 'transparent',
+    top: 1,
+    left: -10,
+    alignItems: 'center', 
+    justifyContent: 'center',
+  },
+  arrow_dropdown_icon: {
+    color: THEME.TERTIARY.SEPARATOR_COLOR,
+    fontSize: 50
   },
 })
 
