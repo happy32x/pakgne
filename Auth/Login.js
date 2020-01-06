@@ -28,7 +28,7 @@ class Login extends React.Component {
     super(props)    
     this.state = {
       loading: false
-    }    
+    }
     this.accessTokenTimeOut = null
   }
 
@@ -66,7 +66,8 @@ class Login extends React.Component {
         firebase.auth().signInWithCredential(credential).then(function(result){
           console.log('user signed in')
           if(result.additionalUserInfo.isNewUser) {   
-            console.log('user is new')               
+            console.log('user is new')
+
             firebase.database().ref('/users/' + result.user.uid).set({
               gmail: result.user.email,
               profile_picture: result.additionalUserInfo.profile.picture, 
@@ -78,6 +79,13 @@ class Login extends React.Component {
             .then(function(snapshot) {
               //console.log('snapshot', snapshot)
             })
+
+            //on ajoute l'utilisateur dans le chat pakgne
+            firebase.database().ref('/members/pakgnegroup/' + result.user.uid).set(true)
+
+            //on ajoute le groupe pakgne dans les groupe de l'utilisateur
+            firebase.database().ref('/userChats/' + result.user.uid + '/pakgnegroup/').set(true)
+
           } else {      
             console.log('user is old')                        
             firebase.database().ref('/users/' + result.user.uid).update({
@@ -94,11 +102,11 @@ class Login extends React.Component {
           // The firebase.auth.AuthCredential type that was used.
           var credential = error.credential;
           // ...
-        });
+        })
       } else {
         console.log('User already signed-in Firebase.');        
       }
-    });
+    })
   }  
 
   signInWithGoogleAsync = async() => {    
@@ -115,6 +123,9 @@ class Login extends React.Component {
           'https://www.googleapis.com/auth/youtube.force-ssl',
         ],
         redirectUrl: `${AppAuth.OAuthRedirect}:/oauth2redirect/google`,
+
+        //A TESTER
+        //accessType: 'offline'
         accesstType: 'offline'
       })   
 
@@ -123,10 +134,10 @@ class Login extends React.Component {
         console.log("fuck you second time")      
 
         //We keep user 'access_token', 'refresh_token' & 'access_token_timeout'
-        //in AsyncStorage local storage            
+        //in AsyncStorage local storage
         setRefreshToken(result.refreshToken).then(() => {
           console.log('Login :: signInWithGoogleAsync :: setRefreshToken :: refreshToken successful saved !')
-        })        
+        })
         setAccessTokenTimeOut( this.accessTokenTimeOut ).then(() => {
           setAccessTokenTimeOutRequest( this.accessTokenTimeOut )
           console.log('Login :: signInWithGoogleAsync :: setAccessTokenTimeOut :: AccessTokenTimeOut successful saved !')

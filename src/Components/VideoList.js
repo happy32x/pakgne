@@ -1,18 +1,18 @@
-import React, { Component, PureComponent } from "react"
+import React, { Component, PureComponent } from 'react'
 import {  
   View,
   FlatList,
   Animated,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,    
+  ActivityIndicator,
 } from 'react-native'
 
 import uuidv1 from 'uuid/v1'
 
 import Video from './Video'
 import { shuffleArray } from '../AI/Randomizer'
-import { 
+import {
   getVideoListFromApi,
   getOneCommentFromApi,
 } from '../API/REQUEST'
@@ -28,16 +28,16 @@ class VideoList extends Component {
   _isMounted = false
 
   constructor(props) {    
-    super(props);    
+    super(props)  
     this.state = {
       updateVideoList: false,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
-      stopLoadingMore: false,   
-      
+      stopLoadingMore: false,
+
       order: 'relevance',
-    }    
+    }
     this.requestId = null
 
     this._data = null
@@ -120,7 +120,7 @@ class VideoList extends Component {
           //if(this._isMounted && this.requestId === requestId && this.props.updateVideoList !== false && this.props.updateVideoList === this.state.updateVideoList) {
           if(this._isMounted && this.requestId === requestId) {
             const data = shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined)) 
-            this._data = data //FOR TEST ONLY                          
+            this._data = data //FOR TEST ONLY
             this._dataAfter = responseJson.nextPageToken
 
             console.log("VideoList :: order :: " + order)

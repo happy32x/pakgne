@@ -14,7 +14,7 @@ import CommentList from '../src/Components/CommentList'
 import CommentListReply from '../src/Components/CommentListReply'
 import ParameterViewer from '../src/Components/ParameterViewer'
 import ParameterElement from '../src/Components/ParameterElement'
-//import ChatViewer from '../../SandBox/CHAT/ChatViewer'
+import ChatViewer from '../src/Components/CHAT/ChatViewer'
 import About from '../src/Components/About'
 import Faq from '../src/Components/Faq'
 import Cgu from '../src/Components/Cgu'
@@ -44,7 +44,7 @@ const Navigator = createStackNavigator(
       CommentListReply: CommentListReply,
       ParameterViewer: ParameterViewer,
       ParameterElement: ParameterElement,
-      //ChatViewer: ChatViewer,
+      ChatViewer: ChatViewer,
       About: About,
       Faq: Faq,
       Cgu: Cgu,

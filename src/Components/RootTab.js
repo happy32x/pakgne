@@ -15,7 +15,7 @@ import {
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
 import DefaultShow from './DefaultShow'
 import VideoList from './VideoList'
-//import ChatList from './CHAT/ChatList'
+import ChatList from './CHAT/ChatList'
 import Default from './Default'
 import Header from './Header'
 import DIMENSION from '../INFO/DIMENSION'
@@ -40,13 +40,13 @@ class RootTab extends React.Component {
       scrollTopChatList: false,
 
       updateVideoList: false,
-      updateVideoListToggle: false,      
+      updateVideoListToggle: false,
 
       index: 0,
       indexOLD: 0,
       routes: [
         { key: '0', title: 'VIDEO' },
-        { key: '1', title: 'SHOP' },
+        { key: '1', title: 'TALK' },
         //{ key: '2', icon: 'show' },
       ],
 
@@ -72,8 +72,8 @@ class RootTab extends React.Component {
     this._scrollAnimVideoList = 0
     this._scrollAnimChatList = 0
 
-    //this.firstRoute = () => ( <Default /> )
-    this.firstRoute = () => (
+    this.firstRoute = () => ( <Default /> )
+    /*this.firstRoute = () => (
       <VideoList
         index = {this.state.index}
         indexOLD = {this.state.indexOLD}
@@ -99,13 +99,13 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )
-    this.secondRoute = () => ( <Default /> )
-    /*this.secondRoute = () => (
-      <ChatList   
-        index = {this.state.index}        
+    )*/
+    //this.secondRoute = () => ( <Default /> )
+    this.secondRoute = () => (
+      <ChatList
+        index = {this.state.index}
         indexOLD = {this.state.indexOLD}
-        scrollTopChatList = {this.state.scrollTopChatList}                 
+        scrollTopChatList = {this.state.scrollTopChatList}
 
         onScroll={
           Animated.event(
@@ -125,7 +125,7 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )*/    
+    )
     //this.thirdRoute = () => ( <DefaultShow /> )     
   }
 
@@ -183,6 +183,16 @@ class RootTab extends React.Component {
     <IconFontAwesome style={styles.icon_tv} name="tv" />
     : null)
   }*/
+
+  renderBadge = ({route}) => {
+    return (
+      route.title === 'VIDEO'
+      ? <IconFontAwesome style={styles.icon_tv} name="tv" />
+      : route.title === 'TALK'
+        ? <IconFontAwesome style={styles.icon_tv} name="tv" />
+        : null
+    )
+  }
 
   _renderScene = ({ route }) => {
     switch (route.key) {
@@ -276,8 +286,9 @@ class RootTab extends React.Component {
           renderTabBar={props => (
             <Animated.View style={[ styles.tabbar_container ,{ transform: [{ translateY: translateY }] }]}>
               <TabBar
-                {...props} 
+                {...props}
                 //renderIcon={this._renderIcon}
+                renderBadge={this._renderBadge}
                 onTabPress={this._onTabPress}
                 indicatorStyle={styles.tabbar_indicator_style} 
                 style={styles.tabbar_style}

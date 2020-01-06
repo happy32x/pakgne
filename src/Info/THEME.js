@@ -22,6 +22,8 @@ const ALL_THEME = {
       BACKGROUND_COLOR: 'transparent',
       WAVE_COLOR: '#D4D4D4',
       SEPARATOR_COLOR: '#EDEDED',
+      SHARP_COLOR: '#FCFCFC',
+      SHARP_COLOR_DARK: '#ECECEC',
     },
     STATUS_BAR: {
       DEFAULT_COLOR: '#E17000',

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { 
+import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -7,7 +7,7 @@ import {
 
 import THEME from '../INFO/THEME'
 
-class BounceUpAndDownStatic extends Component {
+class BounceUpAndDownVoiceNote extends Component {
   constructor(props) {
     super(props)
 
@@ -17,13 +17,15 @@ class BounceUpAndDownStatic extends Component {
     this.animatedValue = new Animated.Value(1)
   }
 
-  _handlePressIn() {    
+  _handlePressIn() {
+    this.props.voiceNoteOnPressedIn()
     Animated.spring(this.animatedValue, {
-      toValue: this.props.scale ? this.props.scale : 0.8
+      toValue: this.props.scale ? this.props.scale : 2
     }).start()
   }
 
-  _handlePressOut() {    
+  _handlePressOut() {
+    this.props.voiceNoteOnPressedOut()
     Animated.spring(this.animatedValue, {
       toValue: 1,
       friction: this.props.fiction ? this.props.fiction : 3,
@@ -32,8 +34,8 @@ class BounceUpAndDownStatic extends Component {
   }
 
   render() {
-    const animatedStyle = {
-      transform: [{ scale: this.animatedValue}]
+    const animatedStyle = {      
+      transform: [{ scale: this.animatedValue}],
     }
 
     return (
@@ -50,4 +52,4 @@ class BounceUpAndDownStatic extends Component {
   }
 }
 
-export default BounceUpAndDownStatic
+export default BounceUpAndDownVoiceNote

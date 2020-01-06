@@ -10,7 +10,6 @@ import {
 import * as Font from 'expo-font'
 import { LinearGradient } from 'expo-linear-gradient'
 
-
 import DIMENSION from '../INFO/DIMENSION'
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
 import HeaderContentIndicator from './HeaderContentIndicator'
@@ -92,12 +91,11 @@ class DefaultShow extends Component {
   render() {
     return (
       <View style={styles.main_container}>
-
-
+        
         <HeaderContentIndicator type="MaterialIcons" icon="live-tv" color="#3e3e3e" backgroundColor="transparent" />
-        <View style={{ flex: 1, paddingTop: 20,  paddingBottom: 20 }} >
+        <View style={{ flex: 1, paddingTop: 20,  paddingBottom: 20 }}>
           {
-            this.state.fontLoaded 
+            this.state.fontLoaded
               ? <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between' }}>
                   <Text style={{ fontFamily: 'candy', fontSize: 40, color: '#3e3e3e', textAlign: 'center' }}>Pakgne : La Télé Réalité ...</Text>
                   <Text style={{ fontFamily: 'candy', fontSize: 56, color: '#4a4a4a', textAlign: 'center' }}>Bientôt</Text>

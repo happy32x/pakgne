@@ -89,10 +89,10 @@ class CommentList extends Component {
     this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
   }
 
-  async _addComment(newComment) {        
+  async _addComment(newComment) {
     //await this._data.splice(0, 0, newComment) //or
     await this._data.unshift(newComment)
-    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))        
+    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))
   }
 
   _toggleModal() {
@@ -309,7 +309,7 @@ class CommentList extends Component {
                     keyExtractor={(item,e) => e.toString()}
                     onEndReachedThreshold={.5}
                     {...this.props}
-                  />                                    
+                  />
                 </View>
         }
 

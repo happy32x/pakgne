@@ -74,10 +74,10 @@ export function getOneCommentFromApi (videoId, order) {
 }
 
 //Récupérer des données pour savoir si l'utilisateur est abonné à une chaîne
-export function getSubscriptionStatusFromApi (accessToken) { 
+export function getSubscriptionStatusFromApi (accessToken) {
   const url = `https://www.googleapis.com/youtube/v3/subscriptions?forChannelId=${channelId}&part=snippet&mine=true`
 
-  return fetch(url, {  
+  return fetch(url, {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
@@ -249,7 +249,7 @@ export async function commentComment (accessToken, topCommentId, textOriginal) {
 
 //editer un Commentaire
 export async function editCommentFromApi (accessToken, commentId, textOriginal) {
-  const url = `https://www.googleapis.com/youtube/v3/comments?part=snippet`  
+  const url = `https://www.googleapis.com/youtube/v3/comments?part=snippet`
   const data = `{
                   "id": "${commentId}",
                   "snippet": {

@@ -54,8 +54,11 @@ export default class App extends React.Component {
     this.state = {
       showRealApp: false
     }
-    if(!firebase.apps.length) 
+
+    if(!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig)
+    }      
+
   }
 
   _renderItem = (item) => {
