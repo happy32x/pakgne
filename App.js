@@ -105,7 +105,7 @@ export default class App extends React.Component {
     if (this.state.showRealApp) {      
       return <Entry />
     } else {
-      return <AppIntroSlider 
+      return <AppIntroSlider
                 renderItem={this._renderItem}
                 renderDoneButton={this._renderDoneButton}
                 renderNextButton={this._renderNextButton} 

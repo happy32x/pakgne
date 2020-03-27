@@ -119,13 +119,10 @@ class ModalCommentPostYoutube extends Component {
             <TouchableNativeFeedback
               onPress={() => console.log('my image pressed !')}
             >
-              <View style={styles.comment_container_left_img_container}>
-                <Image
-                  style={styles.comment_container_left_img_background}
-                  source={require(DEFAULT_IMG)}
-                />
+              <View style={styles.comment_container_left_img_container}>               
                 <Image
                   style={styles.comment_container_left_img}
+                  defaultSource={require(DEFAULT_IMG)}
                   source={{ uri: firebase.auth().currentUser.photoURL }}
                 />
               </View>
@@ -143,7 +140,8 @@ class ModalCommentPostYoutube extends Component {
             >        
               <TextInput
                 ref={x => this.text_input = x}
-                style={{                              
+                style={{           
+                  width: '100%',                   
                   fontWeight: 'normal',
                   fontSize: 16,      
                   color: this.state.isLoading ? THEME.TERTIARY.WAVE_COLOR : 'black'       

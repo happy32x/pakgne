@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   View,
+  Text,
   Dimensions,
   StyleSheet,
   Animated,
@@ -17,9 +18,17 @@ import DefaultShow from './DefaultShow'
 import VideoList from './VideoList'
 import ChatList from './CHAT/ChatList'
 import Default from './Default'
+import VideoListRefresh from './VideoListRefresh'
 import Header from './Header'
+
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
+
+import {
+  setVideoListOrder,
+  setVideoListRandom,
+} from '../Store/storeData'
+
 import { withNavigation } from 'react-navigation'
 
 const BOTTOM_SHADOW_RAY = 5
@@ -35,6 +44,16 @@ class RootTab extends React.Component {
     const offsetAnim = new Animated.Value(0)
 
     this.state = {
+      order: 'date', //this.props.date,
+      random: 'false', //this.props.random,
+
+      newVideo: false,
+      newTalk: false,
+
+      newVideoSeenOnTabBar: false,
+      newTalkSeenOnTabBar: false,
+
+      updateTabBar: false,
 
       scrollTopVideoList: false,
       scrollTopChatList: false,
@@ -67,19 +86,27 @@ class RootTab extends React.Component {
     }
 
     this.index = 0
-    this.navigateTo = this._navigateTo.bind(this)
+    this.navigateTo = this._navigateTo.bind(this)    
 
     this._scrollAnimVideoList = 0
     this._scrollAnimChatList = 0
 
-    this.firstRoute = () => ( <Default /> )
-    /*this.firstRoute = () => (
+    //this.firstRoute = () => ( <VideoListRefresh updateForNewVideo={this.updateForNewVideo} /> )
+    this.firstRoute = () => (
       <VideoList
         index = {this.state.index}
         indexOLD = {this.state.indexOLD}
         scrollTopVideoList = {this.state.scrollTopVideoList}
         updateVideoList = {this.state.updateVideoList}
         updateVideoListToggle = {this.state.updateVideoListToggle}
+
+        updateForNewVideo = {this.updateForNewVideo}        
+        newVideo = {this.state.newVideo}
+        closeNewVideoPopUp = {this.closeNewVideoPopUp}
+
+        order = {this.state.order}
+        random = {this.state.random}
+        updateVideoListOrder = {this.updateVideoListOrder}
 
         onScroll={
           Animated.event(
@@ -88,7 +115,7 @@ class RootTab extends React.Component {
               useNativeDriver: true,
               listener: event => {
                 this._scrollAnimVideoList = event.nativeEvent.contentOffset.y
-                // console.log("RootTab :: firstRoute :: thid._scrollAnimVideoList :: " + this._scrollAnimVideoList)
+                // console.log("RootTab :: firstRoute :: this._scrollAnimVideoList :: " + this._scrollAnimVideoList)
                 // do something special
               },
             },
@@ -99,9 +126,9 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )*/
-    //this.secondRoute = () => ( <Default /> )
-    this.secondRoute = () => (
+    )
+    this.secondRoute = () => ( <Default /> )
+    /*this.secondRoute = () => (
       <ChatList
         index = {this.state.index}
         indexOLD = {this.state.indexOLD}
@@ -125,8 +152,55 @@ class RootTab extends React.Component {
         onMomentumScrollBegin={this._onMomentumScrollBegin}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
       />
-    )
-    //this.thirdRoute = () => ( <DefaultShow /> )     
+    )*/
+    //this.thirdRoute = () => ( <DefaultShow /> )   
+
+    this.listenForNewVideo = this._listenForNewVideo.bind(this)
+    this.updateForNewVideo = this._updateForNewVideo.bind(this)
+
+    this.closeNewVideoPopUp = this._closeNewVideoPopUp.bind(this)
+    this.updateVideoListOrder = this._updateVideoListOrder.bind(this)
+  }
+
+  _closeNewVideoPopUp() {
+    this.setState({newVideo: false})
+  }
+
+  //this is a new video listener
+  _listenForNewVideo(videoID) {
+    this.index === 0 
+      ? this.setState({newVideo: true})
+      : this.setState({newVideoSeenOnTabBar: true, updateTabBar: !this.state.updateTabBar})
+  }
+
+  _updateVideoListOrder(order, random) {
+
+    //on sauvegarde order & random dans Async Storage
+    setVideoListOrder( order ).then(() => {
+      setVideoListRandom( random ).then(() => {
+        console.log('RootTab :: _updateVideoListOrder :: setVideoListOrder :: order & random successful saved !')          
+      })
+    })
+
+    this.setState({
+      newVideo: false,
+      scrollTopVideoList: false,
+      updateVideoList: true,
+      updateVideoListToggle: !this.state.updateVideoListToggle,
+      indexOLD: this.state.index,
+      order: order,
+      random: random,
+    })
+  }
+
+  _updateForNewVideo() {
+    this.setState({
+      newVideo: false,
+      scrollTopVideoList: false,
+      updateVideoList: true,
+      updateVideoListToggle: !this.state.updateVideoListToggle,
+      indexOLD: this.state.index 
+    })
   }
 
   _navigateTo(destination, data) {
@@ -142,13 +216,19 @@ class RootTab extends React.Component {
   //Data Persist Handling
 
   _handleIndexChange = index => {
-    this.index = index 
-    this.setState({ index, indexOLD: this.state.index })    
+    this.index = index     
+    
+    this.state.newVideoSeenOnTabBar
+    ? this.setState({ index, indexOLD: this.state.index, newVideoSeenOnTabBar: false, updateTabBar: !this.state.updateTabBar }) 
+    : this.state.newTalkSeenOnTabBar
+      ? this.setState({ index, indexOLD: this.state.index, newTalkSeenOnTabBar: false, updateTabBar: !this.state.updateTabBar })
+      : this.setState({ index, indexOLD: this.state.index })
+
     //console.log('RootTab :: _handleIndexChange')
     //console.log('RootTab :: index : ' + index )
   }
 
-  _onTabPress = ({ route }) => { 
+  _onTabPress = ({ route }) => {
     /*console.log("this.state.scrollAnim : " + JSON.stringify(this.state.scrollAnim))
     console.log("this.state.index : " + this.state.index)
     console.log("route.key : " + route.key)  */ 
@@ -163,7 +243,13 @@ class RootTab extends React.Component {
         }     
         else if( JSON.stringify(this.state.scrollAnim) == 0 || this._scrollAnimVideoList == 0 ){ //videoList est déjà au top
           //update VideoList
-          this.setState({ scrollTopVideoList: false, updateVideoList: true, updateVideoListToggle: !this.state.updateVideoListToggle, indexOLD: this.state.index })
+          this.setState({ 
+            scrollTopVideoList: false, 
+            updateVideoList: true, 
+            updateVideoListToggle: !this.state.updateVideoListToggle, 
+            indexOLD: this.state.index,
+            newVideo: false,
+          })
         }
       }    
     }  
@@ -175,7 +261,7 @@ class RootTab extends React.Component {
           this._scrollAnimChatList = 0 //initialisation au point zero (tout les indiateurs sont au top)
         }                          
       }    
-    }  
+    }      
   }
 
   /*_renderIcon = ({ route }) => {
@@ -184,13 +270,23 @@ class RootTab extends React.Component {
     : null)
   }*/
 
-  renderBadge = ({route}) => {
+  /*_renderBadge = ({route}) => {
     return (
       route.title === 'VIDEO'
       ? <IconFontAwesome style={styles.icon_tv} name="tv" />
       : route.title === 'TALK'
         ? <IconFontAwesome style={styles.icon_tv} name="tv" />
         : null
+    )
+  }*/
+
+  _renderLabel = ({route, focused, color}) => {
+    return (
+      route.title === 'VIDEO' && this.state.newVideoSeenOnTabBar === true && !focused || route.title === 'VIDEO' && this.state.newVideoSeenOnTabBar === true
+      ? <Text style={{ color, fontWeight:'bold'}}>{route.title}  ⚫</Text>
+      : route.title === 'TALK' && this.state.newTalkSeenOnTabBar === true && !focused || route.title === 'TALK' && this.state.newTalkSeenOnTabBar === true
+        ? <Text style={{ color, fontWeight:'bold'}}>{route.title}  ⚫</Text>
+        : <Text style={{ color, fontWeight:'bold'}}>{route.title}</Text>
     )
   }
 
@@ -233,7 +329,7 @@ class RootTab extends React.Component {
     });
     this.state.offsetAnim.addListener(({ value }) => {
       this._offsetValue = value;
-    });
+    });    
   }
 
   componentWillUnmount() {
@@ -276,6 +372,7 @@ class RootTab extends React.Component {
 
         <Animated.View style={[ styles.header_container ,{ transform: [{ translateY: translateY }] }]}>
           <Header 
+            appNamePolice={this.props.appNamePolice}
             navigateTo={this.navigateTo}
           />
         </Animated.View>
@@ -288,11 +385,13 @@ class RootTab extends React.Component {
               <TabBar
                 {...props}
                 //renderIcon={this._renderIcon}
-                renderBadge={this._renderBadge}
+                renderLabel={this._renderLabel}
+                //renderBadge={this._renderBadge}
                 onTabPress={this._onTabPress}
-                indicatorStyle={styles.tabbar_indicator_style} 
+                indicatorStyle={styles.tabbar_indicator_style}
                 style={styles.tabbar_style}
                 labelStyle={styles.tabbar_label_style}
+                updateTabBar={this.state.updateTabBar}
               />
             </Animated.View>
           )}

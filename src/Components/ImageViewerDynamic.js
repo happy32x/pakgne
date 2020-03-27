@@ -39,7 +39,7 @@ class ImageViewerDynamic extends Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1,
-    backgroundColor: THEME.PRIMARY.COLOR
+    backgroundColor: THEME.SECONDARY.COLOR,
   },
 })
 

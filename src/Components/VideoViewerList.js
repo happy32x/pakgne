@@ -390,7 +390,7 @@ class VideoViewerList extends Component {
                         : item.kind == "youtube#searchResult"
                           ? <VideoMini
                               firstData={item}                            
-                              navigateTo={this.navigateBackNavigateTo}                                      
+                              navigateTo={this.navigateBackNavigateTo}
                             />
                           : item.contentID == 1
                             ? <VideoViewerList_CommentHeader                              
@@ -427,17 +427,17 @@ class VideoViewerList extends Component {
                     )
                   }}
                   onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => { console.log("MORE 2 !!!"); this.fetchMore() }) : null }                    
-                  refreshControl={ 
+                  /*refreshControl={ 
                     <RefreshControl
                       colors={[THEME.SECONDARY.COLOR]} 
-                      refreshing={this.state.isRefreshing} 
+                      refreshing={this.state.isRefreshing}
                       progressViewOffset={-25}
-                      onRefresh={() => {                        
+                      onRefresh={() => {
                         this._dataAfter = ''
                         this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
                       }}                        
                     /> 
-                  }
+                  }*/
                   keyExtractor={(item,e) => e.toString()}
                   onEndReachedThreshold={.5}
                   {...this.props}

@@ -88,13 +88,10 @@ class CommentReply extends React.Component {
               })
             }}
           >
-            <View style={styles.comment_container_left_img_container}>
-              <Image
-                style={styles.comment_container_left_img_background}
-                source={require(DEFAULT_IMG)}
-              />
+            <View style={styles.comment_container_left_img_container}>           
               <Image
                 style={styles.comment_container_left_img}
+                defaultSource={require(DEFAULT_IMG)}
                 source={{ uri: imageResizer(this.props.data.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
               />
             </View>
@@ -125,7 +122,7 @@ class CommentReply extends React.Component {
               </TouchableNativeFeedback>           
             </View>
             <ViewMoreText
-              numberOfLines={3}
+              numberOfLines={10}
               renderViewMore={this.renderViewMore}
               renderViewLess={this.renderViewLess} 
               key={this.props.data.snippet.textOriginal.length}              

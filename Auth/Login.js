@@ -1,9 +1,13 @@
 import React from 'react'
 import {
   View,
-  Button,
+  Text,
+  Image,
   StyleSheet,
-  ActivityIndicator,
+  Dimensions,
+  ImageBackground,
+  ActivityIndicator,  
+  TouchableNativeFeedback
 } from 'react-native'
 
 import THEME from '../src/INFO/THEME'
@@ -21,6 +25,9 @@ import {
   setAccessTokenRequest,
   setAccessTokenTimeOutRequest,
 } from '../src/API/REQUEST' 
+
+import icon from '../src/assets/icon.png'
+import GoogleLogo from '../src/assets/google_logo.png'
 
 class Login extends React.Component {
 
@@ -165,16 +172,32 @@ class Login extends React.Component {
     }
   }
 
-  render() {          
+  render() {
     return (
-      <View style={styles.main_container}> 
+      <View style={styles.main_container}>        
+        <ImageBackground 
+          resizeMode={"contain"}
+          source={icon}
+          style={styles.icon}
+        />
         {
           this.state.loading
             ? <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
-            : <Button 
-                title = 'Sign In with Google'
-                onPress = { () => this.setState( {loading: true}, () => this.signInWithGoogleAsync() ) }                              
-              />   
+            : <View style={styles.main}>
+                <TouchableNativeFeedback
+                  background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+                  onPress = { () => this.setState( {loading: true}, () => this.signInWithGoogleAsync() ) }                              
+                >
+                  <View style={styles.google_sign_in_button}>
+                    <View style={styles.google_logo_container}>
+                      <Image source={GoogleLogo} style={styles.google_logo}/>
+                    </View>
+                    <View style={styles.google_text_container}>
+                      <Text style={styles.google_text}>Sign In With Google</Text>
+                    </View>
+                  </View>
+                </TouchableNativeFeedback>            
+              </View>
         }                 
       </View>
     )  
@@ -187,7 +210,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     //paddingTop: DIMENSION.STATUSBAR_HEIGHT,
-    backgroundColor: "#FFF", //"#fcfcfc",
+    backgroundColor: '#fCfCfC',
+  },
+  icon: {
+		width: 80,
+    height: 80,
+    marginBottom: 50,
+  },
+  main: {
+    width: 220,
+    height: 50,    
+    borderRadius: 5,
+    elevation: 2,
+    overflow:'hidden'
+  },
+  google_sign_in_button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,        
+    backgroundColor: '#FFFFFF',    
+  },
+  google_logo_container: {    
+    alignItems: 'center',
+    justifyContent: 'center',
+    //backgroundColor: '#FFF',
+  },
+  google_logo: {
+    resizeMode: 'contain',
+    marginHorizontal: 10,
+    width: 20,
+    height: 20,
+  },
+  google_text_container: {
+    flex:1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    //backgroundColor: '#FFF',
+  },
+  google_text: {    
+    color: '#7F7F7F',
+    fontSize: 16,    
   },
 })
 

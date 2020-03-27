@@ -2,12 +2,14 @@ import React from 'react';
 import { 
   View,
   StyleSheet,
+  ImageBackground,
   ActivityIndicator,
 } from 'react-native'
 
 import THEME from '../src/INFO/THEME'
 import firebase from 'firebase'
 
+import icon from '../src/assets/icon.png'
 import { StackActions, NavigationActions } from 'react-navigation';
 
 export default class Loading extends React.Component {
@@ -38,11 +40,16 @@ export default class Loading extends React.Component {
 
   componentDidMount(){
     this.checkIfLoggedIn()
-  }  
+  }
 
   render() {
     return (
-      <View style={styles.main_container}> 
+      <View style={styles.main_loader}>        
+        <ImageBackground 
+          resizeMode={"contain"}
+          source={icon}
+          style={styles.icon}
+        />
         <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
       </View>
     )    
@@ -50,11 +57,16 @@ export default class Loading extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  main_container: {
+  main_loader: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     //paddingTop: DIMENSION.STATUSBAR_HEIGHT,
     backgroundColor: "#FFF", //"#fcfcfc",
   }, 
+  icon: {
+		width: 80,
+    height: 80,
+    marginBottom: 50,
+  },
 })

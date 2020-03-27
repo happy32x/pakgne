@@ -22,7 +22,7 @@ class SearchViewerListElement extends React.Component{
   }
 
   renderText() {    
-    let text = this.props.data.nom.toLowerCase()
+    let text = this.props.data.text.toLowerCase()
     let tag = this.props.text.toLowerCase()
     let data = null
     let proceed = text.indexOf(tag)
@@ -77,9 +77,8 @@ class SearchViewerListElement extends React.Component{
 const styles = StyleSheet.create({      
   main: {
     width: '100%',
-    flexDirection:'row', 
-    paddingTop: 5,
-    paddingBottom: 5,
+    flexDirection:'row',
+    paddingVertical: 10,
   },
 
   left: {

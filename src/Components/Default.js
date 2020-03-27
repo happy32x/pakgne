@@ -6,6 +6,7 @@ import {
 } from 'react-native'
 
 import iconOff from '../assets/iconOff.png'
+import VideoListOrder from './VideoListOrder'
 
 class Default extends Component {
   render() {
@@ -15,6 +16,7 @@ class Default extends Component {
           source={ iconOff }
           style={styles.img}
         />
+        {/*<VideoListOrder />*/}
       </View>
     )
   }

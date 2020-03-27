@@ -21,10 +21,14 @@ import THEME from '../INFO/THEME'
 import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewanda.jpg'
 
 import firebase from 'firebase'
+import { imageResizer } from '../AI/ImageResizer'
 
 const DEFAULT_IMG = '../assets/default_100.jpg'
 const REDVALUE = 60
 const MESSAGE = 'Option indisponible dans cette version'
+
+const USER_IMG_SIZE = 100
+
 
 class ParameterViewerContent extends React.Component{
   renderSeparator = () => {
@@ -54,22 +58,31 @@ class ParameterViewerContent extends React.Component{
                 <BounceUpAndDownStatic
                   scale={.8}
                   onPress={() => {
-                    this.props.navigation.navigate('ImageViewer', { 
-                      title: firebase.auth().currentUser.displayName,
-                      imgURLPreview: firebase.auth().currentUser.photoURL,                
+                    this.props.navigation.navigate('ImageViewerDynamic', { 
+                      title: firebase.auth().currentUser.displayName,                    
+                      imgURLPreview: imageResizer(firebase.auth().currentUser.photoURL, USER_IMG_SIZE),               
                     })
-                  }}
+                  }}   
+                  
+                  /*onPress={() => {
+                    this.props.navigateTo('ImageViewerDynamic', {
+                      title: this.props.data.snippet.topLevelComment.snippet.authorDisplayName,
+                      imgURLPreview: imageResizer(this.props.data.snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE),
+                    })
+                  }}*/
                 >
-                  <View style={styles.user_pic_container_one}>
-                    <Image style={styles.user_pic_background} source={require(DEFAULT_IMG)} />
-                    <Image style={styles.user_pic} source={{uri: firebase.auth().currentUser.photoURL}} />
+                  <View style={styles.user_pic_container_one}>                    
+                    <Image 
+                      style={styles.user_pic}
+                      defaultSource={require(DEFAULT_IMG)}
+                      source={{uri: firebase.auth().currentUser.photoURL}} />
                   </View>
                 </BounceUpAndDownStatic>
 
               </View>
               <View style={styles.user_name_container}>
                 <Text style={styles.user_name}>{firebase.auth().currentUser.displayName}</Text>
-                <Text style={styles.user_description}>Je suis votre fan N°1</Text>          
+                <Text style={styles.user_description}>Appuyer pour plus d'infos</Text>          
               </View>
             </View>
           </TouchableNativeFeedback>           

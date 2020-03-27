@@ -27,28 +27,30 @@ class ImageContent extends Component {
     this.setState({ isLoading: false })
   }
 
-  render(){
+  render() {
     return (     
       <View style={styles.main_container}>
         <ImageBackground 
-          source={{ uri: this.props.imgURLPreview }} 
+          source={{ uri: this.state.isLoading ?this.props.imgURLPreview :null }} 
           style={styles.image_background}
+          resizeMode={"contain"}
         >
-          <ImageBackground 
+          <ImageBackground
             source={{ uri: imageResizer(this.props.imgURLPreview, USER_IMG_SIZE) }}
             style={styles.image}
             onLoad={() => this.loadEnd()}
+            resizeMode={"contain"}
           >
             {
               this.state.isLoading 
                 ? <ActivityIndicator style={styles.isloading} size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
                 : null
             }
-          </ImageBackground> 
-        </ImageBackground>                
+          </ImageBackground>
+        </ImageBackground>
       </View>
     )
-  }  
+  }
 }
 
 const styles = StyleSheet.create({

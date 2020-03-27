@@ -64,7 +64,7 @@ class VideoViewer extends React.Component{
     return (
       <View style={styles.main_container}>
           <View style={styles.video_container}>
-            {/*<YoutubeView videoId={video[0].id.videoId} />*/}            
+            <YoutubeView videoId={video[0].id.videoId} />
 
             <TouchableNativeFeedback 
               background={TouchableNativeFeedback.Ripple(THEME.SECONDARY.WAVE_COLOR,true)}

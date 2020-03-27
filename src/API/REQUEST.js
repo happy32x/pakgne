@@ -26,7 +26,7 @@ export function getVideoListFromApi (order, pageToken) {
 }
 
 //Récupérer une liste de videos de resultat de recherche
-export function getVideoListMiniFromApi (keyWord, pageToken) {  
+export function getVideoListMiniFromApi (keyWord, pageToken) {
   const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet&q=${keyWord}&maxResults=${results}${pageToken}`
   return fetch(url)
     .then((response) => response.json())

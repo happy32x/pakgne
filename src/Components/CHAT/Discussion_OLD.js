@@ -219,7 +219,10 @@ class Discussion_OLD extends React.Component {
             
             <View style={styles.option_area_mini}>
               <Text style={[styles.option_area_text,]}>
-                <HourConverter publishAt={this.props.data.val().messageTimeStamp} />
+                10:20
+                {/*<HourConverter 
+                  publishAt={this.props.data.val().messageTimeStamp} 
+                />*/}
               </Text>
             </View>              
                     

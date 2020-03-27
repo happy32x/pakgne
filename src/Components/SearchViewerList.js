@@ -8,12 +8,20 @@ import {
 } from 'react-native'
 
 import SearchViewerListElement from './SearchViewerListElement'
-import { getHistoryListFromApi } from './SearchViewerListRequestTest'
+
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
 import Fuse from 'fuse.js'
 import uuidv1 from 'uuid/v1'
+
+/*import { 
+  getSearchListHistory 
+} from './SearchViewerListRequestTest'*/
+
+import {
+  getSearchListHistory,
+} from '../Store/storeData'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
@@ -25,9 +33,9 @@ const fuse_options = {
   maxPatternLength: 32,
   minMatchCharLength: 1,
   keys: [
-    "nom"
+    "text"
   ]
-};
+}
 
 class SearchViewerList extends Component {  
   _isMounted = false
@@ -35,48 +43,43 @@ class SearchViewerList extends Component {
   constructor(props) {    
     super(props);    
     this.state = {
-      data: null,
+      data: [],
       text: null,
     }        
-
-    this.requestId = null
-    this._data = null    
     
-    this.launchResearhParam = this._launchResearhParam.bind(this)        
-    this.fetchData = this._fetchData.bind(this)
+    this.requestId = null
+    this._data = []
 
-    //console.log("SearckViewerList :: Constructor :: this.props.text :: " + props.text)    
+    this.launchResearhParam = this._launchResearhParam.bind(this)             
   }   
 
   _launchResearhParam(research) {
     this.props.launchResearhParam(research)
   }
 
-  _fetchData(callback) {    
-    getCommentListFromApi(this.videoId, this.state.order, pageToken).then(callback)
-  }
-
   componentDidMount() {
-    this._isMounted = true
-    this._data = getHistoryListFromApi() 
-    console.log("SearckViewerList :: componentDidMount :: this.props.text :: " + this.props.text)    
+    this._isMounted = true     
+    this._data = this.props.searchList
+
+    console.log("SearchViewerList :: componentDidMount :: this.props.text :: " + this.props.text)    
   }
 
   componentDidUpdate() {
     const requestId = this.requestId = uuidv1()
     if(this.props.text && this.props.text != this.state.text) {
-      let fuse = new Fuse(getHistoryListFromApi(), fuse_options)
-      let data = fuse.search(this.props.text)
+      if(this.props.searchList !== null) {
+        let fuse = new Fuse(this.props.searchList, fuse_options)
+        let data = fuse.search(this.props.text)
 
-      if(this._isMounted && this.requestId === requestId) {
-        this._data = data
-        this.setState({data: this._data, text: this.props.text})
+        if(this._isMounted && this.requestId === requestId) {
+          this._data = data
+          this.setState({data: this._data, text: this.props.text})
+        }
+
+        console.log("SearckViewerList :: componentDidUpdate :: this.props.text :: if :: " + this.props.text)  
       }
-
-      console.log("SearckViewerList :: componentDidUpdate :: this.props.text :: if :: " + this.props.text)  
-
-    } else if (this.props.text === '' && this.props.text != this.state.text){      
-      this._data = getHistoryListFromApi() 
+    } else if (this.props.text === '' && this.props.text != this.state.text) {      
+      this._data = this.props.searchList 
       this.setState({data: this._data, text: this.props.text})
 
       console.log("SearckViewerList :: componentDidUpdate :: this.props.text :: else if :: " + this.props.text)    
@@ -92,22 +95,23 @@ class SearchViewerList extends Component {
         <View style={[ styles.main_container, { top: this.props.SearchViewerListIsDisplaying 
                                                   ? DIMENSION.MAX_HEADER_HEIGHT 
                                                   : Dimensions.get('window').height                                               
-                                              }]}>
-          <AnimatedFlatList      
-            keyboardShouldPersistTaps={'handled'}      
+                                              }]}>                                  
+          <AnimatedFlatList
+            keyboardShouldPersistTaps={'handled'}
             contentContainerStyle={styles.content_container}
-            showsVerticalScrollIndicator={false}            
-            data={this._data}                          
+            showsVerticalScrollIndicator={false}
+            data={this._data}
             renderItem={
-              ({item}) => <SearchViewerListElement 
-                data={item}  
-                text={this.props.text}                              
-                launchResearhParam={this.launchResearhParam}                       
+              ({item}) => <SearchViewerListElement
+                data={item}
+                text={this.props.text}
+                launchResearhParam={this.launchResearhParam}
               />
-            }                  
+            }
             keyExtractor={(item,e) => e.toString()}            
             {...this.props}
-          />
+          />          
+       
         </View>
       )    
   }

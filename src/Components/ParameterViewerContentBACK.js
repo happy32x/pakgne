@@ -59,9 +59,11 @@ class ParameterViewerContent extends React.Component{
                     })
                   }}
                 >
-                  <View style={styles.user_pic_container_one}>
-                    <Image style={styles.user_pic_background} source={require(DEFAULT_IMG)} />
-                    <Image style={styles.user_pic} source={{uri: firebase.auth().currentUser.photoURL}} />
+                  <View style={styles.user_pic_container_one}>                    
+                    <Image 
+                      style={styles.user_pic} 
+                      defaultSource={require(DEFAULT_IMG)}
+                      source={{uri: firebase.auth().currentUser.photoURL}} />
                   </View>
                 </BounceUpAndDownStatic>
 

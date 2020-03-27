@@ -254,51 +254,56 @@ class Discussion extends React.Component {
                 </View>
               </View>*/}
 
-              <View style={{              
-                alignSelf: 'stretch',
-                backgroundColor: THEME.TERTIARY.SHARP_COLOR_DARK,
-                margin: 0,
-                marginBottom: 5,
-                marginHorizontal: 5,
-                borderRadius: 5, 
-
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',     
-              }}>
-                <TouchableNativeFeedback
-                  background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR, true)}             
-                  onPress={() => {
-                    console.log("quote touch !")
-                  }}
-                > 
-                  <View style={{              
-                    alignSelf: 'stretch',                  
-                    borderLeftColor: THEME.PRIMARY.BACKGROUND_COLOR,
-                    borderLeftWidth: 5,                   
-                    padding: 5,                  
+              {
+                this.props.data.val().quote === ''
+                ? null  
+                : <View style={{              
+                    alignSelf: 'stretch',
+                    backgroundColor: THEME.TERTIARY.SHARP_COLOR_DARK,
+                    margin: 0,
+                    marginBottom: 5,
+                    marginHorizontal: 5,
+                    borderRadius: 5, 
 
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',                                        
+                    justifyContent: 'center',     
                   }}>
-                    <Text
-                      numberOfLines={1} 
-                      style={{
-                        fontWeight: 'bold',
-                        color: THEME.PRIMARY.BACKGROUND_COLOR,
-                        alignSelf: 'flex-start',
-                        fontSize: 10,
+                    <TouchableNativeFeedback
+                      background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR, true)}             
+                      onPress={() => {
+                        console.log("quote touch !")
+                        this.props.myScrollToItem(this.props.data.val().quote_item)
                       }}
-                    >
-                      Happy ngounou{/*this.props.data.val().author_name*/}
-                    </Text>
-                    <Text numberOfLines={3} style={{alignSelf: 'flex-start'}}>
-                      Et puis quoi !!! {/*this.props.data.val().message*/}
-                    </Text>
+                    > 
+                      <View style={{              
+                        alignSelf: 'stretch',                  
+                        borderLeftColor: THEME.PRIMARY.BACKGROUND_COLOR,
+                        borderLeftWidth: 5,                   
+                        padding: 5,                  
+
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',                                        
+                      }}>
+                        <Text
+                          numberOfLines={1} 
+                          style={{
+                            fontWeight: 'bold',
+                            color: THEME.PRIMARY.BACKGROUND_COLOR,
+                            alignSelf: 'flex-start',
+                            fontSize: 10,
+                          }}
+                        >
+                          Happy ngounou{/*this.props.data.val().author_name*/}
+                        </Text>
+                        <Text numberOfLines={3} style={{alignSelf: 'flex-start'}}>
+                          Et puis quoi !!! {/*this.props.data.val().message*/}
+                        </Text>
+                      </View>
+                    </TouchableNativeFeedback>
                   </View>
-                </TouchableNativeFeedback>
-              </View>
+              }
 
               {/*<ViewMoreText
                 numberOfLines={50}
@@ -325,7 +330,10 @@ class Discussion extends React.Component {
                 {/*<IconMaterialCommunityIcons style={styles.message_status} name="clock-outline" />*/}              
                 <IconMaterialCommunityIcons style={styles.message_status} name="check" />
                 <Text style={[styles.option_area_text,]}>
-                  10:20{/*<HourConverter publishAt={this.props.data.val().messageTimeStamp} />*/}
+                  10:20
+                  {/*<HourConverter 
+                    publishAt={this.props.data.val().messageTimeStamp} 
+                  />*/}
                 </Text>
               </View>      
 

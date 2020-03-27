@@ -6,11 +6,12 @@ import {
   Easing,
   Animated,
   Platform,
-  Keyboard,
+  Keyboard,  
   TextInput,
   StyleSheet,
   Dimensions,
   BackHandler,
+  ToastAndroid,
   PanResponder,
   ImageBackground,
   ActivityIndicator,
@@ -65,7 +66,7 @@ class DiscussionPost extends Component {
       pan: new Animated.ValueXY(),
       panY: new Animated.Value(0),
       scale: new Animated.Value(1),
-      lockBackground: new Animated.Value(0),       
+      lockBackground: new Animated.Value(0),
       
       text: '',
       emojiKeyboardActived: true,
@@ -108,9 +109,6 @@ class DiscussionPost extends Component {
     this._durationTime = 0
     this._durationTimeMinutes = 0
     this._durationTimeSeconds = 0
-
-    this._time = null
-    this._text = ''
 
     this.sendData_commentDiscussion = this._sendData_commentDiscussion.bind(this)
 
@@ -161,7 +159,7 @@ class DiscussionPost extends Component {
 
     //Dernière chose, il faut handle la barre de merde par dafault 
     //qui s'affiche lorsqu'on sélectionne un texte. Cela pourri 
-    //vraiment le design de l'App, ensuite il faudra créer una barre 
+    //vraiment le design de l'App, ensuite il faudra créer une barre 
     //perso en remplacement et handle chacune de ses features 
   }
 
@@ -241,10 +239,8 @@ class DiscussionPost extends Component {
     ]).start()
   }
 
-  _sendData_commentDiscussion() {
-    let data = null
-    let text = this._text
-    let time = this._time
+  _sendData_commentDiscussion(text, time, quoteAuthor, quote, quoteItem) {
+    let data = null   
     data = {
       key: 'NEW',
       val: () => {
@@ -254,6 +250,10 @@ class DiscussionPost extends Component {
           author_name: firebase.auth().currentUser.displayName,
           message: text,
           messageTimeStamp: time,
+
+          quote_author: quoteAuthor,
+          quote: quote,
+          quote_item: quoteItem,
         }
       }
     }
@@ -514,13 +514,13 @@ class DiscussionPost extends Component {
 
   _keyboardDidShow(e) {
     console.log('Keyboard Shown :: ' + e.endCoordinates.height)  
-    this.canHideEmojiKeyboard =true
+    //this.canHideEmojiKeyboard =true
   }
 
   _keyboardDidHide() {
     console.log('Keyboard Hidden')
-    this.text_input.blur()
-    this.canHideEmojiKeyboard ?this.goBack() :null
+    //this.text_input.blur()
+    //this.canHideEmojiKeyboard ?this.goBack() :null
   }
 
   componentDidMount() {
@@ -566,7 +566,7 @@ class DiscussionPost extends Component {
   }
 
   render() {
-    let { pan, panY, scale } = this.state
+    let { pan, panY, scale} = this.state
     let rotate = '0deg'
 
     let [translateX, translateY] = [pan.x, pan.y]
@@ -589,6 +589,11 @@ class DiscussionPost extends Component {
       outputRange: [0, 0.3]
     })
 
+    let quoteAnimOpacity = this.quoteAnim.interpolate({
+      inputRange: [-SCREEN_WIDTH_MID, 0, SCREEN_WIDTH_MID],
+      outputRange: [0, 1, 0]
+    })
+
     return (
         <View style={styles.comment_container}>          
         {          
@@ -606,6 +611,7 @@ class DiscussionPost extends Component {
               alignItems: 'center',
               justifyContent: 'center',
               //backgroundColor: 'red',
+              opacity: quoteAnimOpacity,
               transform: [{translateX:this.quoteAnim}],
             }}> 
               <View 
@@ -651,18 +657,10 @@ class DiscussionPost extends Component {
                         fontSize: 10,
                       }}
                     >
-                      Happy Julien{/*this.props.data.val().author_name*/}
+                      {this.props.quoteAuthor}
                     </Text>
                     <Text numberOfLines={2} style={{alignSelf: 'flex-start'}}>
-                      Et puis quoi !!!{/*this.props.data.val().message*/}
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
-                      Et puis quoi !!!
+                      {this.props.quote}
                     </Text>
                   </View>
                 </TouchableNativeFeedback>
@@ -722,7 +720,7 @@ class DiscussionPost extends Component {
                 marginRight: marginRightAnim,//0 <> 50
               }]}
             > 
-              <View style={{
+              {/*<View style={{
                 alignSelf: 'flex-end',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -758,7 +756,7 @@ class DiscussionPost extends Component {
                     }
                   </View>
                 </TouchableNativeFeedback>
-              </View>
+              </View>*/}
 
               <View                 
                 style={{
@@ -778,6 +776,7 @@ class DiscussionPost extends Component {
                       maxHeight: Dimensions.get("window").height/4,
                       paddingVertical: 10,
                       paddingRight: 20,
+                      paddingLeft: 20,
                       fontWeight:'normal',
                       fontSize: 16,
                       color: 'black',
@@ -798,10 +797,10 @@ class DiscussionPost extends Component {
                     editable={true}
                     showSoftInputOnFocus={false}
                     caretHidden={false}
-                    selectionColor={THEME.PRIMARY.BACKGROUND_COLOR}                  
+                    selectionColor={THEME.PRIMARY.BACKGROUND_COLOR}
                     onSelectionChange={(e) => {
-                      console.log(e.nativeEvent.selection)
-                      this.textInputSelection = e.nativeEvent.selection.start                      
+                      //console.log(e.nativeEvent.selection)
+                      this.textInputSelection = e.nativeEvent.selection.start
                     }}
                     onFocus={() =>
                       this.setState({
@@ -811,7 +810,7 @@ class DiscussionPost extends Component {
                     }
                   />
               </View>
-              {
+              {/*
                 this.state.text !== '' || this.state.onVoiceNote || this.state.onVoiceNoteValidated
                 //true
                 ? null
@@ -819,12 +818,15 @@ class DiscussionPost extends Component {
                     alignSelf: 'flex-end',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'flex-end',                   
+                    justifyContent: 'flex-end',
                   }}>
                     <TouchableNativeFeedback
                       background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR, true)}
-                      onPress={() => {
+                      onPress={() => {                        
                         console.log("camera touch !")
+                        this.props.navigation.navigate('cameraViewer', {
+                          /*data: nom+photo du groupe ou du destinataire
+                        })
                       }}
                     >
                       <View style={styles.camera_button_container}>                         
@@ -832,8 +834,8 @@ class DiscussionPost extends Component {
                       </View>
                     </TouchableNativeFeedback>
                   </View>
-              }
-              {
+              */}
+              {/*
                 this.state.onVoiceNoteValidated
                 //true
                 ? <View style={{
@@ -866,8 +868,8 @@ class DiscussionPost extends Component {
                     </TouchableNativeFeedback>
                   </View>
                 : null
-              }          
-              {
+              */}          
+              {/*
                 this.state.onVoiceNote && !this.state.onVoiceNoteValidated
                 ? <View style={{
                     flex: 1,
@@ -910,7 +912,7 @@ class DiscussionPost extends Component {
                           inputRange: [SHINE_ANIM_LIMIT, 0],
                           outputRange: [SHINE_ANIM_LIMIT, 0]
                         })}
-                      ],*/
+                      ],
                     }}>
                       <LinearGradient
                         start={[1, 0]}
@@ -939,8 +941,8 @@ class DiscussionPost extends Component {
                     </Animated.View>                    
                   </View>
                 : null
-              }
-              {
+              */}
+              {/*
                 this.state.onVoiceNote
                 ? <View style={{
                     position: 'absolute',
@@ -993,23 +995,28 @@ class DiscussionPost extends Component {
                     />
                   </View>
                 : null
-              }
+              */}
             </Animated.View>
 
             {
-              this.state.onVoiceNoteValidated || this.state.text !== ''
+              //this.state.onVoiceNoteValidated || this.state.text !== ''
+              true
               ? <BounceUpAndDownStatic
                   scale={0.8}
                   onPress={() => {
                     //this.EmojiSlicer(this.state.text, this.textInputSelection, "A")
                     if(this.state.text !== '') {
                       console.log('submit button pressed !')
-                      this._time = Date.now()
-                      this._text = this.state.text
-                      this.setState({text:''}, () => this.sendData_commentDiscussion())
+                      let time = Date.now()
+                      let text = this.state.text
+                      let quoteAuthor = this.props.quoteAuthor
+                      let quote = this.props.quote
+                      let quoteItem = this.props.quoteItem
+                      this.setState({text:''}, () => this.sendData_commentDiscussion(text, time, quoteAuthor, quote, quoteItem))
                     } else {
+                      ToastAndroid.show('Ecrivez un message', ToastAndroid.SHORT)
                       console.log('submit voice button pressed !')
-                    }             
+                    }
                   }}
                 >
                   <View style={styles.submit_button_container}>
@@ -1079,7 +1086,7 @@ class DiscussionPost extends Component {
             }
           </View>  
 
-          {
+          {/*
             this.state.emojiKeyboardVisible
               ? <View style={{                      
                   margin: -5,
@@ -1102,7 +1109,7 @@ class DiscussionPost extends Component {
                   />
                 </View>
               : null
-          }
+          */}
           
         </View>
     )

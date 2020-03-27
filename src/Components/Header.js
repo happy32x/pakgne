@@ -1,12 +1,10 @@
 import React from 'react'
-import { 
-	TouchableNativeFeedback, 
+import { 	
 	View, 
 	Text, 
 	StyleSheet,
+	TouchableNativeFeedback,
 } from 'react-native'
-
-import * as Font from 'expo-font'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import APPNAME from '../INFO/APPNAME'
@@ -16,33 +14,20 @@ import THEME from '../INFO/THEME'
 class Header extends React.Component {
 
 	constructor(props) {
-    super(props)
-    this.state = {
-      fontLoaded: false
-    }
-  }
-
-	async componentDidMount() {
-    await Font.loadAsync({
-      'candy': require('../assets/fonts/candy.ttf'),
-    });
-
-    this.setState({ fontLoaded: true });
+    super(props)  
   }
 
   render() {
     return (
       <View style={styles.main_container}>
+
         <View style={styles.appname_container}>
-
-					{
-            this.state.fontLoaded 
-              ? <Text style={styles.appname_candice}>Pakgne</Text>
-                : <Text style={styles.appname}>{APPNAME}</Text>
-          }
-
+          <Text style={[styles.appname_candice, {fontFamily: this.props.appNamePolice}]}>
+						{APPNAME}
+					</Text>
         </View>
-        <View style={styles.option_container}>   
+
+        <View style={styles.option_container}>
 				  <TouchableNativeFeedback
             background={TouchableNativeFeedback.Ripple(THEME.PRIMARY.WAVE_COLOR_PRIMARY,true)}
             onPress={() => {
@@ -103,12 +88,11 @@ const styles = StyleSheet.create({
 		justifyContent:'flex-start', 
 		flexDirection:'row'
 	},
-	appname_candice: { 
-		fontFamily: 'candy', 
+	appname_candice: { 		 
 		fontSize: 28, 
 		color: THEME.PRIMARY.COLOR, 
 		textAlign: 'center', 
-		paddingLeft:17 
+		paddingLeft: 17, 
 	},
 	appname: {
 		color: THEME.PRIMARY.COLOR, 

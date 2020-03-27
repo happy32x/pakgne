@@ -47,7 +47,7 @@ class MyDiscussion extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      send: false, //l'icone "clock" sera afiiché par defaut
+      send: false, //l'icone "clock" sera affiché par defaut
       discussionXAnim: new Animated.Value(0),
       selected: false,
       deletedElement: false,
@@ -86,7 +86,7 @@ class MyDiscussion extends React.Component {
   }
 
   componentDidMount() {
-    console.log("NO")
+    console.log("DISCUSSION MOUNTED !")
     this._isMounted = true
     /*if(this.props.data.key == 'NEW' && !this._alreadySaved){
       this._alreadySaved = true
@@ -118,8 +118,8 @@ class MyDiscussion extends React.Component {
           if(this._discussionXAnim >= 40) {
             //Activation de la citation
             console.log('citation')
-            this.props.addQuote('Happy Julien', 'Bonjour le France !')
-          } 
+            this.props.addQuote(this.props.data.val().author_name, this.props.data.val().message, this.props.data)
+          }
           this._discussionXAnim = 0   
         }      
       },
@@ -143,7 +143,7 @@ class MyDiscussion extends React.Component {
   setSelectedMode = (value) => {
     this.setState({selected: value})
   }
-  
+
   deleteElement = () => {    
     this.setState({deletedElement: true, selected: false})
   }
@@ -155,12 +155,12 @@ class MyDiscussion extends React.Component {
         onLongPress={() => {
           this.state.deletedElement ?null :this.props.onLongPress(this)          
         }}
-        onPress={() => {    
+        onPress={() => {
           this.state.deletedElement ?null :this.props.onPress(this)                
         }}   
       >
         <View style={styles.comment_container}>
-          
+
           <Animated.View
             {...this._panResponder.panHandlers}
             style={[styles.comment_container_right, {
@@ -180,7 +180,7 @@ class MyDiscussion extends React.Component {
                 justifyContent: 'center',
               }}>
                 <Icon style={[styles.arrow_dropdown_icon, {elevation: 1}]} name="md-arrow-dropdown"/>
-              </View>            
+              </View>
 
               {/*<View style={styles.comment_area_name_icon}>
                 <View style={{flex:1}}>
@@ -191,7 +191,7 @@ class MyDiscussion extends React.Component {
               </View>*/}
 
               {
-                this.state.deletedElement    
+                this.state.deletedElement || this.props.data.val().quote === ''
                 ? null          
                 : <View style={{              
                     alignSelf: 'stretch',
@@ -205,16 +205,17 @@ class MyDiscussion extends React.Component {
                     alignItems: 'center',
                     justifyContent: 'center',   
                     
-                    marginTop: 5,    
+                    marginTop: 5,
                   }}>
                     <TouchableNativeFeedback
-                      background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR, true)}             
+                      background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR, true)}
                       onPress={() => {
                         console.log("quote touch !")
+                        this.props.myScrollToItem(this.props.data.val().quote_item)
                       }}
-                    > 
-                      <View style={{              
-                        alignSelf: 'stretch',                  
+                    >
+                      <View style={{
+                        alignSelf: 'stretch',
                         borderLeftColor: THEME.PRIMARY.BACKGROUND_COLOR,
                         borderLeftWidth: 5,                   
                         padding: 5,                  
@@ -232,10 +233,10 @@ class MyDiscussion extends React.Component {
                             fontSize: 10,
                           }}
                         >
-                          Happy ngounou{/*this.props.data.val().author_name*/}
+                          {this.props.data.val().quote_author}
                         </Text>
                         <Text numberOfLines={3} style={{alignSelf: 'flex-start'}}>
-                          Et puis quoi !!! {/*this.props.data.val().message*/}
+                          {this.props.data.val().quote}
                         </Text>
                       </View>
                     </TouchableNativeFeedback>
@@ -275,8 +276,11 @@ class MyDiscussion extends React.Component {
                     />
                     <Text style={{color: THEME.TERTIARY.WAVE_COLOR, marginBottom:2}}>message supprimé</Text>
                   </View>
-                : <View style={{marginHorizontal: 10,}}>
-                    <Text>Bonjour le France !Bonjour le France !{/*this.props.data.val().message*/}</Text>                                                      
+                : <View style={{
+                    marginHorizontal: 10,
+                    marginTop: this.props.data.val().quote === '' ?5 :0,
+                  }}>
+                    <Text>{this.props.data.val().message}</Text>                                                      
                   </View>
               }
 
@@ -287,7 +291,11 @@ class MyDiscussion extends React.Component {
                     {/*<IconMaterialCommunityIcons style={styles.message_status} name="clock-outline" />*/}              
                     <IconMaterialCommunityIcons style={styles.message_status} name="check" />
                     <Text style={[styles.option_area_text,]}>
-                      10:20{/*<HourConverter publishAt={this.props.data.val().messageTimeStamp} />*/}
+                      10:20
+                      {/*<HourConverter 
+                        publishAt={this.props.data.val().messageTimeStamp} 
+                        timeZone={"Australia/Brisbane"}
+                      />*/}                      
                     </Text>
                   </View>
               }      

@@ -1,5 +1,5 @@
 import SearchViewerListDataTest from './SearchViewerListDataTest'
 
-export function getHistoryListFromApi () {  
+export function getSearchListHistory () {  
   return SearchViewerListDataTest
 }

@@ -63,7 +63,7 @@ class Video extends React.Component{
       rate: 'none',
       isRateGot: false,      
     }
-    
+
     this.requestId = null
     this.accessToken = null
 
@@ -385,13 +385,10 @@ class Video extends React.Component{
                       })
                     }}
                   >
-                    <View style={styles.comment_container_left_img_container}>
-                      <Image
-                        style={styles.comment_container_left_img_background}
-                        source={require(DEFAULT_IMG)}
-                      />
+                    <View style={styles.comment_container_left_img_container}>                    
                       <Image
                         style={styles.comment_container_left_img}
+                        defaultSource={require(DEFAULT_IMG)}
                         source={{ uri: imageResizer(this.props.firstData.oneComment[0].snippet.topLevelComment.snippet.authorProfileImageUrl, USER_IMG_SIZE) }}
                       />
                     </View>
@@ -440,17 +437,14 @@ class Video extends React.Component{
                 onPress={() => {
                   this.props.navigateTo('ImageViewerDynamic', { 
                     title: firebase.auth().currentUser.displayName,
-                    imgURLPreview: firebase.auth().currentUser.photoURL,                
+                    imgURLPreview: imageResizer(firebase.auth().currentUser.photoURL, USER_IMG_SIZE),                
                   })
-                }}
+                }}           
               >
-                <View style={styles.comment_container_left_img_container}>
+                <View style={styles.comment_container_left_img_container}>        
                   <Image
-                    style={styles.comment_container_left_img_background}
-                    source={require(DEFAULT_IMG)}
-                  />
-                  <Image
-                    style={styles.comment_container_left_img}
+                    style={styles.comment_container_left_img}       
+                    defaultSource={require(DEFAULT_IMG)}        
                     source={{ uri: firebase.auth().currentUser.photoURL }}
                   />
                 </View>

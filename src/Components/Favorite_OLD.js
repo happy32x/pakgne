@@ -23,21 +23,27 @@ const SCALE = .7
 const TENSION = 100
 
 class Favorite extends React.Component{
-  _isMounted = false
   
   constructor(props) {
     super(props)
-    this.state = {}
-
+    this.state = {            
+      isLike: false,
+    }
+    
     this.toggleFavorite = this._toggleFavorite.bind(this)
+    this.toggleLike = this._toggleLike.bind(this)  
+  }
+
+  _toggleLike() {
+    this.setState({ isLike: !this.state.isLike })
   }
 
   _toggleFavorite() {    
     this.props.toggleFavorite(this.props.data[0], this.props.data[1])
   }
 
-  render() {
-   
+  render() {  
+      console.log("YAEH")
       return (
         <View style={styles.main_container}>
 
@@ -48,7 +54,7 @@ class Favorite extends React.Component{
 
             <View style={styles.title_video_container}>
               <Text style={styles.title_video}>
-                {this.props.data[0].snippet.title}                
+                {this.props.data[0].snippet.title}
               </Text>
               <Text style={styles.publish_at_video}>
                 <MomentConverter publishAt={this.props.data[0].snippet.publishedAt} />
@@ -61,7 +67,7 @@ class Favorite extends React.Component{
                   this.props.isFavorite(this.props.data[0]) !== -1
                   ? true
                   : false
-                }
+                }  
                 toggleFavorite={this.toggleFavorite}
               />
             </View>
@@ -81,13 +87,52 @@ class Favorite extends React.Component{
                 </Text>
               </View>
             </TouchableWithoutFeedback>
-          </View>                
+          </View>
 
-          <View style={styles.bottom_share_container}>
+          <View style={styles.bottom_element_container}>
+          
+            <BounceUpAndDownStatic 
+              scale={SCALE} 
+              tension={TENSION} 
+              style={styles.same_element}
+              onPress={() => { this.toggleLike() }}  
+            >
+              <View style={styles.same_element}>
+                { 
+                  this.state.isLike
+                    ? <Icon style={styles.same_element_one} name="md-heart" />
+                    : <Icon style={styles.same_element_one} name="md-heart-empty" /> 
+                }                                               
+              </View>
+              <View style={styles.same_element_two}>
+                { 
+                  this.state.isLike
+                    ? <Text style={[styles.same_element_four, {color:THEME.PRIMARY.BACKGROUND_COLOR}]}>{likeConverter(this.props.data[1].statistics.likeCount)}</Text>
+                    : <Text style={styles.same_element_four}>{likeConverter(this.props.data[1].statistics.likeCount)}</Text>
+                }                 
+              </View>              
+            </BounceUpAndDownStatic>
+
+            <BounceUpAndDownStatic 
+              scale={SCALE} 
+              tension={TENSION}
+              style={styles.same_element}
+              onPress={() => {
+                this.props.navigateTo( 'CommentList', { videoId: this.props.data[0].id.videoId, commentCount: this.props.data[1].statistics.commentCount } )
+              }}     
+            >
+              <View style={styles.same_element}>
+                <Icon style={styles.same_element_one} name="md-chatbubbles" />
+              </View>
+              <View style={styles.same_element_two}>
+                <Text style={styles.same_element_four}>{likeConverter(this.props.data[1].statistics.commentCount)}</Text>
+              </View>
+            </BounceUpAndDownStatic>
+
             <BounceUpAndDownStatic
               scale={SCALE} 
               tension={TENSION}
-              style={styles.share_main}
+              style={styles.same_element}
               onPress={() => {
                 Share.share({
                   message: `https://www.youtube.com/watch?v=${this.props.data[0].id.videoId}`,
@@ -100,11 +145,13 @@ class Favorite extends React.Component{
                   ]
                 })
               }} 
-            >              
-              <View style={styles.share_button_container}>
+            >
+              <View style={styles.same_element}>
                 <Icon style={styles.same_element_one} name="md-share-alt" />
-                <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3, }]}>  PARTAGER</Text> 
-              </View>             
+              </View>
+              <View style={styles.same_element_two}>
+                <Text style={[styles.same_element_four, { fontSize: 12, paddingBottom:3 }]}>partager</Text>
+              </View>
             </BounceUpAndDownStatic>
           </View>
 
@@ -113,11 +160,10 @@ class Favorite extends React.Component{
   }
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create({  
   main_container: { 
     alignSelf:'stretch', 
-    marginBottom:10,
-    backgroundColor: THEME.PRIMARY.COLOR, 
+    marginBottom:10 
   },
   top_element_container: { 
     backgroundColor: THEME.PRIMARY.COLOR, 
@@ -181,25 +227,14 @@ const styles = StyleSheet.create({
     opacity:0.8,
     fontSize:13,
   },
-  bottom_share_container: { 
+  bottom_element_container: { 
     backgroundColor: THEME.PRIMARY.COLOR, 
     alignSelf:'stretch', 
-    alignItems:'center', 
-    justifyContent:'center',
     flexDirection:'row', 
-    height: 45,
-    marginLeft: 10,
-    marginRight: 10,
-    borderTopWidth: 1,
-    borderTopColor: THEME.TERTIARY.SEPARATOR_COLOR,
+    height:45 
   },
   same_element: { 
     flex:1, 
-    alignItems:'center', 
-    justifyContent:'center', 
-    flexDirection:'row'
-  },
-  share_main: {     
     alignItems:'center', 
     justifyContent:'center', 
     flexDirection:'row'
@@ -208,20 +243,17 @@ const styles = StyleSheet.create({
     fontWeight:'bold', 
     fontFamily:'normal', 
     color: THEME.PRIMARY.BACKGROUND_COLOR, 
-    fontSize:20
+    fontSize:20 
+  },
+  same_element_two: { 
+    flex:1, 
+    alignItems:'center', 
+    justifyContent:'flex-start', 
+    flexDirection:'row'
   },
   same_element_four: { 
-    color: THEME.TERTIARY.COLOR,
-    fontSize: 14,
-  },
-  share_button_container: {    
-    alignItems:'center',
-    justifyContent:'center',
-    flexDirection:'row',
-    borderWidth: 0,
-    borderColor: THEME.PRIMARY.BACKGROUND_COLOR,
-    borderRadius: 5,
-    padding: 5,
+    color: THEME.TERTIARY.COLOR, 
+    fontSize: 14 
   },
 })
 
@@ -232,3 +264,4 @@ const mapStateToProps = (state) => {
 }
 
 export default connect(mapStateToProps)(Favorite)
+

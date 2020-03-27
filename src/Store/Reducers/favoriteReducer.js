@@ -30,7 +30,7 @@ function toggleFavorite(state = initialState, action) {
         nextState = {
           ...state,
           favoritesVideo: [...state.favoritesVideo, action.value]
-        }        
+        }
         ToastAndroid.show('Ajouté', ToastAndroid.SHORT)                    
 
         console.log('UID/FavoriteReducer : ' + firebase.auth().currentUser.uid)         

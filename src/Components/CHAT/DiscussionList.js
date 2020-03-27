@@ -22,7 +22,7 @@ import uuidv1 from 'uuid/v1'
 import THEME from '../../INFO/THEME'
 import { withNavigation } from 'react-navigation'
 
-import { 
+import {
   getMessagesFromApi,
 } from './API/REQUEST'
 
@@ -33,11 +33,14 @@ import DiscussionPost from './DiscussionPost'
 import MyDiscussion from './MyDiscussion'
 
 import BounceUpAndDownStatic from '../../Animations/BounceUpAndDownStatic'
+
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome'
 import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import IconIonicons from 'react-native-vector-icons/Ionicons'
 
 import DiscussionHeader from './DiscussionHeader'
 import DiscussionHeaderSelected from './DiscussionHeaderSelected'
+import DiscussionMessage_PeerToPeer from './DiscussionMessage_PeerToPeer'
 
 const WHATSAPP_DEFAULT_BACKGROUND_IMAGE = '../../assets/whatsAppBackgroundImage.png'
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -53,15 +56,16 @@ class DiscussionList extends Component {
     this.state = {
       scrollY: new Animated.Value(0),
       scaleGoToBottomButton: new Animated.Value(0),
-      
-      data: [4],//[],
+
+      data: [],//[],
       isEmpty: false,
       isLoading: true,
       isLoadingMore: false,
       stopLoadingMore: false,
 
-      quoteAuthor: null,
-      quote: null,
+      quoteAuthor: '',
+      quote: '',
+      quoteItem: '',
       autoShowKeyboard: null,
 
       selectedMode: false,
@@ -74,7 +78,7 @@ class DiscussionList extends Component {
     this.scaleGoToBottomButtonAllowTop = true
     this.scaleGoToBottomButtonAllowBottom = false
 
-    this._data = [4]//[]
+    this._data = []//[]
     this._dataAfter = ''
 
     this.requestId = null
@@ -90,7 +94,9 @@ class DiscussionList extends Component {
     this.delQuote = this._delQuote.bind(this)
     this.copyDiscussion = this._copyDiscussion.bind(this)
     this.deleteDiscussion = this._deleteDiscussion.bind(this)
-    this.shareDiscussion = this._shareDiscussion.bind(this)    
+    this.shareDiscussion = this._shareDiscussion.bind(this)      
+
+    this.myScrollToItem = this._myScrollToItem.bind(this)
   }
 
   _copyDiscussion() {
@@ -117,8 +123,8 @@ class DiscussionList extends Component {
     this.disableSelectedMode()
   }
 
-  _addQuote(quoteAuthor, quote) {
-    this.setState({quoteAuthor,quote, autoShowKeyboard: !this.state.autoShowKeyboard })
+  _addQuote(quoteAuthor, quote, quoteItem) {
+    this.setState({quoteAuthor, quote, quoteItem, autoShowKeyboard: !this.state.autoShowKeyboard })
     this.disableSelectedMode()
   }
 
@@ -134,11 +140,11 @@ class DiscussionList extends Component {
     /*this._data.forEach((e) => {
       console.log(e)
     })*/
-    
+
     console.log("MERDE :: this._data.length :: " + this._data.length) 
-    console.log("MERDE :: this._data[0].val().message :: " + this._data[0].val().message)
-    console.log("MERDE :: this._data[1].val().message :: " + this._data[1].val().message)
-    this.setState({ data: this._data })
+    //console.log("MERDE :: this._data[0].val().message :: " + this._data[0].val().message)
+    //console.log("MERDE :: this._data[1].val().message :: " + this._data[1].val().message)
+    this.setState({ data: this._data, quoteAuthor:'', quote:'', quoteItem:''})
   }
 
   _navigateTo(destination, data) {
@@ -158,7 +164,7 @@ class DiscussionList extends Component {
     const requestId = this.requestId = uuidv1()
 
     this.fetchData(responseJson => {
-      if(this._isMounted && this.requestId === requestId) {         
+      if(this._isMounted && this.requestId === requestId) {
 
         this._data = this._data.concat(responseJson.items)
         this._dataAfter = responseJson.nextPageToken
@@ -180,7 +186,7 @@ class DiscussionList extends Component {
     console.log("DiscussionList :: componentDidMount")
     this._isMounted = true
 
-    this.setState({ 
+    this.setState({
       data: this._data,
       isLoading: false,
       stopLoadingMore: true,
@@ -191,7 +197,7 @@ class DiscussionList extends Component {
         //this._data = responseJson.items.filter(item => item.id.videoId !== undefined)
 
         this._data = responseJson.items
-        this._dataAfter = responseJson.nextPageToken        
+        this._dataAfter = responseJson.nextPageToken
         
         console.log("DiscussionList :: responseJson.nextPageToken :: " + responseJson.nextPageToken)
         console.log("DiscussionList :: responseJson.items[0].key :: " + responseJson.items[0].key)
@@ -304,11 +310,15 @@ class DiscussionList extends Component {
     }
   }
 
+  _myScrollToItem(quoteItem) {
+    this.scroll.getNode().scrollToItem({item: quoteItem})
+  }
+
   render() {
 
     console.log('CHIEN VERT !!!')
     return (
-      <View style={{flex:1}}>     
+      <View style={{flex:1}}>
         <DiscussionHeader
           //title={this.props.navigation.state.params.name}
           //type={this.props.navigation.state.params.type}
@@ -316,11 +326,11 @@ class DiscussionList extends Component {
           navigateBack={this.navigateBack}
           navigateTo={this.navigateTo}
         /> 
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           style={styles.main_container} 
           behavior="padding" 
-          enabled={false}
-          keyboardVerticalOffset={-50}
+          enabled={true}
+          //keyboardVerticalOffset={-50}
         >
           <ImageBackground
             source={require(WHATSAPP_DEFAULT_BACKGROUND_IMAGE)}
@@ -331,10 +341,10 @@ class DiscussionList extends Component {
                 ? <DiscussionLoading color={THEME.PRIMARY.BACKGROUND_COLOR}/>
                 : this.state.isEmpty
                   ? <DiscussionEmpty/>
-                  : <View style={styles.listview_container}>                  
+                  : <View style={styles.listview_container}>
                       <AnimatedFlatList
                         ref={(lv) => {this.scroll = lv}}
-                        inverted={true}
+                        inverted={this.state.data.length !== 0 ?true :false}
                         contentContainerStyle={styles.listview}
                         showsVerticalScrollIndicator={true}
                         keyboardShouldPersistTaps='always'
@@ -343,21 +353,23 @@ class DiscussionList extends Component {
                           ({item}) => {
                             return (
                             true//item.val().author_id === firebase.auth().currentUser.uid
-                              ? <Discussion
-                                  data={item}
-                                  navigateTo={this.navigateTo}
-                                  addQuote={this.addQuote}
-                                  onLongPress={this.onLongPress}
-                                  onPress={this.onPress}                                  
-                                  //chatKey={this.props.chatKey}
-                                />
-                              : <Discussion
+                              ? <MyDiscussion                                  
                                   data={item}
                                   navigateTo={this.navigateTo}
                                   addQuote={this.addQuote}
                                   onLongPress={this.onLongPress}
                                   onPress={this.onPress}
                                   //chatKey={this.props.chatKey}
+                                  myScrollToItem={this.myScrollToItem}
+                                />
+                              : <Discussion                       
+                                  data={item}
+                                  navigateTo={this.navigateTo}
+                                  addQuote={this.addQuote}
+                                  onLongPress={this.onLongPress}
+                                  onPress={this.onPress}
+                                  //chatKey={this.props.chatKey}
+                                  myScrollToItem={this.myScrollToItem}
                                 />         
                               
                               /*<View style={{
@@ -373,6 +385,11 @@ class DiscussionList extends Component {
                                 </View>*/
                           )}
                         }
+                        ListEmptyComponent={() => {
+                          return (
+                            <DiscussionMessage_PeerToPeer />
+                          )
+                        }}       
                         ListFooterComponent={() => {
                           return (
                             this.state.isLoadingMore &&
@@ -446,8 +463,10 @@ class DiscussionList extends Component {
               autoFocus={false}
               quoteAuthor={this.state.quoteAuthor}
               quote={this.state.quote}
+              quoteItem={this.state.quoteItem}
               delQuote={this.delQuote}
               autoShowKeyboard={this.state.autoShowKeyboard}
+              activeCamera={this.activeCamera}
             />
           </ImageBackground>
         </KeyboardAvoidingView>

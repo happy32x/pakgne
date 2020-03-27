@@ -42,13 +42,10 @@ class CommentPost extends Component {
               })
             }}
           >
-            <View style={styles.comment_container_left_img_container}>
-              <Image
-                style={styles.comment_container_left_img_background}
-                source={require(DEFAULT_IMG)}
-              />
+            <View style={styles.comment_container_left_img_container}>  
               <Image
                 style={styles.comment_container_left_img}
+                defaultSource={require(DEFAULT_IMG)}
                 source={{ uri: firebase.auth().currentUser.photoURL }}
               />
             </View>

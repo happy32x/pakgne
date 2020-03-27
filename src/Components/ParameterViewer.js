@@ -2,9 +2,12 @@ import React, { Component } from 'react'
 import {
   Text,
   View,
+  Image,
   Animated,
   Platform,
+  Dimensions,
   StyleSheet,  
+  ImageBackground,
   TouchableNativeFeedback,
 } from 'react-native'
 
@@ -18,17 +21,23 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { black } from 'ansi-colors'
 import firebase from 'firebase'
 
+import { imageResizer } from '../AI/ImageResizer'
+
+const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground)
+
 const USER_IMG = '../assets/Pakgne-Poupi-Muriel-Blanche.jpg'
 const HEADER_MAX_HEIGHT = 300
 //const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? DIMENSION.MAX_HEADER_HEIGHT : DIMENSION.MAX_HEADER_HEIGHT
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT
+const USER_IMG_SIZE = Dimensions.get('window').width
 
 class ParameterViewer extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
+      isBannerImageLoading: true,
       scrollY: new Animated.Value(
         // iOS has negative initial scroll value because content inset...
         Platform.OS === 'ios' ? -HEADER_MAX_HEIGHT : 0,
@@ -103,7 +112,7 @@ class ParameterViewer extends Component {
     })*/
 
     return (
-      <View style={styles.fill}>             
+      <View style={styles.fill}>
 
         <Animated.ScrollView
           style={styles.fill}
@@ -120,16 +129,34 @@ class ParameterViewer extends Component {
             { transform: [{ translateY: headerTranslate }] },
           ]}
         >
-          <Animated.Image
+          {/*<Animated.Image
             style={[
               styles.backgroundImage,
               {
                 opacity: imageOpacity,
-                transform: [{ translateY: imageTranslate }],            
+                transform: [{ translateY: imageTranslate }],
               },
             ]}
             source={{uri: firebase.auth().currentUser.photoURL}}
-          />          
+          /> */}
+          <AnimatedImageBackground
+            style={[
+              styles.backgroundImage,
+              {
+                opacity: imageOpacity,
+                transform: [{ translateY: imageTranslate }],
+              },
+            ]}
+            source={{ uri: this.state.isBannerImageLoading ?firebase.auth().currentUser.photoURL :null }}          
+            resizeMode={"contain"}
+          >
+            <Image
+              style={styles.image}
+              source={{ uri: imageResizer(firebase.auth().currentUser.photoURL, USER_IMG_SIZE) }}
+              onLoad={() => this.setState({ isBannerImageLoading: false })}
+              resizeMode={"contain"}
+            />                
+          </AnimatedImageBackground>
         </Animated.View>
 
         <Animated.View  
@@ -207,8 +234,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: null,
-    height: HEADER_MAX_HEIGHT,
-    resizeMode: 'cover',
+    height: HEADER_MAX_HEIGHT,    
+  },
+  image: {
+    flex: 1,
+    alignItems: 'center', 
+		justifyContent: 'center',	
   },
   tranparentBar: {    
     position: 'absolute',
