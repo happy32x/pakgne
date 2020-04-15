@@ -11,7 +11,7 @@ import {
 
 import uuidv1 from 'uuid/v1'
 
-import Empty from './Empty'
+import EmptySearch from './EmptySearch'
 import VideoMini from './VideoMini'
 import { getVideoListMiniFromApi } from '../API/REQUEST'
 import { withNavigation } from 'react-navigation'
@@ -173,7 +173,7 @@ class VideoListMini extends PureComponent {
     {console.log("yes")}
     if (this.props.searchText === '') {
       {console.log(this.props.searchText + " === " + this.state.searchText)}      
-      return <Empty />
+      return <EmptySearch />
     } else if ( (this.props.searchText !== '' && this.props.searchText !== this.state.searchText) || this.isLoading) {
       return (
         <KeyboardAvoidingView style={styles.isloading_container} behavior="padding" enabled>
@@ -181,7 +181,7 @@ class VideoListMini extends PureComponent {
         </KeyboardAvoidingView>
       )
     } else if (this.state.isEmpty) {
-      return <Empty />
+      return <EmptySearch />
     } else {
       return (        
         <View style={styles.main_container}>

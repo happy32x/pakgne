@@ -70,6 +70,7 @@ class VideoMini extends React.Component{
                 <Image 
                   source={{uri: this.props.firstData.snippet.thumbnails.medium.url}}
                   style={styles.main_container_one}
+                  resizeMode={"contain"}
                 />                
                 <Text style={styles.related_video_duration}>{timeConverter(this.state.secondData.contentDetails.duration)}</Text>
               </View>
@@ -90,7 +91,7 @@ class VideoMini extends React.Component{
 const styles = StyleSheet.create({
   main_container: { 
     flex:1,
-    backgroundColor: THEME.PRIMARY.COLOR
+    backgroundColor: THEME.SECONDARY.COLOR, 
   },
   main_container_one: { 
     flex: 1, 
@@ -101,16 +102,16 @@ const styles = StyleSheet.create({
     alignSelf:"stretch", 
     paddingLeft:15, 
     paddingRight:15,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0,
     borderBottomColor: THEME.ON_LOAD_COLOR,
     backgroundColor: THEME.PRIMARY.COLOR,
   },
   related_video_container_two: { 
     alignSelf:"stretch", 
-    height:90, 
+    height:100, 
     flexDirection:'row', 
-    marginTop:15,
-    marginBottom:15,
+    marginTop:10,
+    marginBottom:10,
   },
   related_video_duration: {
     color: THEME.PRIMARY.COLOR, 
@@ -130,10 +131,10 @@ const styles = StyleSheet.create({
     paddingLeft:15 
   },
   related_video_title: { 
-    fontSize:14 
+    fontSize:16 
   },
   related_video_more_info: { 
-    fontSize:11, 
+    fontSize:13, 
     color: THEME.TERTIARY.COLOR,
     marginTop:1 
   },

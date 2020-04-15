@@ -14,14 +14,18 @@ import {
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import IconMaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import IconAntDesign from 'react-native-vector-icons/AntDesign'
 
 import BarStatus from './BarStatus'
 import img from '../assets/2.jpg'
 import YoutubeView from './YoutubeView'
+import Favori from './Favori'
 import RateVideoViewer from './RateVideoViewer'
 import likeConverter from '../Helpers/likeConverter'
 import THEME from '../INFO/THEME'
+
+import { connect } from 'react-redux'
 
 class VideoViewerList_HeaderComponent extends React.Component{
   constructor(props) {
@@ -44,10 +48,24 @@ class VideoViewerList_HeaderComponent extends React.Component{
 
         <View style={styles.bottom_info_container}>
           <View style={styles.bottom_info}>
-            <View style={styles.title_container}>
-              <Text style={styles.title}>{this.props.video[0].snippet.title}</Text>
-              <Text style={styles.same_element}>{likeConverter(this.props.video[1].statistics.viewCount)} vues</Text>
-            </View>
+
+            <TouchableNativeFeedback 
+              background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}                    
+              onPress={() => {              
+                this.props.toggleDescription(true)
+              }}
+            >
+              <View style={styles.title_container}>
+                <View style={styles.title_container_text}>
+                  <Text style={styles.title} numberOfLines={2}>{this.props.video[0].snippet.title}</Text>
+                  <Text style={styles.same_element}>{likeConverter(this.props.video[1].statistics.viewCount)} vues</Text>
+                </View>
+                <View style={styles.title_container_icon}>                  
+                  <IconAntDesign style={styles.icon} name="caretdown" />
+                </View>
+              </View>
+            </TouchableNativeFeedback>
+
             <View style={styles.bottom_element}>
 
               <RateVideoViewer 
@@ -77,7 +95,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
                 </View>
               </TouchableNativeFeedback>                                      
 
-              <TouchableNativeFeedback 
+              {/*<TouchableNativeFeedback 
                 background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                    
                 onPress={() => {
                   ToastAndroid.show('Téléchargement non pris en charge dans cette version', ToastAndroid.SHORT);
@@ -86,20 +104,17 @@ class VideoViewerList_HeaderComponent extends React.Component{
                 <View style={styles.same_element_one}>
                   <Icon style={styles.same_element_two} name="md-download" />
                   <Text style={styles.same_element} numberOfLines={1}>télécharger</Text>
-                </View>        
-              </TouchableNativeFeedback>
+                </View>
+              </TouchableNativeFeedback>*/}
 
-              <TouchableNativeFeedback 
-                background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,true)}                    
-                onPress={() => {
-                  ToastAndroid.show('ajouter aux favoris, non pris en charge dans cette version', ToastAndroid.SHORT);
-                }} 
-              >
-                <View style={styles.same_element_one}>
-                  <MaterialCommunityIcons style={styles.same_element_two} name="playlist-plus" />
-                  <Text style={styles.same_element} numberOfLines={1}>favori</Text>
-                </View>        
-              </TouchableNativeFeedback>
+              <Favori
+                shouldShine={
+                  this.props.isFavorite() !== -1
+                  ? true
+                  : false
+                }
+                toggleFavorite={this.props.toggleFavorite}
+              />
 
             </View>
           </View>
@@ -109,7 +124,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
           <View style={styles.continued_container_one}>
             <Text style={styles.continued} numberOfLines={1}>A suivre</Text>
           </View>
-          <View style={styles.continued_container_two}>
+          {/*<View style={styles.continued_container_two}>
             <Text style={styles.continued} numberOfLines={1}>Lecture automatique</Text>             
           </View>
           <View style={styles.continued_container_three}>                 
@@ -129,7 +144,7 @@ class VideoViewerList_HeaderComponent extends React.Component{
                 true: THEME.PRIMARY.WAVE_COLOR_PRIMARY
               }}
             />
-          </View>
+          </View>*/}
         </View>
 
       </View>          
@@ -138,28 +153,46 @@ class VideoViewerList_HeaderComponent extends React.Component{
 }
 
 const styles = StyleSheet.create({
-  bottom_info_container: { 
-    alignSelf:"stretch", 
+  bottom_info_container: {
+    alignSelf:"stretch",
   },
-  bottom_info: { 
+  bottom_info: {
     alignSelf:"stretch",
     height: 150,
-    padding:15,
-    backgroundColor: THEME.PRIMARY.COLOR,
+    //backgroundColor: THEME.PRIMARY.COLOR,
   },
-  title_container: { 
-    alignSelf:"stretch" 
+  title_container: {
+    alignSelf:"stretch",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent:'center',
   },
-  title: { 
-    fontSize:17 
+  title_container_text: {
+    flex:1,
+    paddingLeft: 15,
+    paddingVertical: 7.5,
   },
-  bottom_element: { 
-    alignSelf:"stretch", 
-    marginTop:15, 
+  title_container_icon: {
+    width: 50,
+    height: 50,      
+    alignItems: 'center',
+    justifyContent:'center',
+  },
+  title: {
+    fontSize:17,
+  },
+  icon: {
+    fontSize:12,
+  },
+  bottom_element: {
+    alignSelf:"stretch",
+    marginTop:15,
+    paddingHorizontal: 15,
+    paddingBottom: 15,
     flexDirection:'row',
   },
   same_element: { 
-    fontSize:12, 
+    fontSize:13, 
     color: THEME.TERTIARY.COLOR
   },
   like_text: { 
@@ -177,9 +210,8 @@ const styles = StyleSheet.create({
   },
   same_element_two: { 
     color: THEME.TERTIARY.COLOR, 
-    fontSize:20 
+    fontSize:22
   },
-
 
   continued_container: {     
     alignSelf:"stretch",
@@ -188,7 +220,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, 
     borderColor: THEME.ON_LOAD_COLOR,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.ON_LOAD_COLOR,
+    borderBottomColor: 'transparent',
+    //borderBottomColor: THEME.ON_LOAD_COLOR,
   },
   continued_container_one: { 
     flex: 1, 
@@ -211,9 +244,16 @@ const styles = StyleSheet.create({
     justifyContent:'center',
   },
   continued: { 
-    fontSize:13, 
+    fontSize:15, 
     color: THEME.TERTIARY.COLOR
   },
 })
 
-export default VideoViewerList_HeaderComponent
+const mapStateToProps = (state) => {
+  return {
+    favoritesVideo: state.toggleFavorite.favoritesVideo,
+    currentUser: state.UserInfoReducer.currentUser,
+  }
+}
+
+export default connect(mapStateToProps)(VideoViewerList_HeaderComponent)

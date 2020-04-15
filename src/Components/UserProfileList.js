@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableNativeFeedback,
+  TouchableWithoutFeedback,
 } from 'react-native'
 
 import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
@@ -23,11 +24,14 @@ import user_profile_pic from '../assets/actrices-pakgne-pardon-internaute-jewand
 import YoutubeSubscribeButton from './YoutubeSubscribeButton'
 import firebase from 'firebase'
 
-import { 
+import {
   getAccessToken,
   setAccessToken,
 } from '../Store/storeData'
 
+import { imageResizer } from '../AI/ImageResizer'
+
+const USER_IMG_SIZE = 100
 const DEFAULT_IMG = '../assets/default_100.jpg'
 const REDVALUE = 100
 const MESSAGE = 'Option indisponible dans cette version'
@@ -55,19 +59,19 @@ class UserProfileList extends React.Component{
 
   render() {
     return (
-      <ScrollView 
-        style={{ 
-          backgroundColor: THEME.PRIMARY.COLOR,           
+      <ScrollView
+        style={{
+          backgroundColor: THEME.PRIMARY.COLOR,
           flex: 1,
         }}
-      >          
+      >
           <View style={styles.main_container}>
             <BounceUpAndDownStatic
               scale={.8}
               onPress={() => {
-                this.props.navigation.navigate('ImageViewer', { 
-                  title: firebase.auth().currentUser.displayName,
-                  imgURLPreview: firebase.auth().currentUser.photoURL,                
+                this.props.navigation.navigate('ImageViewerDynamic', {
+                  title: firebase.auth().currentUser.displayName,                  
+                  imgURLPreview: imageResizer(firebase.auth().currentUser.photoURL, USER_IMG_SIZE), 
                 })
               }}
             >
@@ -77,16 +81,16 @@ class UserProfileList extends React.Component{
                   defaultSource={require(DEFAULT_IMG)}
                   source={{uri: firebase.auth().currentUser.photoURL}} 
                 />
-                <View style={styles.camera_container}>
+                {/*<View style={styles.camera_container}>
                   <IconIonicons style={styles.camera_icon} name="md-camera" />
-                </View>
+                </View>*/}
               </View>
             </BounceUpAndDownStatic>
           </View>
 
-          <TouchableNativeFeedback 
-            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-            onPress={() => { 
+          <TouchableWithoutFeedback 
+            //background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            /*onPress={() => { 
               this.props.navigation.navigate('ParameterElement', { 
                 title: 'Nom',
                 type: 'Ionicons',
@@ -94,7 +98,7 @@ class UserProfileList extends React.Component{
                 color: THEME.TERTIARY.COLOR,
                 message: MESSAGE,
               }) 
-            }}
+            }}*/
           >
             <View style={styles.main}>
 
@@ -111,17 +115,17 @@ class UserProfileList extends React.Component{
                     <Text style={styles.right_text_two}>{firebase.auth().currentUser.displayName}</Text>
                   </View>
                 </View>
-                <View style={styles.right_container_icon}>
+                {/*<View style={styles.right_container_icon}>
                   <IconMaterialCommunityIcons style={styles.right_icon} name="pencil" />
-                </View>
+                </View>*/}
               </View>    
 
             </View>
-          </TouchableNativeFeedback>             
+          </TouchableWithoutFeedback>             
 
-          <TouchableNativeFeedback 
-            background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
-            onPress={() => { 
+          <TouchableWithoutFeedback 
+            //background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
+            /*onPress={() => { 
               this.props.navigation.navigate('ParameterElement', { 
                 title: 'Email',
                 type: 'Ionicons',
@@ -129,7 +133,7 @@ class UserProfileList extends React.Component{
                 color: THEME.TERTIARY.COLOR,
                 message: MESSAGE,
               }) 
-            }}
+            }}*/
           >
             <View style={styles.main}>
 
@@ -146,15 +150,15 @@ class UserProfileList extends React.Component{
                     <Text style={styles.right_text_two}>{firebase.auth().currentUser.email}</Text>
                   </View>
                 </View>
-                <View style={styles.right_container_icon}>
+                {/*<View style={styles.right_container_icon}>
                   <IconMaterialCommunityIcons style={styles.right_icon} name="pencil" />
-                </View>
+                </View>*/}
               </View>    
 
             </View>
-          </TouchableNativeFeedback>                                     
+          </TouchableWithoutFeedback>                                     
 
-          <TouchableNativeFeedback 
+          {/*<TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
             onPress={() => { 
               this.props.navigation.navigate('ParameterElement', { 
@@ -187,9 +191,9 @@ class UserProfileList extends React.Component{
               </View>    
 
             </View>
-          </TouchableNativeFeedback>                                         
+          </TouchableNativeFeedback>*/}                                   
 
-          {this.renderSeparator()}
+          {/*this.renderSeparator()*/}
 
           <YoutubeSubscribeButton />
 

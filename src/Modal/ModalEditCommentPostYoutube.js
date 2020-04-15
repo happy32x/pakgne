@@ -12,8 +12,8 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
-import firebase from 'firebase'
 import uuidv1 from 'uuid/v1'
+import firebase from 'firebase'
 
 import Modal from 'react-native-modal'
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -23,13 +23,13 @@ import BounceUpAndDownStatic from '../Animations/BounceUpAndDownStatic'
 import { withNavigation } from 'react-navigation'
 
 import { 
-  editCommentFromApi,
-  getNewTokenFromApi_Filter,
-} from '../API/REQUEST'
-
-import { 
   getAccessToken,
 } from '../Store/storeData'
+
+import {
+  editCommentFromApi,  
+  getNewTokenFromApi_Filter,
+} from '../API/REQUEST'
 
 const REDVALUE = 50-10
 const USER_IMG_SIZE = 100
@@ -40,18 +40,18 @@ class ModalEditCommentPostYoutube extends Component {
 
   constructor(props) {    
     super(props)
-    this.state = {     
+    this.state = {    
       text: props.myText,
       isLoading: false,
-    }    
+    }   
 
     this.requestId = null
     this.accessToken = null
 
-    this.updateAccessToken = this._updateAccessToken.bind(this)  
+    this.updateAccessToken = this._updateAccessToken.bind(this) 
     this.fetchData_editCommentFromApi = this._fetchData_editCommentFromApi.bind(this)
   }
-
+  
   _updateAccessToken(accessToken) {
     this.accessToken = accessToken
   }
@@ -60,31 +60,27 @@ class ModalEditCommentPostYoutube extends Component {
     this.updateAccessToken(accessToken)  
     const requestId = this.requestId = uuidv1()
 
-    editCommentFromApi(accessToken, this.props.commentId, this.state.text).then( responseJson => {
+    editCommentFromApi(accessToken, this.props.data.id, this.state.text).then( responseJson => {
       if(this._isMounted && this.requestId === requestId) {                
-        console.log("ModalEditCommentPostYoutube :: _fetchData_editCommentFromApi :: responseJson :: " + JSON.stringify(responseJson))
+        console.log("ModalEditCommentPostYoutube:: _fetchData_editCommentFromApi :: responseJson :: " + JSON.stringify(responseJson))
 
-        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token     
-          getNewTokenFromApi_Filter(this.fetchData_editCommentFromApi)                          
+        if(responseJson.error && responseJson.error.code === 401) { //Invalid Credentials <> Access Token
+          getNewTokenFromApi_Filter(this.fetchData_editCommentFromApi)
         } else { //Success
           console.log(" AMERICAN DREAM !!! ")
 
           if(responseJson.kind && responseJson.kind === "youtube#comment") { //Success
             //Tous s'est bien passé, on peut désormais:
-            //mettre à jour le commentaire                     
-            this.props.editComment(this.state.text)
-            //cacher le modal
-            this.props.hideEditModal()
-            //Et retour à l'état initial, on peut désormais écrire
-            this.setState({ isLoading: false, text: '' })    
+            //mettre à jour le commentaire          
+            this.props.editComment(this.props.data, responseJson)                        
           } else {
             console.log(" SORCERY !!! ")
           }
         }       
       }                 
     })
-  }  
-  
+  }    
+
   changeText = (text) => {        
     this.setState({text}, () => console.log('ModalEditCommentPostYoutube :: changeText :: text :: ' + this.state.text))
   }
@@ -100,7 +96,7 @@ class ModalEditCommentPostYoutube extends Component {
   render() {
     return (
       <Modal
-        isVisible={this.props.isEditModalVisible}
+        isVisible={true}
         backdropColor='black'
         onBackdropPress={() => this.props.hideEditModal()}
         onSwipeComplete={() => this.props.hideEditModal()}
@@ -176,7 +172,7 @@ class ModalEditCommentPostYoutube extends Component {
                     console.log('submit button pressed !')
                     this.setState({isLoading: true}, () => getAccessToken().then(accessToken => {
                                                              this.fetchData_editCommentFromApi(accessToken)
-                                                           }))                     
+                                                           }))
                   }
                 }}
               >

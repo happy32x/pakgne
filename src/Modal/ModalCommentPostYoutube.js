@@ -77,8 +77,20 @@ class ModalCommentPostYoutube extends Component {
             this.props.toggleModalCommentPostYoutube_HIDE()
             //Et retour à l'état initial, on peut désormais écrire
             this.setState({ isLoading: false, text: '' })       
+          } else if (responseJson.error &&
+                     responseJson.error.errors &&
+                     responseJson.error.errors[0] &&
+                     responseJson.error.errors[0].reason &&
+                     responseJson.error.errors[0].reason === "invalidParameter"
+                    ){     
+            //si on arrive ici, cela veut dire que : 
+            //soit les commentaires ont été desactivés pour cette vidéo
+            //soit il s'agit d'une autre raison
+            console.log(" impossible de commenter ")    
+            this.props.setModalUnableToCommentVisibility(true)              
+            this.setState({ isLoading: false }) 
           } else {
-            console.log(" SORCERY !!! ")
+            console.log("UNKNOW BEHAVIOR !")
           }
         }       
       }                 

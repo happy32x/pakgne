@@ -57,6 +57,8 @@ class VideoViewerList_CommentHeader extends Component {
 
 const styles = StyleSheet.create({
   header: {
+    borderTopWidth: 1,
+    borderTopColor: THEME.ON_LOAD_COLOR,
     backgroundColor: THEME.PRIMARY.COLOR,
 		height: DIMENSION.MIN_HEADER_HEIGHT,
     width: '100%',

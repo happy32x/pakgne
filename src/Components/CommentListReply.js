@@ -15,12 +15,14 @@ import CommentReply from './CommentReply'
 import MyCommentReply from './MyCommentReply'
 import CommentReplyHeader from './CommentReplyHeader'
 import CommentLoading from './CommentLoading'
-import CommentEmpty from './CommentEmpty'
-import { getCommentListReplyFromApi } from '../API/REQUEST'
-import THEME from '../INFO/THEME'
-import { connect } from 'react-redux'
-
+import EmptyComment from './EmptyComment'
 import CommentCommentPostYoutube from './CommentCommentPostYoutube'
+
+import { 
+  getCommentListReplyFromApi 
+} from '../API/REQUEST'
+
+import THEME from '../INFO/THEME'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
@@ -30,15 +32,16 @@ class CommentListReply extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      data:[],
-      isEmpty: true,
+      data:[],      
       isLoading: true,
+      isEmpty: false,
       isLoadingMore: false,
       isRefreshing: false,      
-      stopLoadingMore: false,
+      stopLoadingMore: false,  
+      lockLoadingMore: false,  
     }
 
-    this._data = null
+    this._data = []
     this._dataAfter = ''
 
     this.commentId = this.props.navigation.getParam('commentId', 'NO-DATA')   
@@ -51,24 +54,50 @@ class CommentListReply extends Component {
     this.navigateBack = this._navigateBack.bind(this)
 
     this.addComment = this._addComment.bind(this)
-    this.deleteComment = this._deleteComment.bind(this)
+    this.editComment = this._editComment.bind(this)
+    this.deleteComment = this._deleteComment.bind(this)    
   }
 
   static navigationOptions = {
     header: null
   }
 
+  _addComment(newComment) {
+    //await this._data.splice(0, 0, newComment) //or
+    //await this._data.unshift(newComment)
+    this._data = [newComment, ...this._data]
+    this.setState({
+      data: this._data,
+      isEmpty: false,
+    }, () => {
+      this.scrollTop()
+      console.log('NEW COMMENT ADDED !!!')
+    })
+  }
+
+  _editComment(oldItem, newItem) {    
+    const index = this._data.indexOf(oldItem)
+
+    if (index !== -1) {
+      this._data[index] = newItem
+      this.setState({data: this._data}, () =>  console.log('commentaire modifié avec succes !'))
+    } else {
+      console.log('WHATS HAPPENNING ?')
+    }    
+  }
+
   async _deleteComment(commentId) {
     this._data = await this._data.filter( item =>                                                                          
                                           item.id !== commentId
                                         )
-    this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
+    this.setState({ 
+      data: this._data,
+      isEmpty: this._data.length ?false :true
+    }, () => console.log('COMMENT DELETED !!!'))        
   }
 
-  async _addComment(newComment) {        
-    //await this._data.splice(0, 0, newComment) //or
-    await this._data.unshift(newComment)
-    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))        
+  scrollTop  = () => {    
+    this.scroll.getNode().scrollToOffset({ offset: 0, animated: true });
   }
 
   _navigateTo(destination, data) {
@@ -105,19 +134,28 @@ class CommentListReply extends Component {
   _fetchRefresh() {
     this.fetchData(responseJson => {
       if(this._isMounted) {
-        this._data = responseJson.items
-        this._dataAfter = responseJson.nextPageToken
 
-        this.setState({
-          data: this._data,
-          isLoading: false,
-          isLoadingMore: false,
-          isRefreshing: false,            
-        })
+        if( (responseJson.items && responseJson.items===undefined) || 
+            (responseJson.items && responseJson.items.length===0) 
+          ) { 
+          this.setState({ isEmpty: true, isLoading: false, lockLoadingMore: true }) 
+        } else {
+          this._data = responseJson.items
+          this._dataAfter = responseJson.nextPageToken
 
-        responseJson.nextPageToken===undefined 
-          ? this.setState({ stopLoadingMore: true })  
-          : null 
+          this.setState({
+            data: this._data,
+            isLoading: false,
+            isEmpty: false,
+            isLoadingMore: false,
+            isRefreshing: false,  
+            lockLoadingMore: false,          
+          })
+
+          responseJson.nextPageToken===undefined 
+            ? this.setState({ stopLoadingMore: true })  
+            : null 
+        }
       }
     })
   }
@@ -126,13 +164,16 @@ class CommentListReply extends Component {
     this._isMounted = true
     this.fetchData(responseJson => {     
       if(this._isMounted) {
-        //En temps normal, lorsque responseJson.items.lenght===0, 
+        console.log("FUCK" + JSON.stringify(responseJson))
+        //Le commentaire qui suit est issu d'un problème déjà réglé :)    
+        //En temps normal, lorsque responseJson.items.length===0, 
         //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users 
         //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-        if(responseJson.items.length===0) {
-          this.setState({ isEmpty: true, isLoading: false }) 
+        if( (responseJson.items && responseJson.items===undefined) || 
+            (responseJson.items && responseJson.items.length===0) 
+          ) {
+          this.setState({ isEmpty: true, isLoading: false, lockLoadingMore: true }) 
         } else {
-
           this._data = responseJson.items
           this._dataAfter = responseJson.nextPageToken
           
@@ -140,6 +181,7 @@ class CommentListReply extends Component {
             data: this._data,
             isEmpty: false,
             isLoading: false,
+            lockLoadingMore: false,
           })
 
           responseJson.nextPageToken===undefined
@@ -166,9 +208,10 @@ class CommentListReply extends Component {
           this.state.isLoading
             ? <CommentLoading color={THEME.SECONDARY.COLOR} />           
             : this.state.isEmpty
-              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur
+              ? <EmptyComment/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur
               : <View style={styles.listview_container}>
                   <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
+                    ref={(lv) => {this.scroll = lv}}
                     contentContainerStyle={styles.listview}
                     showsVerticalScrollIndicator={true}
                     keyboardShouldPersistTaps='always'
@@ -179,7 +222,8 @@ class CommentListReply extends Component {
                           ? <MyCommentReply
                               data={item}
                               navigateTo={this.navigateTo}
-                              deleteComment={this.deleteComment}
+                              editComment={this.editComment}
+                              deleteComment={this.deleteComment}                              
                             />
                           : item.kind == "youtube#comment" && item.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
                             ? <CommentReply
@@ -197,7 +241,7 @@ class CommentListReply extends Component {
                         </View>
                       )
                     }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore && !this.state.lockLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
                     refreshControl={ 
                       <RefreshControl 
                         colors={[THEME.SECONDARY.COLOR]} 

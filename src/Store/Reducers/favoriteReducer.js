@@ -29,7 +29,7 @@ function toggleFavorite(state = initialState, action) {
         // Le film n'est pas dans les films favoris, on l'ajoute à la liste      
         nextState = {
           ...state,
-          favoritesVideo: [...state.favoritesVideo, action.value]
+          favoritesVideo: [action.value, ...state.favoritesVideo]
         }
         ToastAndroid.show('Ajouté', ToastAndroid.SHORT)                    
 

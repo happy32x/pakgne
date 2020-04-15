@@ -8,10 +8,10 @@ import {
 import DIMENSION from '../INFO/DIMENSION'
 import THEME from '../INFO/THEME'
 
-function CommentEmpty(props) {
+function VideoViewerList_CommentLocked(props) {
   return (         
     <View style={styles.isloading_container}>             
-      <Text style={styles.isempty}>Aucun commentaire</Text>      
+      <Text style={styles.isempty}>Les commentaires sont désactivés</Text>      
     </View>
   );
 }
@@ -19,15 +19,16 @@ function CommentEmpty(props) {
 const styles = StyleSheet.create({
   isloading_container: {
     flex: 1,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: THEME.PRIMARY.COLOR,
+    backgroundColor: THEME.PRIMARY.COLOR,    
   },
   isempty: {
     color: THEME.TERTIARY.COLOR,
-    transform: [{ translateY: -DIMENSION.STATUSBAR_HEIGHT }],
+    //transform: [{ translateY: -DIMENSION.STATUSBAR_HEIGHT }],
   },
 })
 
-export default CommentEmpty
+export default VideoViewerList_CommentLocked
 

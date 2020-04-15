@@ -46,6 +46,7 @@ class VideoList extends Component {
       isLoadingMore: false,
       isRefreshing: false,
       stopLoadingMore: false,
+      isEmpty: true,
     }
 
     this.requestId = null
@@ -120,32 +121,37 @@ class VideoList extends Component {
     this.fetchData(responseJson => {
       //if(this._isMounted && this.requestId === requestId && this.props.updateVideoList !== false && this.props.updateVideoList === this.state.updateVideoList) {
       if(this._isMounted && this.requestId === requestId) {
-        
-        const data = this.props.random === 'true'
+
+        if(responseJson.items===undefined) {
+          this.setState({ isEmpty: true, isLoading: false }) 
+        } else { 
+          const data = this.props.random === 'true'
                      ? shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
                      : responseJson.items.filter(item => item.id.videoId !== undefined)  
 
-        this._data = data //FOR TEST ONLY
-        this._dataAfter = responseJson.nextPageToken
+          this._data = data //FOR TEST ONLY
+          this._dataAfter = responseJson.nextPageToken
 
-        console.log("VideoList :: dataLength :: " + data.length)
+          console.log("VideoList :: dataLength :: " + data.length)
 
-        //this.async_getOneCommentFromApi(data).then( () => {
-          this.setState({
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,
-          })
+          //this.async_getOneCommentFromApi(data).then( () => {
+            this.setState({
+              isLoading: false,
+              isLoadingMore: false,
+              isRefreshing: false,
+              isEmpty: false,
+            })
 
-          responseJson.nextPageToken===undefined 
-            ? this.setState({ stopLoadingMore: true })  
-            : this.setState({ stopLoadingMore: false })
+            responseJson.nextPageToken===undefined 
+              ? this.setState({ stopLoadingMore: true })  
+              : this.setState({ stopLoadingMore: false })
 
-          //On vérifie pour raison de sécurité si this.requestId à été modifié
-          /*this.requestId === requestId 
-            ? this.setState({ isLoading: false })
-            : this.setState({ isLoading: true })*/
-        //})
+            //On vérifie pour raison de sécurité si this.requestId à été modifié
+            /*this.requestId === requestId 
+              ? this.setState({ isLoading: false })
+              : this.setState({ isLoading: true })*/
+          //})
+        }
 
       }            
     })
@@ -245,37 +251,41 @@ class VideoList extends Component {
 
     this.fetchData(responseJson => {
     
-    /*{"error":{"code":-1,"message":"A network error occurred, and the request could not be completed."}}*/
-    /*if(responseJson.error && responseJson.error.code && responseJson.error.code === -1){
-      //Aucune connexion internet
-      this.setState({
-        isDisconnected: true,
-        isLoading: false,
-      })
-    }
-    else { */   
-      if(this._isMounted) {          
-
+      /*{"error":{"code":-1,"message":"A network error occurred, and the request could not be completed."}}*/
+      /*if(responseJson.error && responseJson.error.code && responseJson.error.code === -1){
+        //Aucune connexion internet
+        this.setState({
+          isDisconnected: true,
+          isLoading: false,
+        })
+      }
+      else { */
+      
+      if(responseJson.items===undefined) {
+        this.setState({ isEmpty: true, isLoading: false }) 
+      } else { 
+        if(this._isMounted) {          
           const data = this.props.random === 'true'
                       ? shuffleArray(responseJson.items.filter(item => item.id.videoId !== undefined))
                       : responseJson.items.filter(item => item.id.videoId !== undefined)  
-
           this._data = data //FOR TEST ONLY
           this._dataAfter = responseJson.nextPageToken              
-          
+
           console.log("VideoList :: dataLength :: " + data.length)            
 
           //this.async_getOneCommentFromApi(data).then( () => {
             console.log('EN ATTENTE DE CHARGEMENT DE LA LISTE DES VIDEOS ...')           
-            this.setState({ isLoading: false })
+            this.setState({ 
+              isLoading: false,
+              isEmpty: false, 
+            })
 
             responseJson.nextPageToken===undefined 
               ? this.setState({ stopLoadingMore: true }) //pourquoi ici on n'ajoute pas "this.setState({ isLoading: false })"
               : null   
           //})
-    
         }      
-      //}
+      }
     })
   }
 
@@ -321,74 +331,82 @@ class VideoList extends Component {
   }
 
   render() {
-    {console.log('VideoList :: render')}
-    if (this.state.isLoading) {
-      return (
-        <View style={styles.isloading_container}>
+    return (
+      this.state.isLoading
+      ? <View style={styles.isloading_container}>
           <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
         </View>
-      )
-    /*} else if (this.state.isDisconnected) {
-      <VideoListRefresh updateForNewVideo={this.props.updateForNewVideo} />*/
-    } else {
-      return (
-        <View style={styles.main_container}>
-          <AnimatedFlatList
-            ref={(lv) => {this.scroll = lv}}
-            contentContainerStyle={styles.content_container}
-            showsVerticalScrollIndicator={false}
-            data={this._data}
-            ListHeaderComponent={() => <HeaderContentIndicator type="MaterialCommunityIcons" icon="movie" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
-            renderItem={
-              ({item, index}) => <Video
-                firstData={item}
-                toggleFavorite={this.toggleFavorite}
-                recoverFavorite={this.recoverFavorite}
-                isFavorite={this.isFavorite}
-                navigateTo={this.navigateTo}
-                id={index}
-              />
-            }
-            ListFooterComponent={() => {
-              return (
-                this.state.isLoadingMore &&
-                <View style={styles.isloadingmore_container}>
-                  <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR} />
-                </View>
-              )
-            }}
-            onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
-            refreshControl={
-              <RefreshControl
-                colors={[THEME.PRIMARY.BACKGROUND_COLOR]}
-                refreshing={this.state.isRefreshing}
-                progressViewOffset={50}
-                onRefresh={() => {
-                  this.props.updateForNewVideo()
+      : this.state.isDisconnected
+        ? <VideoListRefresh updateForNewVideo={this.props.updateForNewVideo} />
+        : this.state.isEmpty
+          ? <View style={styles.isempty_container}>   
+              <IconMaterialCommunityIcons style={styles.isempty_icon} name="video-off-outline" />              
+              <Text style={styles.isempty_text}>Aucune video</Text>     
+              {
+                this.props.newVideo
+                ? <NewVideoPopUp
+                    closeNewVideoPopUp={this.props.closeNewVideoPopUp}
+                    updateForNewVideo={this.props.updateForNewVideo}
+                  />
+                : null
+              }  
+            </View>
+          : <View style={styles.main_container}>
+              <AnimatedFlatList
+                ref={(lv) => {this.scroll = lv}}
+                contentContainerStyle={styles.content_container}
+                showsVerticalScrollIndicator={false}
+                data={this._data}
+                ListHeaderComponent={() => <HeaderContentIndicator type="MaterialCommunityIcons" icon="movie" color={THEME.PRIMARY.BACKGROUND_COLOR} backgroundColor={THEME.PRIMARY.COLOR} />}
+                renderItem={
+                  ({item, index}) => <Video
+                    firstData={item}
+                    toggleFavorite={this.toggleFavorite}
+                    recoverFavorite={this.recoverFavorite}
+                    isFavorite={this.isFavorite}
+                    navigateTo={this.navigateTo}
+                    id={index}
+                  />
+                }
+                ListFooterComponent={() => {
+                  return (
+                    this.state.isLoadingMore &&
+                    <View style={styles.isloadingmore_container}>
+                      <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR} />
+                    </View>
+                  )
                 }}
+                onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }
+                refreshControl={
+                  <RefreshControl
+                    colors={[THEME.PRIMARY.BACKGROUND_COLOR]}
+                    refreshing={this.state.isRefreshing}
+                    progressViewOffset={50}
+                    onRefresh={() => {
+                      this.props.updateForNewVideo()
+                    }}
+                  />
+                }
+                keyExtractor={(item, index) => index.toString()}
+                onEndReachedThreshold={.1}
+                {...this.props}
               />
-            }
-            keyExtractor={(item, index) => index.toString()}
-            onEndReachedThreshold={.1}
-            {...this.props}
-          />
 
-          <VideoListOrder            
-            updateVideoListOrder={this.props.updateVideoListOrder} 
-          />
-
-          {
-            this.props.newVideo
-            ? <NewVideoPopUp
-                closeNewVideoPopUp={this.props.closeNewVideoPopUp}
-                updateForNewVideo={this.props.updateForNewVideo}
+              <VideoListOrder            
+                updateVideoListOrder={this.props.updateVideoListOrder} 
               />
-            : null
-          }
 
-        </View>
-      )
-    }
+              {
+                this.props.newVideo
+                ? <NewVideoPopUp
+                    closeNewVideoPopUp={this.props.closeNewVideoPopUp}
+                    updateForNewVideo={this.props.updateForNewVideo}
+                  />
+                : null
+              }
+
+            </View>
+    )   
   }
 }
 
@@ -410,6 +428,21 @@ const styles = StyleSheet.create({
   isloadingmore_container: {
     flex: 1,
     padding: 10,
+  },
+  isempty_container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: THEME.PRIMARY.COLOR,
+  },
+  isempty_icon:{
+    fontSize: 70,
+    color: THEME.TERTIARY.COLOR,
+    //transform: [{ translateY: DIMENSION.NAVBAR_HEIGHT }],
+  },
+  isempty_text: {
+    color: THEME.TERTIARY.COLOR,
+    //transform: [{ translateY: DIMENSION.NAVBAR_HEIGHT }],
   },
 })
 

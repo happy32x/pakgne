@@ -22,7 +22,6 @@ import uuidv1 from 'uuid/v1'
 
 import {  
   getNewTokenFromApi_Filter,
-
   getVideoRateDataFromApi,
   rateVideoFromApi,    
 } from '../API/REQUEST'
@@ -234,18 +233,18 @@ const styles = StyleSheet.create({
   },
   dislike_icon: { 
     color: THEME.PRIMARY.BACKGROUND_COLOR,  
-    fontSize:20 
+    fontSize:22 
   },
   dislike_text: { 
-    fontSize:12, 
+    fontSize:13, 
     color: THEME.PRIMARY.BACKGROUND_COLOR, 
   },
   like_icon: { 
     color: THEME.PRIMARY.BACKGROUND_COLOR, 
-    fontSize:20 
+    fontSize:22
   },
   like_text: { 
-    fontSize:12, 
+    fontSize:13, 
     color: THEME.PRIMARY.BACKGROUND_COLOR
   },
 })

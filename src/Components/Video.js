@@ -238,9 +238,10 @@ class Video extends React.Component{
                 : console.log("Video :: render :: Element not load yet")
             }}>
               <View style={styles.image_container}>
-                <Image 
+                <Image
                   source={{uri: this.props.firstData.snippet.thumbnails.medium.url}}
                   style={styles.image}
+                  resizeMode={"contain"}
                 />
                 <Text style={styles.duration}>
                   {
@@ -481,7 +482,7 @@ class Video extends React.Component{
 
           <View style={styles.bottom_share_container}>
             <BounceUpAndDownStatic
-              scale={SCALE} 
+              scale={SCALE}
               tension={TENSION}
               style={styles.share_main}
               onPress={() => {

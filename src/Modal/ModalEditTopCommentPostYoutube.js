@@ -60,7 +60,7 @@ class ModalEditTopCommentPostYoutube extends Component {
     this.updateAccessToken(accessToken)  
     const requestId = this.requestId = uuidv1()
 
-    editTopCommentFromApi(accessToken, this.props.topCommentId, this.state.text).then( responseJson => {
+    editTopCommentFromApi(accessToken, this.props.data.snippet.topLevelComment.id, this.state.text).then( responseJson => {
       if(this._isMounted && this.requestId === requestId) {                
         console.log("ModalEditTopCommentPostYoutube :: _fetchData_editTopCommentFromApi :: responseJson :: " + JSON.stringify(responseJson))
 
@@ -72,11 +72,7 @@ class ModalEditTopCommentPostYoutube extends Component {
           if(responseJson.kind && responseJson.kind === "youtube#commentThread") { //Success
             //Tous s'est bien passé, on peut désormais:
             //mettre à jour le commentaire                     
-            this.props.editComment(this.state.text)
-            //cacher le modal
-            this.props.hideEditModal()
-            //Et retour à l'état initial, on peut désormais écrire
-            this.setState({ isLoading: false, text: '' })    
+            this.props.editComment(this.props.data, responseJson)               
           } else {
             console.log(" SORCERY !!! ")
           }
@@ -100,7 +96,7 @@ class ModalEditTopCommentPostYoutube extends Component {
   render() {
     return (
       <Modal
-        isVisible={this.props.isEditModalVisible}
+        isVisible={true}
         backdropColor='black'
         onBackdropPress={() => this.props.hideEditModal()}        
         onSwipeComplete={() => this.props.hideEditModal()}

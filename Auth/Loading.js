@@ -9,7 +9,7 @@ import {
 import THEME from '../src/INFO/THEME'
 import firebase from 'firebase'
 
-import icon from '../src/assets/icon.png'
+import icon from '../src/assets/iconOff.png'
 import { StackActions, NavigationActions } from 'react-navigation';
 
 export default class Loading extends React.Component {
@@ -50,7 +50,7 @@ export default class Loading extends React.Component {
           source={icon}
           style={styles.icon}
         />
-        <ActivityIndicator size="large" color={THEME.PRIMARY.BACKGROUND_COLOR}/>
+        <ActivityIndicator size="large" color={THEME.TERTIARY.COLOR}/>
       </View>
     )    
   }

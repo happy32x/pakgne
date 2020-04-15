@@ -14,7 +14,7 @@
 
 //////////////////////////////////////////////////comment image
 export function imageResizer (url, newSize) {
-  console.log("imageResizer // " + url)
+  //console.log("imageResizer // " + url)
   //https://yt3.ggpht.com/a-/AAuE7mATsCoxYmtiyCHr-T8O8UfWr-ZyxZd50OItFA=s88-c-k-c0x00ffffff-no-rj-mo
   //https://yt3.ggpht.com/a/AGF-l7-b9Do3b7SYttg20oP19_PqT6aevon48wtK9Q=s48-c-k-c0xffffffff-no-rj-mo
   //https://lh6.googleusercontent.com/-ajpWAjjwsbw/AAAAAAAAAAI/AAAAAAAAACc/HqLcEGVoj3Y/s96-c/photo.jpg

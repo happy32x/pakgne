@@ -19,6 +19,7 @@ import CommentPost from './CommentPost'
 import VideoViewerList_HeaderComponent from './VideoViewerList_HeaderComponent'
 import VideoViewerList_CommentHeader from './VideoViewerList_CommentHeader'
 import VideoViewerList_CommentEmpty from './VideoViewerList_CommentEmpty'
+import VideoViewerList_CommentLocked from './VideoViewerList_CommentLocked'
 import VideoMini from './VideoMini'
 
 import Comment from './Comment'
@@ -35,6 +36,7 @@ import THEME from '../INFO/THEME'
 
 import ModalCommentTopRecent from '../Modal/ModalCommentTopRecent'
 import ModalCommentPostYoutube from '../Modal/ModalCommentPostYoutube'
+import ModalUnableToComment from '../Modal/ModalUnableToComment'
 
 import { connect } from 'react-redux'
 import DIMENSION from '../INFO/DIMENSION'
@@ -49,13 +51,14 @@ class VideoViewerList extends Component {
     super(props)
     this.state = {
       data: [],
-
       isEmpty: false,
+      isLocked: false,
       isFirstLoading: true,
       isLoading: true,
       isLoadingMore: false,
       isRefreshing: false,
       stopLoadingMore: false,
+      lockLoadingMore: false, 
 
       modalPosition: null,
       isModalVisible: false,
@@ -63,10 +66,14 @@ class VideoViewerList extends Component {
       order: 'relevance',
 
       canWeHandleOrder: false,
-      commentCount: this.props.commentCount,      
+      commentCount: this.props.commentCount, 
+      
+      isModalUnableToCommentVisible: false,     
     }    
-
+    
     this._firstData = []
+    this._nextVideo = []
+    
     this._data = []
     this._dataAfter = ''
 
@@ -78,7 +85,7 @@ class VideoViewerList extends Component {
     this.fetchDataCommentCount = this._fetchDataCommentCount.bind(this)
 
     this.fetchMore = this._fetchMore.bind(this)
-    this.fetchRefresh = this._fetchRefresh.bind(this)
+    //this.fetchRefresh = this._fetchRefresh.bind(this)
 
     this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
@@ -92,9 +99,35 @@ class VideoViewerList extends Component {
     this.orderComment = this._orderComment.bind(this)
 
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
-    
+
     this.addComment = this._addComment.bind(this)
+    this.editComment = this._editComment.bind(this)
     this.deleteComment = this._deleteComment.bind(this)
+
+    this.setModalUnableToCommentVisibility = this._setModalUnableToCommentVisibility.bind(this)
+  }
+
+  _setModalUnableToCommentVisibility (value) {
+    this.setState({isModalUnableToCommentVisible: value})    
+  }
+
+  async _addComment(newComment) {        
+    await this._data.splice(this._firstData.length, 0, newComment)
+    this.setState({ 
+      data: this._data,
+      isEmpty: false,
+    }, () => console.log('NEW COMMENT ADDED !!!'))        
+  }
+
+  _editComment(oldItem, newItem) {    
+    const index = this._data.indexOf(oldItem)
+
+    if (index !== -1) {
+      this._data[index] = newItem
+      this.setState({data: this._data}, () =>  console.log('commentaire modifié avec succes !'))
+    } else {
+      console.log('WHATS HAPPENNING ?')
+    }    
   }
 
   async _deleteComment(commentId) {
@@ -103,13 +136,12 @@ class VideoViewerList extends Component {
                                           item.kind && item.kind == "youtube#searchResult" ||
                                           item.snippet && item.snippet.topLevelComment && item.snippet.topLevelComment.id !== commentId
                                         )
-    this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
-  }
-
-  async _addComment(newComment) {        
-    await this._data.splice(this._firstData.length, 0, newComment)
-    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))        
-  }
+  console.log("FOFOFOFOFOFOFOFOFOFOFOFOOF :: " + this._nextVideo.length)    
+    this.setState({ 
+      data: this._data,
+      isEmpty: this._data.length===1+this._nextVideo.length+1+1 ?true :false
+    }, () => console.log('COMMENT DELETED !!!'))        
+  }  
 
   _toggleModal() {       
     this.setState({ isModalVisible: !this.state.isModalVisible })
@@ -165,7 +197,14 @@ class VideoViewerList extends Component {
 
     if(this.state.order !== order) {    
       this._data = this._firstData    
-      this.setState({ data: this._data, isLoading: true, isLoadingMore: true, order }, () => this.componentDidMountClone()) 
+      this.setState({ 
+        data: this._data, 
+        /*isLoading: true,*/ 
+        isEmpty: false, 
+        isLocked: false,
+        isLoadingMore: true, 
+        order 
+      }, () => this.componentDidMountClone()) 
     }        
   }
 
@@ -201,23 +240,37 @@ class VideoViewerList extends Component {
     this.fetchData(responseJson => {
       if(this._isMounted && this.requestId === requestId) {   
 
-        this._data = this._data.concat(responseJson.items)        
-        this._dataAfter = responseJson.nextPageToken
+        if(responseJson.error && 
+           responseJson.error.errors && 
+           responseJson.error.errors[0] && 
+           responseJson.error.errors[0].reason &&
+           responseJson.error.errors[0].reason === "commentsDisabled"
+        ) {
+          this.setState({ isLocked: true, isLoadingMore: false, canWeHandleOrder: false, lockLoadingMore: true })
+        } else if( (responseJson.items && responseJson.items===undefined) || 
+                   (responseJson.items && responseJson.items.length===0) 
+                 ) { 
+          this.setState({ isEmpty: true, isLoadingMore: false, canWeHandleOrder: false, lockLoadingMore: true }) 
+        } else { 
+          this._data = this._data.concat(responseJson.items)        
+          this._dataAfter = responseJson.nextPageToken
 
-        this.setState({ 
-          data: this._data,
-          isLoadingMore: false
-        })
+          this.setState({ 
+            data: this._data,
+            isLoadingMore: false,
+            lockLoadingMore: false,
+          })
 
-        responseJson.nextPageToken===undefined
-          ? this.setState({ stopLoadingMore: true })
-          : null
+          responseJson.nextPageToken===undefined
+            ? this.setState({ stopLoadingMore: true })
+            : null
+        }
       }
     })
   }
 
   //USELESS HERE !!!
-  _fetchRefresh() {
+  /*_fetchRefresh() {
     this._dataAfter = ''
     const requestId = this.requestId = uuidv1()
 
@@ -244,11 +297,11 @@ class VideoViewerList extends Component {
           //On vérifie pour raison de sécurité si this.requestId à été modifié
           /*this.requestId === requestId 
             ? this.setState({ isLoading: false })
-            : this.setState({ isLoading: true })*/
+            : this.setState({ isLoading: true })
         }
       })
     })
-  }
+  }*/
 
   _componentDidMountClone() {    
     this._dataAfter = ''
@@ -260,8 +313,17 @@ class VideoViewerList extends Component {
         //En temps normal, lorsque responseJson.items.length===0, 
         //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users
         //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-        if(responseJson.items.length===0) {
-          this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
+        if(responseJson.error && 
+           responseJson.error.errors && 
+           responseJson.error.errors[0] && 
+           responseJson.error.errors[0].reason &&
+           responseJson.error.errors[0].reason === "commentsDisabled"
+          ) {
+          this.setState({ isLocked: true, isLoading: false, isLoadingMore: false, canWeHandleOrder: false, lockLoadingMore: true })
+        } else if( (responseJson.items && responseJson.items===undefined) || 
+                   (responseJson.items && responseJson.items.length===0) 
+                 ) { 
+          this.setState({ isEmpty: true, isLoading: false, isLoadingMore: false, canWeHandleOrder: false, lockLoadingMore: true }) 
         } else {        
           this.fetchDataCommentCount(responseJsonCommentCount => {
             if(this._isMounted && this.requestId === requestId) {               
@@ -273,8 +335,10 @@ class VideoViewerList extends Component {
               this.setState({
                 data: this._data,
                 isEmpty: false,
+                isLocked: false,   
                 isLoading: false,    
                 isLoadingMore: false,
+                lockLoadingMore: false,
                 commentCount,
                 canWeHandleOrder: true,                           
               })
@@ -298,11 +362,14 @@ class VideoViewerList extends Component {
     this._isMounted = true
     this._data = [ {"contentID":"0"} ]
 
-    this.fetchFirstData(responseJson => {  
-      if(this._isMounted) {      
+    this.fetchFirstData(responseJson => {
+      if(this._isMounted) {
+        this._nextVideo = responseJson.items.filter(item => item.snippet.channelId === channelId)                
+        console.log("LENGTH :: " + this._nextVideo.length) 
+
         //this._data = this._data.concat(responseJson.items).concat([ {"contentID":"1"} ])
-        this._data = this._data.concat(responseJson.items.filter(item => item.snippet.channelId === channelId)).concat([ {"contentID":"1"}, {"contentID":"2"} ])
-        
+        this._data = this._data.concat(this._nextVideo).concat([ {"contentID":"1"}, {"contentID":"2"} ])
+
         //[LE COMMENTAIRE SUIVANT ETAIT UN ALGO BASé SUR UNE ERREUR DE MA PART]->[A SUPPRIMER]
         //Ceci est la postion (dans la tableau "this._data") à partir
         //de laquelle nous allons insérer chaque nouveau commentaire
@@ -337,7 +404,7 @@ class VideoViewerList extends Component {
           //DIMENSION.MIN_HEADER_HEIGHT + 15 > hauteur total de CommentPost (height + marginBottom)                                                   
           //***************************************************************************************       
 
-          Dimensions.get('window').height -200 -DIMENSION.STATUSBAR_HEIGHT > +150 +50 +(120*responseJson.items.length) +(DIMENSION.MIN_HEADER_HEIGHT*2 + 15)
+          Dimensions.get('window').height -200 -DIMENSION.STATUSBAR_HEIGHT > +150 +50 +(120*this._nextVideo.length) +(DIMENSION.MIN_HEADER_HEIGHT*2 + 15)
           && !this.state.isFirstLoading 
           && !this.state.isRefreshing 
           && !this.state.stopLoadingMore 
@@ -366,11 +433,20 @@ class VideoViewerList extends Component {
         />
 
         <ModalCommentPostYoutube 
-          addComment={this.addComment}
-          toggleModalCommentPostYoutube_HIDE={this.toggleModalCommentPostYoutube_HIDE}
-          isModalCommentPostYoutubeVisible={this.state.isModalCommentPostYoutubeVisible}          
           videoId={this.videoId}
+          addComment={this.addComment}          
+          toggleModalCommentPostYoutube_HIDE={this.toggleModalCommentPostYoutube_HIDE}
+          isModalCommentPostYoutubeVisible={this.state.isModalCommentPostYoutubeVisible}                    
+          setModalUnableToCommentVisibility={this.setModalUnableToCommentVisibility}
         />
+
+        { 
+          this.state.isModalUnableToCommentVisible
+          ? <ModalUnableToComment 
+              setModalUnableToCommentVisibility={this.setModalUnableToCommentVisibility}
+            />
+          : null 
+        }    
 
         {
           this.state.isFirstLoading           
@@ -385,7 +461,10 @@ class VideoViewerList extends Component {
                     ({item}) => { return (                        
                       item.contentID == 0
                         ? <VideoViewerList_HeaderComponent
-                            video={this.props.video}                            
+                            video={this.props.video}
+                            toggleFavorite={this.props.toggleFavorite}
+                            isFavorite={this.props.isFavorite}
+                            toggleDescription = {this.props.toggleDescription}
                           />
                         : item.kind == "youtube#searchResult"
                           ? <VideoMini
@@ -394,18 +473,19 @@ class VideoViewerList extends Component {
                             />
                           : item.contentID == 1
                             ? <VideoViewerList_CommentHeader                              
-                                setModalPosition={this.setModalPosition}                                
-                                commentCount={this.state.commentCount}                
-                                isLoading={this.state.isLoading}                                        
+                                setModalPosition={this.setModalPosition}
+                                commentCount={this.state.commentCount}
+                                isLoading={this.state.isLoading}
                               />
                             : item.contentID == 2
                               ? <CommentPost 
                                   toggleModalCommentPostYoutube_VISIBLE={this.toggleModalCommentPostYoutube_VISIBLE}
                                 />               
-                              :item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName === firebase.auth().currentUser.displayName
+                              : item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName === firebase.auth().currentUser.displayName
                                 ? <MyComment
                                     data={item}
-                                    navigateTo={this.navigateTo}                                                                                            
+                                    navigateTo={this.navigateTo}    
+                                    editComment={this.editComment}                                                                                        
                                     deleteComment={this.deleteComment}
                                   />
                                 : item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
@@ -418,15 +498,17 @@ class VideoViewerList extends Component {
                   }
                   ListFooterComponent={() => {
                     return (
-                      this.state.isEmpty                  
-                        ? <VideoViewerList_CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur 
-                        : this.state.isLoadingMore &&
+                      this.state.isLocked                  
+                        ? <VideoViewerList_CommentLocked/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur 
+                        : this.state.isEmpty 
+                          ? <VideoViewerList_CommentEmpty/>
+                          : this.state.isLoadingMore &&
                             <View style={styles.isloadingmore_container}>
                               <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
                             </View>                      
                     )
                   }}
-                  onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => { console.log("MORE 2 !!!"); this.fetchMore() }) : null }                    
+                  onEndReached={ !this.state.isFirstLoading && !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore && !this.state.lockLoadingMore ? () => this.setState({ isLoadingMore: true }, () => { console.log("MORE 2 !!!"); this.fetchMore() }) : null }                    
                   /*refreshControl={ 
                     <RefreshControl
                       colors={[THEME.SECONDARY.COLOR]} 

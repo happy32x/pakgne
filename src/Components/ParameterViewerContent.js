@@ -39,10 +39,10 @@ class ParameterViewerContent extends React.Component{
 
   render() {
     return (
-      <View 
-        style={{ 
-          backgroundColor: THEME.PRIMARY.COLOR, 
-          paddingTop: Platform.OS !== 'ios' ? this.props.headerMaxHeight : 0, 
+      <View
+        style={{
+          backgroundColor: THEME.PRIMARY.COLOR,
+          paddingTop: Platform.OS !== 'ios' ? this.props.headerMaxHeight : 0,
           flex: 1,
         }}
       >
@@ -87,7 +87,7 @@ class ParameterViewerContent extends React.Component{
             </View>
           </TouchableNativeFeedback>           
 
-          <TouchableNativeFeedback 
+          {/*<TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
             onPress={() => {
               Share.share({
@@ -100,7 +100,7 @@ class ParameterViewerContent extends React.Component{
                   'com.apple.UIKit.activity.PostToTwitter'
                 ]
               })
-            }} 
+            }}
             /*onPress={() => { 
               this.props.navigation.navigate('ParameterElement', { 
                 title: 'Inviter',
@@ -109,7 +109,7 @@ class ParameterViewerContent extends React.Component{
                 color: THEME.TERTIARY.COLOR,
                 message: MESSAGE,
               }) 
-            }}*/            
+            }}           
           >
             <View style={styles.band}>
               <View style={styles.icon_container}>
@@ -121,9 +121,9 @@ class ParameterViewerContent extends React.Component{
             </View>
           </TouchableNativeFeedback>
 
-          {this.renderSeparator()}
+          {this.renderSeparator()*/}
 
-          <TouchableNativeFeedback 
+          {/*<TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
             onPress={() => { 
               this.props.navigation.navigate('ParameterElement', { 
@@ -143,9 +143,9 @@ class ParameterViewerContent extends React.Component{
                 <Text style={styles.text}>Galeries</Text>
               </View>
             </View>
-          </TouchableNativeFeedback>                      
+          </TouchableNativeFeedback>*/}                     
 
-          {this.renderSeparator()}
+          {/*this.renderSeparator()}
 
           <TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
@@ -167,9 +167,9 @@ class ParameterViewerContent extends React.Component{
                 <Text style={styles.text}>Notifications</Text>
               </View>
             </View>
-          </TouchableNativeFeedback>
+          </TouchableNativeFeedback>*/}
 
-          {this.renderSeparator()}
+          {/*this.renderSeparator()}
 
           <TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}
@@ -191,9 +191,9 @@ class ParameterViewerContent extends React.Component{
                 <Text style={styles.text}>Langue</Text>
               </View>
             </View>
-          </TouchableNativeFeedback>
+          </TouchableNativeFeedback>*/}
 
-          {this.renderSeparator()}
+          {/*this.renderSeparator()*/}
           
           <TouchableNativeFeedback 
             background={TouchableNativeFeedback.Ripple(THEME.TERTIARY.WAVE_COLOR,false)}                      

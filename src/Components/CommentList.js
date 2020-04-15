@@ -15,7 +15,9 @@ import uuidv1 from 'uuid/v1'
 import Comment from './Comment'
 import CommentHeader from './CommentHeader'
 import CommentLoading from './CommentLoading'
-import CommentEmpty from './CommentEmpty'
+
+import EmptyComment from './EmptyComment'
+import LockedComment from './LockedComment'
 
 import { 
   getCommentListFromApi,
@@ -23,11 +25,12 @@ import {
 } from '../API/REQUEST'
 
 import THEME from '../INFO/THEME'
-import ModalCommentTopRecentStatic from '../Modal/ModalCommentTopRecentStatic'
-import CommentPostYoutube from './CommentPostYoutube'
 
+import ModalCommentTopRecentStatic from '../Modal/ModalCommentTopRecentStatic'
+import ModalUnableToComment from '../Modal/ModalUnableToComment'
+
+import CommentPostYoutube from './CommentPostYoutube'
 import MyComment from './MyComment'
-import { connect } from 'react-redux'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
@@ -38,8 +41,9 @@ class CommentList extends Component {
     super(props)
     this.state = {
       data: [],
-      isEmpty: true,
       isLoading: true,
+      isEmpty: false,
+      isLocked: false,      
       isLoadingMore: false,
       isRefreshing: false,
       stopLoadingMore: false,
@@ -47,12 +51,14 @@ class CommentList extends Component {
       isModalVisible: false,
       order: 'relevance',
       canWeHandleOrder: false,
+      lockLoadingMore: false,  
 
-      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA'),         
+      commentCount: this.props.navigation.getParam('commentCount', 'NO-DATA'),    
+      isModalUnableToCommentVisible: false,     
     }
     this.autoFocus = this.props.navigation.getParam('autoFocus', 'NO-DATA'),
 
-    this._data = null
+    this._data = []
     this._dataAfter = ''
 
     this.requestId = null
@@ -73,11 +79,43 @@ class CommentList extends Component {
     this.componentDidMountClone = this._componentDidMountClone.bind(this)
     
     this.addComment = this._addComment.bind(this)
+    this.editComment = this._editComment.bind(this)
     this.deleteComment = this._deleteComment.bind(this)
+
+    this.setModalUnableToCommentVisibility = this._setModalUnableToCommentVisibility.bind(this)
   }
 
   static navigationOptions = {
     header: null
+  }
+
+  _setModalUnableToCommentVisibility (value) {
+    this.setState({isModalUnableToCommentVisible: value})    
+  }
+
+  _addComment(newComment) {
+    //await this._data.splice(0, 0, newComment) //or
+    //await this._data.unshift(newComment)
+    this._data = [newComment, ...this._data]
+    this.setState({ 
+      data: this._data,
+      isLocked: false,
+      isEmpty: false,      
+    }, () => {
+      this.scrollTop()
+      console.log('NEW COMMENT ADDED !!!')
+    })
+  }
+
+  _editComment(oldItem, newItem) {    
+    const index = this._data.indexOf(oldItem)
+
+    if (index !== -1) {
+      this._data[index] = newItem
+      this.setState({data: this._data}, () =>  console.log('commentaire modifié avec succes !'))
+    } else {
+      console.log('WHATS HAPPENNING ?')
+    }    
   }
 
   async _deleteComment(commentId) {
@@ -85,15 +123,16 @@ class CommentList extends Component {
                                           item.snippet &&
                                           item.snippet.topLevelComment &&
                                           item.snippet.topLevelComment.id !== commentId
-                                        )
-    this.setState({ data: this._data }, () => console.log('COMMENT DELETED !!!'))        
+                                        )    
+    this.setState({ 
+      data: this._data,
+      isEmpty: this._data.length ?false :true
+    }, () => console.log('COMMENT DELETED !!!'))        
   }
 
-  async _addComment(newComment) {
-    //await this._data.splice(0, 0, newComment) //or
-    await this._data.unshift(newComment)
-    this.setState({ data: this._data }, () => console.log('NEW COMMENT ADDED !!!'))
-  }
+  scrollTop  = () => {    
+    this.scroll.getNode().scrollToOffset({ offset: 0, animated: true });
+  }  
 
   _toggleModal() {
     this.setState({ isModalVisible: !this.state.isModalVisible })
@@ -109,7 +148,7 @@ class CommentList extends Component {
         this.state.isLoading 
           ? this.fetchRefresh() //Lorqu'une requete est déjà en cours, on ne fait plus de setState mais on execute directement this.fetchRefresh()
           : this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false, order }, () => this.fetchRefresh())        
-      }        
+      }
       else {
         //Ceci ne se déclenche que lorqu'il n'y aucun element à afficher
         //On annule donc le chargement précédent de la page et on reprend avec la nouvelle requête
@@ -160,32 +199,48 @@ class CommentList extends Component {
     this._dataAfter = ''
     const requestId = this.requestId = uuidv1()
 
-    this.fetchData(responseJson => {         
-      this.fetchDataCommentCount(responseJsonCommentCount => {
-        if(this._isMounted && this.requestId === requestId) { 
+    this.fetchData(responseJson => {
+      if(responseJson.error && 
+         responseJson.error.errors && 
+         responseJson.error.errors[0] && 
+         responseJson.error.errors[0].reason &&
+         responseJson.error.errors[0].reason === "commentsDisabled"
+        ) {
+        this.setState({ isLocked: true, isLoading: false, canWeHandleOrder: false, lockLoadingMore: true })
+      } else if( (responseJson.items && responseJson.items===undefined) || 
+                 (responseJson.items && responseJson.items.length===0) 
+               ) { 
+        this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false, lockLoadingMore: true }) 
+      } else {    
+        this.fetchDataCommentCount(responseJsonCommentCount => {
+          if(this._isMounted && this.requestId === requestId) { 
 
-          this._data = responseJson.items          
-          this._dataAfter = responseJson.nextPageToken
-          const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
+            this._data = responseJson.items          
+            this._dataAfter = responseJson.nextPageToken
+            const commentCount = responseJsonCommentCount.items[0].statistics.commentCount
 
-          this.setState({
-            data: this._data,
-            isLoading: false,
-            isLoadingMore: false,
-            isRefreshing: false,              
-            commentCount,
-          })          
+            this.setState({
+              data: this._data,
+              isLoading: false,
+              isLocked: false,
+              isEmpty: false,            
+              isLoadingMore: false,
+              isRefreshing: false,      
+              lockLoadingMore: false,        
+              commentCount,
+            })          
 
-          responseJson.nextPageToken===undefined 
-          ? this.setState({ stopLoadingMore: true })
-          : null
+            responseJson.nextPageToken===undefined 
+            ? this.setState({ stopLoadingMore: true })
+            : null
 
-          //On vérifie pour raison de sécurité si this.requestId à été modifié
-          /*this.requestId === requestId 
-            ? this.setState({ isLoading: false })
-            : this.setState({ isLoading: true })*/
-        }
-      })
+            //On vérifie pour raison de sécurité si this.requestId à été modifié
+            /*this.requestId === requestId 
+              ? this.setState({ isLoading: false })
+              : this.setState({ isLoading: true })*/
+          }
+        })
+      }
     })
   }
 
@@ -193,14 +248,24 @@ class CommentList extends Component {
     this._dataAfter = ''
     const requestId = this.requestId = uuidv1()
 
-    this.fetchData(responseJson => {  
-      if(this._isMounted && this.requestId === requestId) {             
-        
-        //En temps normal, lorsque responseJson.items.lenght===0, 
+    this.fetchData(responseJson => {        
+      if(this._isMounted && this.requestId === requestId) {
+        console.log("MESSAGE " + JSON.stringify(responseJson))
+        //Le commentaire qui suit est issu d'un problème déjà réglé :)
+        //En temps normal, lorsque responseJson.items.length===0, 
         //dans le render() on devrai avoir une autre AnimatedFlatList destiné à acceuillir les commentaires du users
         //ce qui implique de nouvelles variables, fonction, modification, disposition, bref un gros bordel
-        if(responseJson.items.length===0) {
-          this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false }) 
+        if(responseJson.error && 
+           responseJson.error.errors && 
+           responseJson.error.errors[0] && 
+           responseJson.error.errors[0].reason &&
+           responseJson.error.errors[0].reason === "commentsDisabled"
+          ) {
+          this.setState({ isLocked: true, isLoading: false, canWeHandleOrder: false, lockLoadingMore: true })
+        } else if( (responseJson.items && responseJson.items===undefined) || 
+                   (responseJson.items && responseJson.items.length===0) 
+                 ) {          
+          this.setState({ isEmpty: true, isLoading: false, canWeHandleOrder: false, lockLoadingMore: true })         
         } else {        
           this.fetchDataCommentCount(responseJsonCommentCount => {
             if(this._isMounted && this.requestId === requestId) { 
@@ -211,10 +276,12 @@ class CommentList extends Component {
 
               this.setState({
                 data: this._data,
-                isEmpty: false,
                 isLoading: false,
+                isLocked: false,
+                isEmpty: false,                                
+                lockLoadingMore: false,
                 commentCount,
-                canWeHandleOrder: true,                           
+                canWeHandleOrder: true,
               })
 
               responseJson.nextPageToken===undefined
@@ -260,63 +327,76 @@ class CommentList extends Component {
         />
 
         { 
+          this.state.isModalUnableToCommentVisible
+          ? <ModalUnableToComment 
+              setModalUnableToCommentVisibility={this.setModalUnableToCommentVisibility}
+            />
+          : null 
+        }               
+
+        {
           this.state.isLoading           
             ? <CommentLoading color={THEME.SECONDARY.COLOR}/>
-            : this.state.isEmpty
-              ? <CommentEmpty/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
-              : <View style={styles.listview_container}>                  
-                  <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard
-                    contentContainerStyle={styles.listview}
-                    showsVerticalScrollIndicator={true}      
-                    keyboardShouldPersistTaps='always'            
-                    data={this.state.data}
-                    renderItem={
-                      ({item}) => { return ( 
-                        item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName === firebase.auth().currentUser.displayName
-                          ? <MyComment
-                              data={item}
-                              navigateTo={this.navigateTo}                                                                                            
-                              deleteComment={this.deleteComment}
-                            />
-                          : item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
-                            ? <Comment
+            : this.state.isLocked
+              ? <LockedComment/> //En temps normal ceci est cencé être une autre AnimatedFlatList destinée à acceuilir les commentaires de l'utilisateur            
+              : this.state.isEmpty
+                ? <EmptyComment/>
+                : <View style={styles.listview_container}>                  
+                    <AnimatedFlatList //AnimatedFlatList pourra lui aussi acceullir les commentaires de l'utilisateur, mais nous travaillerons dessus plutard > DEJA FAIT
+                      ref={(lv) => {this.scroll = lv}}
+                      contentContainerStyle={styles.listview}
+                      showsVerticalScrollIndicator={true}      
+                      keyboardShouldPersistTaps='always'            
+                      data={this.state.data}
+                      renderItem={
+                        ({item}) => { return ( 
+                          item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName === firebase.auth().currentUser.displayName
+                            ? <MyComment
                                 data={item}
-                                navigateTo={this.navigateTo}                                                                                            
+                                navigateTo={this.navigateTo}  
+                                editComment={this.editComment}                                                                                          
+                                deleteComment={this.deleteComment}
                               />
-                            : null
-                      )}
-                    }
-                    ListFooterComponent={() => {
-                      return (
-                        this.state.isLoadingMore &&
-                        <View style={styles.isloadingmore_container}>
-                          <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
-                        </View>
-                      )
-                    }}
-                    onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
-                    refreshControl={ 
-                      <RefreshControl 
-                        colors={[THEME.SECONDARY.COLOR]} 
-                        refreshing={this.state.isRefreshing} 
-                        progressViewOffset={-25}
-                        onRefresh={() => {
-                          this._dataAfter = ''
-                          this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
-                        }}                        
-                      /> 
-                    }
-                    keyExtractor={(item,e) => e.toString()}
-                    onEndReachedThreshold={.5}
-                    {...this.props}
-                  />
-                </View>
+                            : item.kind == "youtube#commentThread" && item.snippet.topLevelComment.snippet.authorDisplayName !== firebase.auth().currentUser.displayName
+                              ? <Comment
+                                  data={item}
+                                  navigateTo={this.navigateTo}                                                                                            
+                                />
+                              : null
+                        )}
+                      }
+                      ListFooterComponent={() => {
+                        return (
+                          this.state.isLoadingMore &&
+                          <View style={styles.isloadingmore_container}>
+                            <ActivityIndicator size="large" color={THEME.SECONDARY.COLOR} />
+                          </View>
+                        )
+                      }}
+                      onEndReached={ !this.state.isRefreshing && !this.state.stopLoadingMore && !this.state.isLoadingMore && !this.state.lockLoadingMore ? () => this.setState({ isLoadingMore: true }, () => this.fetchMore()) : null }                    
+                      refreshControl={ 
+                        <RefreshControl 
+                          colors={[THEME.SECONDARY.COLOR]} 
+                          refreshing={this.state.isRefreshing} 
+                          progressViewOffset={-25}
+                          onRefresh={() => {
+                            this._dataAfter = ''
+                            this.setState({ isRefreshing: true, isLoading: true, isLoadingMore: false }, () => this.fetchRefresh())
+                          }}                        
+                        /> 
+                      }
+                      keyExtractor={(item,e) => e.toString()}
+                      onEndReachedThreshold={.5}
+                      {...this.props}
+                    />
+                  </View>
         }
 
-        <CommentPostYoutube 
-          addComment={this.addComment}                                                
+        <CommentPostYoutube                                                         
           videoId={this.videoId}
           autoFocus={this.autoFocus}
+          addComment={this.addComment}  
+          setModalUnableToCommentVisibility={this.setModalUnableToCommentVisibility}
         />
       </KeyboardAvoidingView>
     )

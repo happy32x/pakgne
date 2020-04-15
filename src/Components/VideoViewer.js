@@ -14,7 +14,9 @@ import {
   TouchableNativeFeedback,
 } from 'react-native'
 
+import { connect } from 'react-redux'
 import VideoViewerList from './VideoViewerList'
+import VideoViewerDescription from './VideoViewerDescription'
 
 import Icon from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -26,6 +28,8 @@ import RateVideoViewer from './RateVideoViewer'
 import likeConverter from '../Helpers/likeConverter'
 import THEME from '../INFO/THEME'
 
+const VIDEO_HEIGHT = 200
+
 class VideoViewer extends React.Component{
 
   static navigationOptions = {
@@ -36,12 +40,33 @@ class VideoViewer extends React.Component{
     super(props)
     this.state = {
       switchValue: false,
+      showDescription: false,
     }
+    this.toggleFavorite = this._toggleFavorite.bind(this)
+    this.isFavorite = this._isFavorite.bind(this)
 
+    this.toggleDescription = this._toggleDescription.bind(this)   
     this.toggleSwitch = this._toggleSwitch.bind(this)   
 
     this.navigateTo = this._navigateTo.bind(this)
     this.navigateBack = this._navigateBack.bind(this)
+  }
+
+  _toggleDescription(value) {
+    this.setState({showDescription: value})
+  }
+
+  _toggleFavorite() {
+    const action = { 
+      type: "TOGGLE_FAVORITE", 
+      value: [
+        this.props.navigation.state.params.video[0],
+        this.props.navigation.state.params.video[1]
+      ]}
+    this.props.dispatch(action)
+  }
+  _isFavorite() {
+    return this.props.favoritesVideo.findIndex(item => item[0].id.videoId === this.props.navigation.state.params.video[0].id.videoId)
   }
 
   _toggleSwitch(value) {
@@ -60,7 +85,7 @@ class VideoViewer extends React.Component{
   render() {
     const { navigation } = this.props
     const video = navigation.getParam('video', 'NO-DATA')
-
+  
     return (
       <View style={styles.main_container}>
           <View style={styles.video_container}>
@@ -74,7 +99,7 @@ class VideoViewer extends React.Component{
                 <Icon style={styles.arrow_back} name="md-arrow-back" /> 
               </View>              
             </TouchableNativeFeedback>
-          </View>
+          </View>          
 
           <View style={styles.main_container}>
             <VideoViewerList
@@ -82,9 +107,19 @@ class VideoViewer extends React.Component{
               video = {video}
               commentCount = {video[1].statistics.commentCount}  
               navigateTo = {this.navigateTo}
-              navigateBack = {this.navigateBack}             
+              navigateBack = {this.navigateBack}       
+              toggleFavorite={this.toggleFavorite}
+              isFavorite={this.isFavorite}
+              toggleDescription = {this.toggleDescription}
             />
           </View>          
+
+          { this.state.showDescription
+          ? <VideoViewerDescription
+              video = {video}
+              toggleDescription = {this.toggleDescription}
+            />
+          : null }
 
           { Platform.OS === 'android' ? <BarStatus color={THEME.SECONDARY.COLOR} /> : null }
       </View>
@@ -104,10 +139,10 @@ const styles = StyleSheet.create({
   },
   video_container: {
     alignSelf:'stretch', 
-    height:200, 
+    height: VIDEO_HEIGHT, 
     backgroundColor: THEME.SECONDARY.COLOR,
     marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 
-  },
+  }, 
   arrow_back_container: { 
     position:"absolute", 
     top: 0,
@@ -233,4 +268,11 @@ const styles = StyleSheet.create({
   },
 })
 
-export default VideoViewer
+const mapStateToProps = (state) => {
+  return {
+    favoritesVideo: state.toggleFavorite.favoritesVideo,
+    currentUser: state.UserInfoReducer.currentUser,
+  }
+}
+
+export default connect(mapStateToProps)(VideoViewer)

@@ -46,9 +46,10 @@ class MyComment extends React.Component {
     this.state = {
       loadingImage: true,
       isModalVisible: false,
-      isEditModalVisible: false,
-      myText: props.data.snippet.topLevelComment.snippet.textOriginal
+      isEditModalVisible: false,    
     }    
+
+    this.myText = props.data.snippet.topLevelComment.snippet.textOriginal
 
     this.element_on = THEME.PRIMARY.BACKGROUND_COLOR
     this.element_off = THEME.TERTIARY.COLOR
@@ -69,20 +70,17 @@ class MyComment extends React.Component {
     this.preEditComment = this._preEditComment.bind(this)
     this.editComment = this._editComment.bind(this)
 
-    this.fetchData_deleteCommentFromApi = this._fetchData_deleteCommentFromApi.bind(this)     
-  }  
+    this.fetchData_deleteCommentFromApi = this._fetchData_deleteCommentFromApi.bind(this)
+  }
 
   _preEditComment() {
-    this.setState({isModalVisible: false, isEditModalVisible: true})    
+    this.setState({isModalVisible: false, isEditModalVisible: true})
   }
 
-  _showEditModal() {
-    this.setState({}, () => console.log('que voulez-vous faire de ce commentaire ?'))
-  }
-
-  _editComment(text) {
-    this.setState({myText: text}, () => console.log('commentaire modifié avec succes !'))
-  }
+  _editComment(oldItem, newItem) {
+    this.hideEditModal()
+    this.props.editComment(oldItem, newItem)
+  } 
 
   _updateAccessToken(accessToken) {
     this.accessToken = accessToken
@@ -153,27 +151,37 @@ class MyComment extends React.Component {
     this._isMounted = false
   }
 
+  shouldComponentUpdate(nextProps, nextState) {      
+    this.myText = nextProps.data.snippet.topLevelComment.snippet.textOriginal
+    return true
+  }
+
   render() {    
     return (
       /*
       <View style={styles.comment_container} key={this.props.rowId}>
       */
       <View style={styles.comment_container}>
+        {
+          this.state.isModalVisible
+          ? <ModalMyComment        
+              hideModal={this.hideModal}
+              preEditComment={this.preEditComment}
+              fetchData_deleteCommentFromApi={this.fetchData_deleteCommentFromApi}
+            />
+          : null
+        }
 
-        <ModalMyComment
-          isModalVisible={this.state.isModalVisible}
-          hideModal={this.hideModal}
-          preEditComment={this.preEditComment}
-          fetchData_deleteCommentFromApi={this.fetchData_deleteCommentFromApi}
-        />
-
-        <ModalEditTopCommentPostYoutube
-          isEditModalVisible={this.state.isEditModalVisible}
-          hideEditModal={this.hideEditModal}
-          myText={this.state.myText}
-          editComment={this.editComment}
-          topCommentId={this.props.data.id}
-        />
+        {
+          this.state.isEditModalVisible
+          ? <ModalEditTopCommentPostYoutube  
+              data={this.props.data}        
+              myText={this.myText}
+              editComment={this.editComment}
+              hideEditModal={this.hideEditModal}              
+            />
+          : null
+        }
 
         <View style={styles.comment_container_left}>
           <BounceUpAndDownStatic
@@ -222,14 +230,14 @@ class MyComment extends React.Component {
               numberOfLines={3}
               renderViewMore={this.renderViewMore}
               renderViewLess={this.renderViewLess} 
-              key={this.state.myText.length}              
+              key={this.myText.length}              
             >
               <Autolink
                 style={styles.comment_area_text}
-                text={this.state.myText}
+                text={this.myText}
                 hashtag="instagram"
                 mention="twitter"
-              />                
+              />                               
             </ViewMoreText>
           </View>
 

@@ -33,7 +33,7 @@ class ModalMyCommentReply extends Component {
   render() {
     return (
       <Modal        
-        isVisible={this.props.isModalVisible}
+        isVisible={true}
         onBackdropPress={() => this.props.hideModal()}      
         onSwipeComplete={() => this.props.hideModal()}
         swipeDirection={['left', 'right']}  
