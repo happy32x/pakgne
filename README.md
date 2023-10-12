@@ -1,3 +1,9 @@
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=zfWlCx1GNGo" target="_blank">
+ <img src="http://img.youtube.com/vi/zfWlCx1GNGo/mqdefault.jpg" alt="Watch the video" width="240" height="180" border="10" />
+</a>
+
+
 ### UPDATE - JAN 03 2024
 The application is currently being refactored and updated, and will be definitively available on PLAYSTORE on January 03, 2024.
 
