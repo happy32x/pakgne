@@ -2,7 +2,7 @@
 The application is currently being refactored and updated, and will be definitively available on PLAYSTORE on January 03, 2024.
 
 ### IMAGE
-![alt text](https://i.imgur.com/JTv02Ur.png)
+![alt text](https://i.imgur.com/JTv02Ur.png | width=100)
 
 ### DEMO
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/LYRuFtkDU4I/0.jpg)](https://youtube.com/shorts/zfWlCx1GNGo)
