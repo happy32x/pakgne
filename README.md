@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/1xONcuQ.png">
+<img src="https://i.imgur.com/a/1xONcuQ.png">
 
 ### UPDATE - JAN 03 2024
 The application is currently being refactored and updated, and will be definitively available on PLAYSTORE on January 03, 2024.
