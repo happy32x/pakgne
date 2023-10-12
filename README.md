@@ -3,6 +3,7 @@ The application is currently being refactored and updated, and will be definitiv
 
 ### IMAGE
 ![alt text](https://i.imgur.com/JTv02Ur.png | width=100)
+<img src="https://i.imgur.com/JTv02Ur.png" width="100">
 
 ### DEMO
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/LYRuFtkDU4I/0.jpg)](https://youtube.com/shorts/zfWlCx1GNGo)
