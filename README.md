@@ -1,5 +1,11 @@
+<img src="https://i.imgur.com/1xONcuQ.png">
+
 ### UPDATE - JAN 03 2024
 The application is currently being refactored and updated, and will be definitively available on PLAYSTORE on January 03, 2024.
+
+### WHAT IS "PAKGNE"
+https://www.youtube.com/channel/UCWitG84eyFDN5xj8oLXwVhA
+
 
 ### IMAGE
 <img src="https://i.imgur.com/JTv02Ur.png" width="300">
