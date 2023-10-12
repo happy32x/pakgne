@@ -16,4 +16,4 @@ Pakgne is a mobile application that brings together fans of the <a href="https:/
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/_JIodAa3uwQ/maxresdefault.jpg)](https://youtu.be/_JIodAa3uwQ)
 
 ### NOTE
-At present, the functionalities are much more advanced than those presented in the video. They will be presented to you in video on 01/03/2023.
+At present, the functionalities are much more advanced than those presented in the video. They will be presented to you in video on 01/03/2024, and how you can use the project to generate your own mobile application based on any YouTube channel of your choice.
