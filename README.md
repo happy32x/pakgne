@@ -5,7 +5,7 @@ The application is currently being refactored and updated, and will be definitiv
 <img src="https://i.imgur.com/JTv02Ur.png" width="300">
 
 ### DEMO
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/zfWlCx1GNGo/0.jpg)](https://youtube.com/shorts/zfWlCx1GNGo)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/zfWlCx1GNGo/hqdefault.jpg)](https://youtube.com/shorts/zfWlCx1GNGo)
 
 ### FOOTAGE
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/_JIodAa3uwQ/0.jpg)](https://youtu.be/_JIodAa3uwQ)
